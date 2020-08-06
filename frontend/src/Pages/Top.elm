@@ -8,7 +8,6 @@ import Element.Input as Input
 import Spa.Document exposing (Document)
 import Spa.Page as Page exposing (Page)
 import Spa.Url exposing (Url)
-import Utils.Route exposing (navigate)
 
 
 type alias Params =
@@ -34,6 +33,16 @@ page =
 -- VIEW
 
 
+primaryColor : Color
+primaryColor =
+    rgb255 52 172 224
+
+
+darkGrey : Color
+darkGrey =
+    rgb255 61 61 61
+
+
 view : Url Params -> Document Msg
 view { params } =
     { title = "dwb?"
@@ -50,12 +59,16 @@ view { params } =
                 ]
                 (column [ centerX, centerY, spacing 10 ]
                     [ el [ centerX, Font.size 80 ] (text "Homework Organizer")
-                    , el [ centerX, Font.size 30 ]
+                    , el [ centerX, Font.size 20 ]
                         (link
                             [ padding 15
-                            , Background.color (rgb255 125 95 255)
+                            , Background.color primaryColor
                             , Border.rounded 7
                             , Font.color (rgb255 255 255 255)
+                            , Font.family
+                                [ Font.typeface "Roboto"
+                                , Font.sansSerif
+                                ]
                             ]
                             { url = "/register", label = text "Register now" }
                         )
@@ -69,7 +82,7 @@ view { params } =
                     , Font.serif
                     ]
                 , width fill
-                , Background.color (rgb255 61 61 61)
+                , Background.color darkGrey
                 , Font.color (rgb 1 1 1)
                 ]
                 (column [ padding 100, spacing 10 ]
