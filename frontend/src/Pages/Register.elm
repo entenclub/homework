@@ -6,6 +6,8 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
 import Html exposing (input)
+import Http
+import Json.Decode as Json
 import Spa.Document exposing (Document)
 import Spa.Page as Page exposing (Page)
 import Spa.Url exposing (Url)
@@ -32,12 +34,20 @@ type alias Errors =
     }
 
 
+type UsernameTakenStatus
+    = Success Bool
+    | Inactive
+    | Failure
+    | Loading
+
+
 type alias Model =
     { usernameInput : String
     , passwordInput : String
     , validatePasswordInput : String
     , emailInput : String
     , errors : Errors
+    , usernameTakenStatus : UsernameTakenStatus
     }
 
 
@@ -46,6 +56,7 @@ type Msg
     | PasswordInput String
     | ValidatePasswordInput String
     | EmailInput String
+    | GotUsernameTaken (Result Http.Error Bool)
     | Register
 
 
@@ -56,6 +67,7 @@ init _ =
       , validatePasswordInput = ""
       , emailInput = ""
       , errors = { username = Nothing, password = Nothing, email = Nothing }
+      , usernameTakenStatus = Inactive
       }
     , Cmd.none
     )
@@ -75,10 +87,7 @@ validateEmailInput input =
 
 validateUsernameInput : String -> Maybe String
 validateUsernameInput input =
-    if input == "3nt3" then
-        Just "username taken"
-
-    else if input == "" then
+    if input == "" then
         Just "no username specified"
 
     else if String.contains " " input then
@@ -115,16 +124,25 @@ setPasswordError original newError =
     { original | password = newError }
 
 
-update : Msg -> Model -> ( Model, Cmd msg )
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UsernameInput input ->
-            ( { model
-                | usernameInput = input
-                , errors = setUsernameError model.errors (validateUsernameInput input)
-              }
-            , Cmd.none
-            )
+            if String.length input > 0 then
+                ( { model
+                    | usernameInput = input
+                    , errors = setUsernameError model.errors (validateUsernameInput input)
+                  }
+                , usernameTakenRequest input
+                )
+
+            else
+                ( { model
+                    | usernameInput = input
+                    , errors = setUsernameError model.errors (validateUsernameInput input)
+                  }
+                , Cmd.none
+                )
 
         PasswordInput input ->
             ( { model
@@ -149,6 +167,14 @@ update msg model =
               }
             , Cmd.none
             )
+
+        GotUsernameTaken result ->
+            case result of
+                Ok taken ->
+                    ( { model | usernameTakenStatus = Success taken }, Cmd.none )
+
+                Err _ ->
+                    ( { model | usernameTakenStatus = Failure }, Cmd.none )
 
         _ ->
             ( model, Cmd.none )
@@ -203,6 +229,7 @@ view model =
                             ]
                         , column [ width fill ]
                             [ viewInputError model "username"
+                            , viewUsernameTaken model
                             , Input.text inputStyle
                                 { label = Input.labelHidden "username"
                                 , placeholder = Just (Input.placeholder [] (text "enter username"))
@@ -318,3 +345,36 @@ passwordStrengthIndicator password =
         , Border.rounded 5
         ]
         Element.none
+
+
+viewUsernameTaken : Model -> Element Msg
+viewUsernameTaken model =
+    case model.usernameTakenStatus of
+        Success taken ->
+            if taken then
+                text "username taken"
+
+            else
+                text "username not taken"
+
+        Failure ->
+            el [ Font.color errorColor ] (text "error determining whether username is available")
+
+        Loading ->
+            text "Loading..."
+
+        Inactive ->
+            text " "
+
+
+usernameTakenRequest : String -> Cmd Msg
+usernameTakenRequest username =
+    Http.get
+        { url = "http://localhost:5000/username-taken/" ++ username
+        , expect = Http.expectJson GotUsernameTaken usernameTakenDecoder
+        }
+
+
+usernameTakenDecoder : Json.Decoder Bool
+usernameTakenDecoder =
+    Json.field "content" Json.bool
