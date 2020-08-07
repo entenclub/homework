@@ -11,4 +11,8 @@ class User(db.Model):
 
     def to_dict(self):
         return {"id": self.id, "username": self.username, "password_hash": self.password_hash,
-                "user_type": self.user_type}
+                "privilege": self.privilege}
+
+    def to_safe_dict(self):
+        return {"id": self.id, "username": self.username,
+                "privilege": self.privilege}
