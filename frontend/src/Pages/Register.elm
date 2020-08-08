@@ -2,12 +2,14 @@ module Pages.Register exposing (Model, Msg, Params, page)
 
 import Element exposing (..)
 import Element.Background as Background
-import Element.Border as Border
+import Element.Border as Border exposing (rounded)
 import Element.Font as Font
 import Element.Input as Input
 import Html exposing (input)
 import Http
 import Json.Decode as Json
+import Material.Icons as Icons
+import Material.Icons.Types exposing (Coloring(..))
 import Spa.Document exposing (Document)
 import Spa.Page as Page exposing (Page)
 import Spa.Url exposing (Url)
@@ -140,6 +142,7 @@ update msg model =
                 ( { model
                     | usernameInput = input
                     , errors = setUsernameError model.errors (validateUsernameInput input)
+                    , usernameTakenStatus = Inactive
                   }
                 , Cmd.none
                 )
@@ -218,7 +221,7 @@ view model =
                         ]
                         (text "Register")
                     , row [ spacing 10 ]
-                        [ column [ width fill ]
+                        [ column [ width (fillPortion 20) ]
                             [ viewInputError model "email"
                             , Input.email inputStyle
                                 { label = Input.labelHidden "email"
@@ -227,16 +230,25 @@ view model =
                                 , text = model.emailInput
                                 }
                             ]
-                        , column [ width fill ]
-                            [ viewInputError model "username"
-                            , viewUsernameTaken model
-                            , Input.text inputStyle
+                        , column [ width (fillPortion 18) ]
+                            [ Input.text inputStyle
                                 { label = Input.labelHidden "username"
                                 , placeholder = Just (Input.placeholder [] (text "enter username"))
                                 , onChange = UsernameInput
                                 , text = model.usernameInput
                                 }
                             ]
+                        , el
+                            [ width (px 55)
+                            , height (px 55)
+                            , Background.color (rgb 1 1 1)
+                            , Border.rounded 3
+                            , height fill
+                            , Border.solid
+                            , Border.width 1
+                            , Border.color (rgb 0.7 0.7 0.7)
+                            ]
+                            (viewUsernameTaken model)
                         ]
                     , column [ width fill, spacing 5 ]
                         [ viewInputError model "password"
@@ -349,22 +361,29 @@ passwordStrengthIndicator password =
 
 viewUsernameTaken : Model -> Element Msg
 viewUsernameTaken model =
-    case model.usernameTakenStatus of
-        Success taken ->
-            if taken then
-                text "username taken"
+    el [ centerX, centerY, width shrink, height fill ]
+        (let
+            size =
+                48
+         in
+         case model.usernameTakenStatus of
+            Success taken ->
+                if taken then
+                    el [ centerX, centerY, Font.color errorColor ]
+                        (html (Icons.close size Inherit))
 
-            else
-                text "username not taken"
+                else
+                    el [ centerX, centerY, Font.color greenColor ] (html (Icons.check size Inherit))
 
-        Failure ->
-            el [ Font.color errorColor ] (text "error determining whether username is available")
+            Failure ->
+                el [ centerX, centerY ] (html (Icons.error (round (size * 0.8)) Inherit))
 
-        Loading ->
-            text "Loading..."
+            Loading ->
+                el [ centerX, centerY ] (html (Icons.hourglass_bottom size Inherit))
 
-        Inactive ->
-            text " "
+            Inactive ->
+                el [] Element.none
+        )
 
 
 usernameTakenRequest : String -> Cmd Msg
