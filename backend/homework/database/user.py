@@ -10,9 +10,9 @@ class User(db.Model):
     privilege = db.Column('privilege', db.Integer, default=0)
 
     def to_dict(self):
-        return {"id": self.id, "username": self.username, "password_hash": self.password_hash,
+        return {"id": self.id, "username": self.username, "email": self.email, "password_hash": self.password_hash,
                 "privilege": self.privilege}
 
     def to_safe_dict(self):
-        return {"id": self.id, "username": self.username,
+        return {"id": self.id, "username": self.username, "email": self.email,
                 "privilege": self.privilege}

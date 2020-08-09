@@ -1,6 +1,7 @@
 module Pages.Register exposing (Model, Msg, Params, page)
 
 import Api
+import Api.Homework.User
 import Api.Homework.UsernameTaken
 import Element exposing (..)
 import Element.Background as Background
@@ -8,13 +9,13 @@ import Element.Border as Border exposing (rounded)
 import Element.Font as Font
 import Element.Input as Input
 import Html exposing (input)
-import Http
-import Json.Decode as Json
 import Material.Icons as Icons
 import Material.Icons.Types exposing (Coloring(..))
 import Spa.Document exposing (Document)
+import Spa.Generated.Route as Route
 import Spa.Page as Page exposing (Page)
 import Spa.Url exposing (Url)
+import Utils.Route
 
 
 page : Page Params Model Msg
@@ -45,6 +46,8 @@ type alias Model =
     , emailInput : String
     , errors : Errors
     , usernameTakenStatus : Api.Data Bool
+    , registrationStatus : Api.Data Api.Homework.User.User
+    , url : Url Params
     }
 
 
@@ -54,17 +57,20 @@ type Msg
     | ValidatePasswordInput String
     | EmailInput String
     | GotUsernameTaken (Api.Data Bool)
+    | GotRegistrationData (Api.Data Api.Homework.User.User)
     | Register
 
 
 init : Url Params -> ( Model, Cmd Msg )
-init _ =
+init url =
     ( { usernameInput = ""
       , passwordInput = ""
       , validatePasswordInput = ""
       , emailInput = ""
       , errors = { username = Nothing, password = Nothing, email = Nothing }
       , usernameTakenStatus = Api.NotAsked
+      , registrationStatus = Api.NotAsked
+      , url = url
       }
     , Cmd.none
     )
@@ -169,8 +175,23 @@ update msg model =
         GotUsernameTaken data ->
             ( { model | usernameTakenStatus = data }, Cmd.none )
 
-        _ ->
-            ( model, Cmd.none )
+        GotRegistrationData data ->
+            case data of
+                Api.Success _ ->
+                    ( model, Utils.Route.navigate model.url.key Route.Dashboard )
+
+                _ ->
+                    ( { model | registrationStatus = data }, Cmd.none )
+
+        Register ->
+            ( model
+            , Api.Homework.User.register
+                { username = model.usernameInput
+                , password = model.passwordInput
+                , email = Just model.emailInput
+                }
+                { onResponse = GotRegistrationData }
+            )
 
 
 subscriptions : Model -> Sub Msg
@@ -254,7 +275,7 @@ view model =
                         ]
                     , Input.currentPassword inputStyle
                         { label = Input.labelHidden "validate password"
-                        , placeholder = Just (Input.placeholder [] (text "validate password"))
+                        , placeholder = Just (Input.placeholder [] (text "repeat password"))
                         , onChange = ValidatePasswordInput
                         , text = model.validatePasswordInput
                         , show = False
@@ -268,7 +289,7 @@ view model =
                         , paddingXY 30 15
                         , Font.bold
                         ]
-                        { label = text "register"
+                        { label = viewRegistrationButton model
                         , onPress = Just Register
                         }
                     ]
@@ -380,3 +401,25 @@ viewUsernameTaken model =
                 el [] Element.none
         )
 
+
+viewRegistrationButton : Model -> Element Msg
+viewRegistrationButton model =
+    let
+        size =
+            42
+    in
+    el []
+        (case model.registrationStatus of
+            Api.Success _ ->
+                el [ centerX, centerY, Font.color darkGreenColor ] (html (Icons.check size Inherit))
+
+            Api.Loading ->
+                el [ centerX, centerY ] (html (Icons.hourglass_bottom size Inherit))
+
+            Api.Failure _ ->
+                el [ centerX, centerY, Font.color errorColor ]
+                    (html (Icons.close size Inherit))
+
+            Api.NotAsked ->
+                text "register"
+        )

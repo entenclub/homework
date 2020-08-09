@@ -1,11 +1,13 @@
-from flask import Blueprint, jsonify, request, make_response
+from flask import Blueprint, jsonify, request, make_response, Response
 from ..database.user import User
 from ..database.session import Session
 from . import to_response, return_error
 from .. import db
 import bcrypt
+from flask_cors import CORS
 
 user_bp = Blueprint('authentication', __name__)
+CORS(user_bp, supports_credentials=True)
 
 
 # @user_bp.route('/user')
@@ -56,14 +58,14 @@ def user_by_id(id):
         return jsonify(return_error("user not found")), 404
 
 
-@user_bp.route('/user/')
+@user_bp.route('/user')
 def user_by_session():
     session_cookie = request.cookies.get('hw_session')
     if not session_cookie:
         return jsonify(return_error("no session")), 401
 
     try:
-        session = Session.query.filter_by(id=session_cookie.content).first()
+        session = Session.query.filter_by(id=session_cookie).first()
 
     except Exception as e:
         print(e)
@@ -76,6 +78,7 @@ def user_by_session():
         print(e)
         return jsonify(return_error("invalid session")), 401
 
+    print(user.to_dict())
     return jsonify(to_response(user.to_safe_dict())), 200
 
 
@@ -103,6 +106,6 @@ def register():
     print(type(new_session.id))
 
     resp = make_response(jsonify(new_user.to_safe_dict()))
-    resp.set_cookie('hw_session', str(new_session.id))
+    resp.set_cookie('hw_session', str(new_session.id), max_age=60*60*24*183)
 
     return resp, 200

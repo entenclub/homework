@@ -4,7 +4,8 @@ from flask_sqlalchemy import SQLAlchemy
 
 
 app = FlaskAPI(__name__)
-CORS(app)
+app.config.from_object('config')
+CORS(app, supports_credentials=True)
 
 
 # sqlalchemy
