@@ -1,5 +1,7 @@
 module Pages.Register exposing (Model, Msg, Params, page)
 
+import Api
+import Api.Homework.UsernameTaken
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border exposing (rounded)
@@ -36,20 +38,13 @@ type alias Errors =
     }
 
 
-type UsernameTakenStatus
-    = Success Bool
-    | Inactive
-    | Failure
-    | Loading
-
-
 type alias Model =
     { usernameInput : String
     , passwordInput : String
     , validatePasswordInput : String
     , emailInput : String
     , errors : Errors
-    , usernameTakenStatus : UsernameTakenStatus
+    , usernameTakenStatus : Api.Data Bool
     }
 
 
@@ -58,7 +53,7 @@ type Msg
     | PasswordInput String
     | ValidatePasswordInput String
     | EmailInput String
-    | GotUsernameTaken (Result Http.Error Bool)
+    | GotUsernameTaken (Api.Data Bool)
     | Register
 
 
@@ -69,7 +64,7 @@ init _ =
       , validatePasswordInput = ""
       , emailInput = ""
       , errors = { username = Nothing, password = Nothing, email = Nothing }
-      , usernameTakenStatus = Inactive
+      , usernameTakenStatus = Api.NotAsked
       }
     , Cmd.none
     )
@@ -135,14 +130,14 @@ update msg model =
                     | usernameInput = input
                     , errors = setUsernameError model.errors (validateUsernameInput input)
                   }
-                , usernameTakenRequest input
+                , Api.Homework.UsernameTaken.usernameTaken input { onResponse = GotUsernameTaken }
                 )
 
             else
                 ( { model
                     | usernameInput = input
                     , errors = setUsernameError model.errors (validateUsernameInput input)
-                    , usernameTakenStatus = Inactive
+                    , usernameTakenStatus = Api.NotAsked
                   }
                 , Cmd.none
                 )
@@ -171,13 +166,8 @@ update msg model =
             , Cmd.none
             )
 
-        GotUsernameTaken result ->
-            case result of
-                Ok taken ->
-                    ( { model | usernameTakenStatus = Success taken }, Cmd.none )
-
-                Err _ ->
-                    ( { model | usernameTakenStatus = Failure }, Cmd.none )
+        GotUsernameTaken data ->
+            ( { model | usernameTakenStatus = data }, Cmd.none )
 
         _ ->
             ( model, Cmd.none )
@@ -318,6 +308,11 @@ greenColor =
     rgb255 46 204 113
 
 
+darkGreenColor : Color
+darkGreenColor =
+    rgb255 39 174 96
+
+
 omgSoGreatColor : Color
 omgSoGreatColor =
     rgb255 52 172 224
@@ -367,33 +362,21 @@ viewUsernameTaken model =
                 48
          in
          case model.usernameTakenStatus of
-            Success taken ->
+            Api.Success taken ->
                 if taken then
                     el [ centerX, centerY, Font.color errorColor ]
                         (html (Icons.close size Inherit))
 
                 else
-                    el [ centerX, centerY, Font.color greenColor ] (html (Icons.check size Inherit))
+                    el [ centerX, centerY, Font.color darkGreenColor ] (html (Icons.check size Inherit))
 
-            Failure ->
+            Api.Failure _ ->
                 el [ centerX, centerY ] (html (Icons.error (round (size * 0.8)) Inherit))
 
-            Loading ->
+            Api.Loading ->
                 el [ centerX, centerY ] (html (Icons.hourglass_bottom size Inherit))
 
-            Inactive ->
+            Api.NotAsked ->
                 el [] Element.none
         )
 
-
-usernameTakenRequest : String -> Cmd Msg
-usernameTakenRequest username =
-    Http.get
-        { url = "http://localhost:5000/username-taken/" ++ username
-        , expect = Http.expectJson GotUsernameTaken usernameTakenDecoder
-        }
-
-
-usernameTakenDecoder : Json.Decoder Bool
-usernameTakenDecoder =
-    Json.field "content" Json.bool
