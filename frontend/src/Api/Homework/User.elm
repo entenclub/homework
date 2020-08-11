@@ -1,28 +1,16 @@
-module Api.Homework.User exposing (User, getUserFromSession, login, register)
+module Api.Homework.User exposing (getUserFromSession, login, register)
 
 import Api
 import Http
 import Json.Decode as Json
 import Json.Encode as Encode
-
-
-type Privilege
-    = Normal
-    | Admin
+import Shared exposing (User)
 
 
 type alias Credentials =
     { username : String
     , password : String
     , email : Maybe String
-    }
-
-
-type alias User =
-    { id : Int
-    , username : String
-    , email : String
-    , privilege : Int
     }
 
 

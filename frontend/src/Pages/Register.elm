@@ -11,6 +11,7 @@ import Element.Input as Input
 import Html exposing (input)
 import Material.Icons as Icons
 import Material.Icons.Types exposing (Coloring(..))
+import Shared
 import Spa.Document exposing (Document)
 import Spa.Generated.Route as Route
 import Spa.Page as Page exposing (Page)
@@ -20,11 +21,13 @@ import Utils.Route
 
 page : Page Params Model Msg
 page =
-    Page.element
+    Page.application
         { init = init
         , subscriptions = subscriptions
         , update = update
         , view = view
+        , save = save
+        , load = load
         }
 
 
@@ -46,7 +49,7 @@ type alias Model =
     , emailInput : String
     , errors : Errors
     , usernameTakenStatus : Api.Data Bool
-    , registrationStatus : Api.Data Api.Homework.User.User
+    , registrationStatus : Api.Data Shared.User
     , url : Url Params
     }
 
@@ -57,12 +60,12 @@ type Msg
     | ValidatePasswordInput String
     | EmailInput String
     | GotUsernameTaken (Api.Data Bool)
-    | GotRegistrationData (Api.Data Api.Homework.User.User)
+    | GotRegistrationData (Api.Data Shared.User)
     | Register
 
 
-init : Url Params -> ( Model, Cmd Msg )
-init url =
+init : Shared.Model -> Url Params -> ( Model, Cmd Msg )
+init _ url =
     ( { usernameInput = ""
       , passwordInput = ""
       , validatePasswordInput = ""
@@ -197,6 +200,21 @@ update msg model =
 subscriptions : Model -> Sub Msg
 subscriptions _ =
     Sub.none
+
+
+load : Shared.Model -> Model -> ( Model, Cmd msg )
+load shared model =
+    ( model, Cmd.none )
+
+
+save : Model -> Shared.Model -> Shared.Model
+save model shared =
+    case model.registrationStatus of
+        Api.Success user ->
+            { shared | user = Just user }
+
+        _ ->
+            shared
 
 
 inputStyle : List (Attribute msg)

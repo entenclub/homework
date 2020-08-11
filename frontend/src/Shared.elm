@@ -1,13 +1,18 @@
 module Shared exposing
-    ( Flags
+    ( Device
+    , DeviceClass(..)
+    , Flags
     , Model
     , Msg
+    , User
     , init
     , subscriptions
     , update
     , view
     )
 
+import Api.Reddit.Listing exposing (new)
+import Browser.Events
 import Browser.Navigation exposing (Key)
 import Element exposing (..)
 import Element.Background as Background
@@ -22,19 +27,60 @@ import Url exposing (Url)
 -- INIT
 
 
+type alias Device =
+    { class : DeviceClass
+    , orientation : Orientation
+    , width : Int
+    , height : Int
+    }
+
+
+type DeviceClass
+    = Phone
+    | Tablet
+    | Desktop
+
+
+type Orientation
+    = Portrait
+    | Landscape
+
+
+classifyDevice : { window | height : Int, width : Int } -> Device
+classifyDevice options =
+    if options.width < 450 then
+        Device Phone Portrait options.width options.height
+
+    else if options.width < 900 then
+        Device Tablet Portrait options.width options.height
+
+    else
+        Device Desktop Landscape options.width options.height
+
+
+type alias User =
+    { id : Int
+    , username : String
+    , email : String
+    , privilege : Int
+    }
+
+
 type alias Flags =
-    ()
+    { width : Int, height : Int }
 
 
 type alias Model =
     { url : Url
     , key : Key
+    , user : Maybe User
+    , device : Device
     }
 
 
 init : Flags -> Url -> Key -> ( Model, Cmd Msg )
 init flags url key =
-    ( Model url key
+    ( Model url key Nothing (classifyDevice { width = flags.width, height = flags.height })
     , Cmd.none
     )
 
@@ -44,23 +90,36 @@ init flags url key =
 
 
 type Msg
-    = ReplaceMe
+    = GotUser User
+    | Logout
+    | Resize Int Int
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        ReplaceMe ->
-            ( model, Cmd.none )
+        GotUser user ->
+            ( { model | user = Just user }, Cmd.none )
+
+        Logout ->
+            ( { model | user = Nothing }, Cmd.none )
+
+        Resize w h ->
+            ( { model | device = classifyDevice { width = w, height = h } }, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Browser.Events.onResize (\w h -> Resize w h)
 
 
 
 -- VIEW
+
+
+lighterGreyColor : Color
+lighterGreyColor =
+    rgb255 29 32 37
 
 
 navBarElement : String -> String -> Element msg
@@ -68,36 +127,33 @@ navBarElement label url =
     el [] (link [] { label = text label, url = url })
 
 
-navBarView : Element msg
-navBarView =
-    let
-        horizontalPadding =
-            40
-
-        verticalPadding =
-            30
-    in
+navBarView : Maybe User -> Element msg
+navBarView maybeUser =
     row
-        [ Background.color (rgb255 61 61 61)
+        [ Background.color lighterGreyColor
         , Font.color (rgb255 255 255 255)
-        , Font.size 24
+        , Font.size 20
         , Font.family
-            [ Font.typeface "Noto Serif"
-            , Font.serif
+            [ Font.typeface "Source Sans Pro"
+            , Font.sansSerif
             ]
-        , paddingEach
-            { left = horizontalPadding
-            , right = horizontalPadding
-            , top = verticalPadding
-            , bottom = verticalPadding
-            }
-        , spacing 20
+        , Font.semiBold
+        , Element.paddingXY 60 30
+        , spacing 40
         , width fill
         ]
-        [ el [ alignLeft ] (navBarElement "Home" "/")
-        , el [ alignRight ] (navBarElement "Login" "/login")
-        , el [ alignRight, Font.underline ] (navBarElement "Register" "/register")
-        ]
+        (case maybeUser of
+            Just _ ->
+                [ el [ alignLeft ] (navBarElement "Home" "/")
+                , el [ alignRight ] (navBarElement "Dashboard" "/dashboard")
+                ]
+
+            Nothing ->
+                [ el [ alignLeft ] (navBarElement "Home" "/")
+                , el [ alignRight ] (navBarElement "Login" "/login")
+                , el [ alignRight, Font.underline ] (navBarElement "Register" "/register")
+                ]
+        )
 
 
 view :
@@ -108,7 +164,7 @@ view { page, toMsg } model =
     { title = page.title
     , body =
         [ -- body
-          navBarView
+          navBarView model.user
         , column [ height fill, width fill ] page.body
         ]
     }
