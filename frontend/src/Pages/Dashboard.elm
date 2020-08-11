@@ -7,11 +7,14 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
-import Http
-import Shared exposing (User)
+import Element.Keyed as Keyed
+import Http exposing (riskyRequest)
+import Shared exposing (Assignment, Course, User)
 import Spa.Document exposing (Document)
 import Spa.Page as Page exposing (Page)
 import Spa.Url exposing (Url)
+import Time
+import Utils.Darken exposing (darken)
 import Utils.Route
 import Utils.Vh exposing (vh, vw)
 
@@ -83,6 +86,21 @@ blueColor =
     rgb255 45 156 252
 
 
+redColor : Color
+redColor =
+    rgb255 255 82 96
+
+
+greenColor : Color
+greenColor =
+    rgb255 80 214 68
+
+
+yellowColor : Color
+yellowColor =
+    rgb255 220 200 69
+
+
 lighterGreyColor : Color
 lighterGreyColor =
     rgb255 29 32 37
@@ -97,13 +115,7 @@ view : Model -> Document Msg
 view model =
     { title = "dashboard"
     , body =
-        [ (case model.device.class of
-            Shared.Desktop ->
-                wrappedRow
-
-            _ ->
-                column
-          )
+        [ el
             [ width fill
             , height fill
             , Font.family
@@ -114,24 +126,36 @@ view model =
             , padding 30
             , Background.color darkGreyColor
             ]
-            [ -- sidebar
-              viewSidebar model
+            ((case model.device.class of
+                Shared.Desktop ->
+                    wrappedRow
 
-            -- content
-            , column
-                [ width
-                    (case model.device.class of
-                        Shared.Phone ->
-                            fill
-
-                        _ ->
-                            fillPortion 4
-                    )
+                _ ->
+                    column
+             )
+                [ spacing 30
                 , height fill
-                , Background.color darkGreyColor
+                , width fill
                 ]
-                [ text " " ]
-            ]
+                [ -- sidebar
+                  viewSidebar model
+
+                -- content
+                , column
+                    [ width
+                        (case model.device.class of
+                            Shared.Phone ->
+                                fill
+
+                            _ ->
+                                fillPortion 4
+                        )
+                    , height fill
+                    , Background.color darkGreyColor
+                    ]
+                    [ viewOustandingAssignments model ]
+                ]
+            )
         ]
     }
 
@@ -233,3 +257,80 @@ viewUserComponent user =
                 Element.none
             )
         ]
+
+
+
+-- outstanding? assignments
+
+
+mockupAssignments : List Assignment
+mockupAssignments =
+    [ { id = 1, creator = { id = 14, username = "enteee", privilege = 1, email = "gott@3nt3.de" }, title = "test assignment #1", description = Nothing, course = 0, dueDate = Time.millisToPosix 1597127700077 } ]
+
+
+mockupCourses : List Course
+mockupCourses =
+    [ { id = 1, teacher = "Robin Ejaz", assignments = mockupAssignments, subject = "Geschichte" } ]
+
+
+viewOustandingAssignments : Model -> Element msg
+viewOustandingAssignments model =
+    row
+        [ width fill
+        , height (px 400)
+        , spacing 30
+        ]
+        [ --today
+          viewAssignmentsDayColumn mockupCourses "today" redColor
+        , viewAssignmentsDayColumn mockupCourses "tomorrow" yellowColor
+        , viewAssignmentsDayColumn mockupCourses "the day after tomorrow" greenColor
+        ]
+
+
+viewAssignmentsDayColumn : List Course -> String -> Color -> Element msg
+viewAssignmentsDayColumn courses title color =
+    column
+        [ Background.color color
+        , height fill
+        , Border.rounded borderRadius
+        , padding 20
+        , width (fillPortion 1)
+        , spacing 10
+        ]
+        [ el [ Font.bold ] (text title)
+        , Keyed.column [ width fill ] (List.map (courseGroupToKeyValue color) courses)
+        ]
+
+
+courseGroupToKeyValue : Color -> Course -> ( String, Element msg )
+courseGroupToKeyValue color course =
+    ( String.fromInt course.id, viewAssignmentCourseGroup course color )
+
+
+viewAssignmentCourseGroup : Course -> Color -> Element msg
+viewAssignmentCourseGroup course color =
+    column
+        [ Background.color (darken color 0.05)
+        , padding 10
+        , spacing 10
+        , Border.rounded 10
+        , width fill
+        ]
+        [ el [ Font.bold ] (text (course.teacher ++ " - " ++ course.subject))
+        , Keyed.column [] (List.map (assignmentToKeyValue color) course.assignments)
+        ]
+
+
+assignmentToKeyValue : Color -> Assignment -> ( String, Element msg )
+assignmentToKeyValue color assignment =
+    ( String.fromInt assignment.id, viewAssignment assignment color )
+
+
+viewAssignment : Assignment -> Color -> Element msg
+viewAssignment assignment color =
+    column
+        [ Background.color (darken color 0.1)
+        , padding 10
+        , Border.rounded 10
+        ]
+        [ el [] (text assignment.title) ]

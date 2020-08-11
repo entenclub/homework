@@ -1,5 +1,7 @@
 module Shared exposing
-    ( Device
+    ( Assignment
+    , Course
+    , Device
     , DeviceClass(..)
     , Flags
     , Model
@@ -20,6 +22,7 @@ import Element.Border as Border
 import Element.Font as Font
 import Spa.Document exposing (Document)
 import Spa.Generated.Route as Route
+import Time
 import Url exposing (Url)
 
 
@@ -58,11 +61,33 @@ classifyDevice options =
         Device Desktop Landscape options.width options.height
 
 
+
+-- model data types
+
+
 type alias User =
     { id : Int
     , username : String
     , email : String
     , privilege : Int
+    }
+
+
+type alias Assignment =
+    { id : Int
+    , course : Int
+    , creator : User
+    , title : String
+    , description : Maybe String
+    , dueDate : Time.Posix
+    }
+
+
+type alias Course =
+    { id : Int
+    , subject : String
+    , teacher : String
+    , assignments : List Assignment
     }
 
 
