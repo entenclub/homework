@@ -8,7 +8,6 @@ import Element.Background as Background
 import Element.Border as Border exposing (rounded)
 import Element.Font as Font
 import Element.Input as Input
-import Html exposing (input)
 import Material.Icons as Icons
 import Material.Icons.Types exposing (Coloring(..))
 import Shared

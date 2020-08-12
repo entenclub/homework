@@ -18,31 +18,34 @@ def outstanding_assignments():
     if not session_cookie:
         return jsonify(return_error("no session")), 401
 
-    try:
-        session = Session.query.filter_by(id=session_cookie).first
-    except Exception as e:
-        print(e)
+    session = Session.query.filter_by(id=session_cookie).first()
+    if session is None:
         return jsonify(return_error("invalid sesssion")), 401
 
-    try:
-        user = User.query.filter_by(id=session.user_id).first()
+    user = User.query.filter_by(id=session.user_id).first()
 
-    except Exception as e:
+    if user is None:
         print(e)
         return jsonify(return_error("invalid session")), 401
 
-    courses_raw = user.decode_courses()
-    if not courses:
+    course_ids = user.decode_courses()
+    if not course_ids:
         return jsonify(to_response([])), 200
 
     has_outstanding_assignments = []
     now = datetime.datetime.utcnow().timetuple()[:3]
     print(now)
-    for course in courses:
-        assignments = [assignment for assignment in Assignment.query.filter_by(course=course.id).all() if assignment.due_date >= now]
+    courses = []
+
+    for course_id in course_ids:
+        courses.append(Course.filter_by(id=course_id).first())
+
+    for course in course_ids:
+        assignments = [assignment for assignment in Assignment.query.filter_by(course=course_id).all() if assignment.due_date >= now]
 
         course_dict = course.to_dict()
         course_dict['assignments'] = assignments
         has_outstanding_assignments.append(course_dict)
 
+    print(to_response(has_outstanding_assignments))
     return jsonify(to_response(has_outstanding_assignments))

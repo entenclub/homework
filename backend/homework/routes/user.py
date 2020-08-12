@@ -30,12 +30,12 @@ def login():
     username, password = data['username'], data['password']
 
     user = User.query.filter_by(username=username).first()
-    if not user is None:
+    if user is None:
         return jsonify(return_error("invalid username")), 401
 
     correct = bcrypt.checkpw(
         password.encode('utf-8'), user.password_hash.encode('utf-8'))
-    if not correct:
+    if not corect:
         return jsonify(return_error("incorrect password")), 401
 
     new_session = Session()

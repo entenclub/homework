@@ -1,10 +1,10 @@
-module Api.Homework.User exposing (getUserFromSession, login, register)
+module Api.Homework.User exposing (getUserFromSession, login, register, userDecoder)
 
 import Api
 import Http
 import Json.Decode as Json
 import Json.Encode as Encode
-import Shared exposing (User)
+import Shared exposing (Privilege(..), User)
 
 
 type alias Credentials =
@@ -14,13 +14,22 @@ type alias Credentials =
     }
 
 
+intToPrivilege privilege =
+    case privilege of
+        1 ->
+            Json.succeed Admin
+
+        _ ->
+            Json.succeed Normal
+
+
 userDecoder : Json.Decoder User
 userDecoder =
     Json.map4 User
         (Json.field "id" Json.int)
         (Json.field "username" Json.string)
         (Json.field "email" Json.string)
-        (Json.field "privilege" Json.int)
+        (Json.field "privilege" (Json.andThen (\priv -> intToPrivilege priv) Json.int))
 
 
 credentialsEncoder : Credentials -> Encode.Value

@@ -1,4 +1,5 @@
 from homework import db
+import json
 
 
 class User(db.Model):

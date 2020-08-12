@@ -6,6 +6,7 @@ module Shared exposing
     , Flags
     , Model
     , Msg
+    , Privilege(..)
     , User
     , init
     , subscriptions
@@ -18,7 +19,6 @@ import Browser.Events
 import Browser.Navigation exposing (Key)
 import Element exposing (..)
 import Element.Background as Background
-import Element.Border as Border
 import Element.Font as Font
 import Spa.Document exposing (Document)
 import Spa.Generated.Route as Route
@@ -54,7 +54,7 @@ classifyDevice options =
     if options.width < 450 then
         Device Phone Portrait options.width options.height
 
-    else if options.width < 900 then
+    else if options.width < 1200 then
         Device Tablet Portrait options.width options.height
 
     else
@@ -65,17 +65,22 @@ classifyDevice options =
 -- model data types
 
 
+type Privilege
+    = Normal
+    | Admin
+
+
 type alias User =
     { id : Int
     , username : String
     , email : String
-    , privilege : Int
+    , privilege : Privilege
     }
 
 
 type alias Assignment =
     { id : Int
-    , course : Int
+    , courseId : Int
     , creator : User
     , title : String
     , description : Maybe String
@@ -92,7 +97,9 @@ type alias Course =
 
 
 type alias Flags =
-    { width : Int, height : Int }
+    { width : Int
+    , height : Int
+    }
 
 
 type alias Model =
