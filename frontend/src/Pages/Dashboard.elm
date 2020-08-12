@@ -41,6 +41,7 @@ type alias Model =
     , searchCoursesText : String
     , searchCoursesData : Api.Data (List MinimalCourse)
     , selectedCourse : Maybe Int
+    , titleTFText : String
     }
 
 
@@ -52,6 +53,7 @@ type Msg
     | SearchCourses String
     | GotSearchCoursesData (Api.Data (List MinimalCourse))
     | CAFSelectCourse MinimalCourse
+    | CAFChangeTitle String
     | Refresh
 
 
@@ -76,7 +78,17 @@ initCommands =
 
 init : Shared.Model -> Url Params -> ( Model, Cmd Msg )
 init shared url =
-    ( { url = url, userData = NotAsked, courseData = NotAsked, searchCoursesData = NotAsked, device = shared.device, searchCoursesText = "", selectedCourse = Nothing }, Cmd.batch initCommands )
+    ( { url = url
+      , userData = NotAsked
+      , courseData = NotAsked
+      , searchCoursesData = NotAsked
+      , device = shared.device
+      , searchCoursesText = ""
+      , selectedCourse = Nothing
+      , titleTFText = ""
+      }
+    , Cmd.batch initCommands
+    )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -107,6 +119,9 @@ update msg model =
 
         CAFSelectCourse course ->
             ( { model | searchCoursesText = course.teacher ++ ": " ++ course.subject, searchCoursesData = NotAsked, selectedCourse = Just course.id }, Cmd.none )
+
+        CAFChangeTitle text ->
+            ( { model | titleTFText = text }, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
@@ -445,30 +460,47 @@ viewCreateAssignmentForm model =
         , Border.rounded borderRadius
         , padding 20
         , Font.color darkGreyColor
+        , spacing 10
         ]
         [ el [ Font.bold, Font.size 30, Font.color inputTextColor ]
             (text "Create Assignment")
-        , Input.text
-            [ Background.color inputColor
-            , Border.width 0
-            , if model.searchCoursesData == NotAsked then
-                Border.rounded 10
+        , row [ width fill, spacing 10 ]
+            [ column [ width fill ]
+                [ Input.text
+                    [ Background.color inputColor
+                    , Border.width 0
+                    , if model.searchCoursesData == NotAsked then
+                        Border.rounded 10
 
-              else
-                Border.roundEach
-                    { topLeft = 10
-                    , topRight = 10
-                    , bottomLeft = 0
-                    , bottomRight = 0
+                      else
+                        Border.roundEach
+                            { topLeft = 10
+                            , topRight = 10
+                            , bottomLeft = 0
+                            , bottomRight = 0
+                            }
+                    , Font.color (rgb 1 1 1)
+                    ]
+                    { label = Input.labelAbove [ Font.color (rgb 1 1 1) ] (text "search courses (required)")
+                    , placeholder = Just (Input.placeholder [] (text "Emily Oliver: History"))
+                    , onChange = SearchCourses
+                    , text = model.searchCoursesText
                     }
-            , Font.color (rgb 1 1 1)
+                , viewSearchDropdown model.searchCoursesData
+                ]
+            , Input.text
+                [ Background.color inputColor
+                , Border.width 0
+                , Border.rounded 10
+                , Font.color inputTextColor
+                , alignTop
+                ]
+                { label = Input.labelAbove [ Font.color (rgb 1 1 1) ] (text "title (required)")
+                , placeholder = Just (Input.placeholder [] (text "sb. page 105, 1-3a"))
+                , onChange = CAFChangeTitle
+                , text = model.titleTFText
+                }
             ]
-            { label = Input.labelAbove [ Font.color (rgb 1 1 1) ] (text "search courses")
-            , placeholder = Nothing
-            , onChange = SearchCourses
-            , text = model.searchCoursesText
-            }
-        , viewSearchDropdown model.searchCoursesData
         ]
 
 
@@ -528,5 +560,5 @@ viewSearchDropdownElement course isLast =
             ]
         , Events.onClick (CAFSelectCourse course)
         ]
-        [ el [ Font.bold, Font.color (rgb 0.8 0.8 0.8) ] (text (course.teacher ++ ": " ++ course.subject))
+        [ el [ Font.bold, Font.color inputTextColor ] (text (course.teacher ++ ": " ++ course.subject))
         ]
