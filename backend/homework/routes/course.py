@@ -4,4 +4,7 @@ from ..database.session import Session
 from . import to_response, return_error
 from .. import db
 
-@
+course_bp = Blueprint('course', __name__)
+CORS(course_bp)
+
+@course_bp.route('/course')

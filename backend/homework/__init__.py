@@ -15,7 +15,9 @@ db = SQLAlchemy(app)
 
 # blueprints
 from .routes.user import user_bp
+from .routes.assignment import assignment_bp
 app.register_blueprint(user_bp)
+app.register_blueprint(assignment_bp)
 
 # initialize database
 db.create_all()
