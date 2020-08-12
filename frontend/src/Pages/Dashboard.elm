@@ -4,6 +4,7 @@ import Api exposing (Data(..))
 import Api.Homework.Course exposing (MinimalCourse, getActiveCourses, searchCourses)
 import Api.Homework.User exposing (getUserFromSession)
 import Array
+import Date
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
@@ -41,7 +42,10 @@ type alias Model =
     , searchCoursesText : String
     , searchCoursesData : Api.Data (List MinimalCourse)
     , selectedCourse : Maybe Int
-    , titleTFText : String
+    , titleTfText : String
+    , dateTfText : String
+    , selectedDate : Maybe Date.Date
+    , errors : List String
     }
 
 
@@ -54,6 +58,8 @@ type Msg
     | GotSearchCoursesData (Api.Data (List MinimalCourse))
     | CAFSelectCourse MinimalCourse
     | CAFChangeTitle String
+    | CAFChangeDate String
+    | CreateAssignment
     | Refresh
 
 
@@ -85,7 +91,10 @@ init shared url =
       , device = shared.device
       , searchCoursesText = ""
       , selectedCourse = Nothing
-      , titleTFText = ""
+      , titleTfText = ""
+      , dateTfText = ""
+      , selectedDate = Nothing
+      , errors = [ "no course selected", "missing title", "invalid date" ]
       }
     , Cmd.batch initCommands
     )
@@ -111,17 +120,105 @@ update msg model =
 
         -- create assignment form
         SearchCourses text ->
-            if text == "" then
-                ( { model | searchCoursesText = text, searchCoursesData = NotAsked, selectedCourse = Nothing }, Cmd.none )
+            let
+                errorMsg =
+                    "no course selected"
+            in
+            if String.isEmpty (String.trim text) then
+                ( { model
+                    | searchCoursesText = text
+                    , searchCoursesData = NotAsked
+                    , selectedCourse = Nothing
+                    , errors =
+                        if List.member errorMsg model.errors then
+                            model.errors
+
+                        else
+                            List.append model.errors [ errorMsg ]
+                  }
+                , Cmd.none
+                )
+
+            else if model.selectedCourse == Nothing then
+                ( { model
+                    | searchCoursesText = text
+                    , selectedCourse = Nothing
+                    , errors =
+                        if List.member errorMsg model.errors then
+                            model.errors
+
+                        else
+                            List.append model.errors [ errorMsg ]
+                  }
+                , searchCourses text { onResponse = GotSearchCoursesData }
+                )
 
             else
-                ( { model | searchCoursesText = text, selectedCourse = Nothing }, searchCourses text { onResponse = GotSearchCoursesData } )
+                ( { model | searchCoursesText = text, selectedCourse = Nothing, errors = List.filter (\error -> error /= errorMsg) model.errors }, searchCourses text { onResponse = GotSearchCoursesData } )
 
         CAFSelectCourse course ->
-            ( { model | searchCoursesText = course.teacher ++ ": " ++ course.subject, searchCoursesData = NotAsked, selectedCourse = Just course.id }, Cmd.none )
+            ( { model
+                | searchCoursesText = course.teacher ++ ": " ++ course.subject
+                , searchCoursesData = NotAsked
+                , selectedCourse = Just course.id
+                , errors = List.filter (\error -> error /= "no course selected") model.errors
+              }
+            , Cmd.none
+            )
 
         CAFChangeTitle text ->
-            ( { model | titleTFText = text }, Cmd.none )
+            let
+                errorMsg =
+                    "missing title"
+            in
+            if String.isEmpty (String.trim text) then
+                if List.member errorMsg model.errors then
+                    ( { model
+                        | titleTfText = text
+                      }
+                    , Cmd.none
+                    )
+
+                else
+                    ( { model
+                        | titleTfText = text
+                        , errors = List.append model.errors [ errorMsg ]
+                      }
+                    , Cmd.none
+                    )
+
+            else
+                ( { model
+                    | titleTfText = text
+                    , errors = List.filter (\error -> error /= errorMsg) model.errors
+                  }
+                , Cmd.none
+                )
+
+        CAFChangeDate text ->
+            let
+                errorMsg =
+                    "invalid date"
+            in
+            case dateStringToDate text of
+                Just date ->
+                    ( { model
+                        | dateTfText = text
+                        , selectedDate = Just date
+                        , errors = List.filter (\error -> error /= errorMsg) model.errors
+                      }
+                    , Cmd.none
+                    )
+
+                Nothing ->
+                    if List.member errorMsg model.errors then
+                        ( { model | dateTfText = text, selectedDate = Nothing }, Cmd.none )
+
+                    else
+                        ( { model | dateTfText = text, selectedDate = Nothing, errors = List.append model.errors [ errorMsg ] }, Cmd.none )
+
+        CreateAssignment ->
+            ( model, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
@@ -451,6 +548,45 @@ inputTextColor =
     rgb 0.8 0.8 0.8
 
 
+inputStyle =
+    [ Background.color inputColor
+    , Border.width 0
+    , Border.rounded 10
+    , Font.color inputTextColor
+    , alignTop
+    ]
+
+
+viewCreateAssignmentFormErrors : List String -> Element Msg
+viewCreateAssignmentFormErrors errors =
+    if List.isEmpty errors then
+        text ""
+
+    else
+        column
+            [ Background.color
+                (darken redColor
+                    -0.1
+                )
+            , width fill
+            , Border.rounded borderRadius
+            , padding 10
+            , spacing 5
+            ]
+            [ el [ Font.bold, Font.size 30, Font.color (darken redColor 0.8) ] (text "Errors")
+            , column []
+                (List.map
+                    viewCreateAssignmentFormError
+                    errors
+                )
+            ]
+
+
+viewCreateAssignmentFormError : String -> Element msg
+viewCreateAssignmentFormError error =
+    el [ Font.bold, Font.color (darken redColor 0.8) ] (text error)
+
+
 viewCreateAssignmentForm : Model -> Element Msg
 viewCreateAssignmentForm model =
     column
@@ -464,6 +600,7 @@ viewCreateAssignmentForm model =
         ]
         [ el [ Font.bold, Font.size 30, Font.color inputTextColor ]
             (text "Create Assignment")
+        , viewCreateAssignmentFormErrors model.errors
         , row [ width fill, spacing 10 ]
             [ column [ width fill ]
                 [ Input.text
@@ -489,18 +626,55 @@ viewCreateAssignmentForm model =
                 , viewSearchDropdown model.searchCoursesData
                 ]
             , Input.text
-                [ Background.color inputColor
-                , Border.width 0
-                , Border.rounded 10
-                , Font.color inputTextColor
-                , alignTop
-                ]
+                (List.append
+                    inputStyle
+                    [ alignTop ]
+                )
                 { label = Input.labelAbove [ Font.color (rgb 1 1 1) ] (text "title (required)")
                 , placeholder = Just (Input.placeholder [] (text "sb. page 105, 1-3a"))
                 , onChange = CAFChangeTitle
-                , text = model.titleTFText
+                , text = model.titleTfText
                 }
             ]
+        , row [ width fill ]
+            [ Input.text
+                (List.append
+                    inputStyle
+                    []
+                )
+                { label = Input.labelAbove [ Font.color (rgb 1 1 1) ] (text "due date (required)")
+                , placeholder = Just (Input.placeholder [] (text "13.08.2020"))
+                , onChange = CAFChangeDate
+                , text = model.dateTfText
+                }
+            ]
+        , if not (List.isEmpty model.errors) then
+            Input.button
+                [ width fill
+                , height (px 50)
+                , Background.color (darken inputColor -0.1)
+                , Font.color (rgb 1 1 1)
+                , Font.bold
+                , Border.rounded 10
+                , padding 10
+                ]
+                { label = el [ centerX, centerY ] (text "Submit")
+                , onPress = Nothing
+                }
+
+          else
+            Input.button
+                [ width fill
+                , height (px 50)
+                , Background.color blueColor
+                , Font.color (rgb 1 1 1)
+                , Font.bold
+                , Border.rounded 10
+                , padding 10
+                ]
+                { label = el [ centerX, centerY ] (text "Submit")
+                , onPress = Just CreateAssignment
+                }
         ]
 
 
@@ -562,3 +736,85 @@ viewSearchDropdownElement course isLast =
         ]
         [ el [ Font.bold, Font.color inputTextColor ] (text (course.teacher ++ ": " ++ course.subject))
         ]
+
+
+dateStringToDate : String -> Maybe Date.Date
+dateStringToDate input =
+    let
+        data =
+            Array.fromList (String.split "." input)
+    in
+    case Array.get 0 data of
+        Just dayStr ->
+            case String.toInt dayStr of
+                Just day ->
+                    case Array.get 1 data of
+                        Just monthStr ->
+                            case String.toInt monthStr of
+                                Just monthInt ->
+                                    case Array.get 2 data of
+                                        Just yearStr ->
+                                            case String.toInt yearStr of
+                                                Just year ->
+                                                    case monthInt of
+                                                        1 ->
+                                                            dayMonthYearToDate day Time.Jan year
+
+                                                        2 ->
+                                                            dayMonthYearToDate day Time.Feb year
+
+                                                        3 ->
+                                                            dayMonthYearToDate day Time.Mar year
+
+                                                        4 ->
+                                                            dayMonthYearToDate day Time.Apr year
+
+                                                        5 ->
+                                                            dayMonthYearToDate day Time.May year
+
+                                                        6 ->
+                                                            dayMonthYearToDate day Time.Jun year
+
+                                                        7 ->
+                                                            dayMonthYearToDate day Time.Jul year
+
+                                                        8 ->
+                                                            dayMonthYearToDate day Time.Aug year
+
+                                                        9 ->
+                                                            dayMonthYearToDate day Time.Sep year
+
+                                                        10 ->
+                                                            dayMonthYearToDate day Time.Oct year
+
+                                                        11 ->
+                                                            dayMonthYearToDate day Time.Nov year
+
+                                                        12 ->
+                                                            dayMonthYearToDate day Time.Dec year
+
+                                                        _ ->
+                                                            Nothing
+
+                                                Nothing ->
+                                                    Nothing
+
+                                        Nothing ->
+                                            Nothing
+
+                                Nothing ->
+                                    Nothing
+
+                        Nothing ->
+                            Nothing
+
+                Nothing ->
+                    Nothing
+
+        Nothing ->
+            Nothing
+
+
+dayMonthYearToDate : Int -> Time.Month -> Int -> Maybe Date.Date
+dayMonthYearToDate day month year =
+    Just (Date.fromCalendarDate year month day)
