@@ -8,6 +8,13 @@ import Shared exposing (Assignment, Course, User)
 import Time
 
 
+type alias MinimalCourse =
+    { id : Int
+    , subject : String
+    , teacher : String
+    }
+
+
 dateDecoder : Json.Decoder Time.Posix
 dateDecoder =
     Json.int
@@ -35,6 +42,14 @@ courseDecoder =
         (Json.field "assignments" (Json.list assignmentDecoder))
 
 
+minimalCourseDecoder : Json.Decoder MinimalCourse
+minimalCourseDecoder =
+    Json.map3 MinimalCourse
+        (Json.field "id" Json.int)
+        (Json.field "subject" Json.string)
+        (Json.field "teacher" Json.string)
+
+
 getActiveCourses : { onResponse : Api.Data (List Course) -> msg } -> Cmd msg
 getActiveCourses options =
     Http.riskyRequest
@@ -47,13 +62,14 @@ getActiveCourses options =
         , tracker = Nothing
         }
 
-searchCourses : String -> {onResponse : Api.Data (List Course) -> msg} -> Cmd msg
+
+searchCourses : String -> { onResponse : Api.Data (List MinimalCourse) -> msg } -> Cmd msg
 searchCourses searchterm options =
     Http.riskyRequest
         { body = Http.emptyBody
         , url = "http://localhost:5000/courses/search/" ++ searchterm
         , method = "GET"
-        , expect = Api.expectJson options.onResponse (Json.at [ "content" ] (Json.list courseDecoder))
+        , expect = Api.expectJson options.onResponse (Json.at [ "content" ] (Json.list minimalCourseDecoder))
         , headers = []
         , timeout = Nothing
         , tracker = Nothing
