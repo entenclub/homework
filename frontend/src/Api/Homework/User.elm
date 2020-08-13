@@ -4,7 +4,7 @@ import Api
 import Http
 import Json.Decode as Json
 import Json.Encode as Encode
-import Shared exposing (Privilege(..), User)
+import Models exposing (Privilege(..), User)
 
 
 type alias Credentials =

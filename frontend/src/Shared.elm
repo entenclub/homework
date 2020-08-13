@@ -1,25 +1,23 @@
 module Shared exposing
-    ( Assignment
-    , Course
-    , Device
+    ( Device
     , DeviceClass(..)
     , Flags
     , Model
     , Msg
-    , Privilege(..)
-    , User
     , init
     , subscriptions
     , update
     , view
     )
 
-import Api.Reddit.Listing exposing (new)
+import Api
+import Api.Homework.User exposing (getUserFromSession)
 import Browser.Events
 import Browser.Navigation exposing (Key)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Font as Font
+import Models exposing (User)
 import Spa.Document exposing (Document)
 import Spa.Generated.Route as Route
 import Time
@@ -61,41 +59,6 @@ classifyDevice options =
         Device Desktop Landscape options.width options.height
 
 
-
--- model data types
-
-
-type Privilege
-    = Normal
-    | Admin
-
-
-type alias User =
-    { id : Int
-    , username : String
-    , email : String
-    , privilege : Privilege
-    }
-
-
-type alias Assignment =
-    { id : Int
-    , courseId : Int
-    , creator : User
-    , title : String
-    , description : Maybe String
-    , dueDate : Time.Posix
-    }
-
-
-type alias Course =
-    { id : Int
-    , subject : String
-    , teacher : String
-    , assignments : List Assignment
-    }
-
-
 type alias Flags =
     { width : Int
     , height : Int
@@ -113,7 +76,7 @@ type alias Model =
 init : Flags -> Url -> Key -> ( Model, Cmd Msg )
 init flags url key =
     ( Model url key Nothing (classifyDevice { width = flags.width, height = flags.height })
-    , Cmd.none
+    , getUserFromSession { onResponse = GotUser }
     )
 
 
@@ -122,7 +85,7 @@ init flags url key =
 
 
 type Msg
-    = GotUser User
+    = GotUser (Api.Data User)
     | Logout
     | Resize Int Int
 
@@ -130,8 +93,13 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        GotUser user ->
-            ( { model | user = Just user }, Cmd.none )
+        GotUser userData ->
+            case userData of
+                Api.Success user ->
+                    ( { model | user = Just user }, Cmd.none )
+
+                _ ->
+                    ( { model | user = Nothing }, Cmd.none )
 
         Logout ->
             ( { model | user = Nothing }, Cmd.none )

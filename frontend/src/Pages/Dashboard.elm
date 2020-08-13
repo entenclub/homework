@@ -17,7 +17,8 @@ import Http exposing (riskyRequest)
 import Json.Decode exposing (errorToString)
 import Material.Icons as Icons
 import Material.Icons.Types exposing (Coloring(..))
-import Shared exposing (Assignment, Course, User)
+import Models exposing (Assignment, Course, User)
+import Shared
 import Spa.Document exposing (Document)
 import Spa.Generated.Route as Route exposing (Route)
 import Spa.Page as Page exposing (Page)
@@ -515,10 +516,10 @@ viewUserComponent user courses =
             )
         , el [ centerX ]
             (case user.privilege of
-                Shared.Admin ->
+                Models.Admin ->
                     text "Administrator"
 
-                Shared.Normal ->
+                Models.Normal ->
                     none
             )
         , el

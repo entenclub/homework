@@ -4,7 +4,7 @@ import Api
 import Api.Homework.User exposing (userDecoder)
 import Http
 import Json.Decode as Json
-import Shared exposing (Assignment, Course, User)
+import Models exposing (Assignment, Course, User)
 import Time
 
 

@@ -10,6 +10,7 @@ import Element.Font as Font
 import Element.Input as Input
 import Material.Icons as Icons
 import Material.Icons.Types exposing (Coloring(..))
+import Models
 import Shared
 import Spa.Document exposing (Document)
 import Spa.Generated.Route as Route
@@ -48,7 +49,7 @@ type alias Model =
     , emailInput : String
     , errors : Errors
     , usernameTakenStatus : Api.Data Bool
-    , registrationStatus : Api.Data Shared.User
+    , registrationStatus : Api.Data Models.User
     , url : Url Params
     }
 
@@ -59,7 +60,7 @@ type Msg
     | ValidatePasswordInput String
     | EmailInput String
     | GotUsernameTaken (Api.Data Bool)
-    | GotRegistrationData (Api.Data Shared.User)
+    | GotRegistrationData (Api.Data Models.User)
     | Register
 
 
