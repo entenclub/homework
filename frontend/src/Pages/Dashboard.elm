@@ -22,6 +22,7 @@ import Spa.Document exposing (Document)
 import Spa.Generated.Route as Route exposing (Route)
 import Spa.Page as Page exposing (Page)
 import Spa.Url exposing (Url)
+import Task
 import Time
 import Utils.Darken exposing (darken)
 import Utils.Route exposing (navigate)
@@ -45,6 +46,8 @@ type alias Model =
     , titleTfText : String
     , dateTfText : String
     , selectedDate : Maybe Date.Date
+    , today : Date.Date
+    , selectedDateTime : Time.Posix
     , errors : List String
     }
 
@@ -60,6 +63,8 @@ type Msg
     | CAFChangeTitle String
     | CAFChangeDate String
     | CreateAssignment
+    | ReceiveTime Time.Posix
+    | Add1Day
     | Refresh
 
 
@@ -79,6 +84,7 @@ initCommands : List (Cmd Msg)
 initCommands =
     [ getUserFromSession { onResponse = GotUserData }
     , getActiveCourses { onResponse = GotCourseData }
+    , Time.now |> Task.perform ReceiveTime
     ]
 
 
@@ -94,6 +100,8 @@ init shared url =
       , titleTfText = ""
       , dateTfText = ""
       , selectedDate = Nothing
+      , today = Date.fromCalendarDate 2019 Time.Jan 1
+      , selectedDateTime = Time.millisToPosix 0
       , errors = [ "no course selected", "missing title", "invalid date" ]
       }
     , Cmd.batch initCommands
@@ -199,12 +207,16 @@ update msg model =
             let
                 errorMsg =
                     "invalid date"
+
+                epochStartOffset =
+                    719162
             in
             case dateStringToDate text of
                 Just date ->
                     ( { model
                         | dateTfText = text
                         , selectedDate = Just date
+                        , selectedDateTime = Time.millisToPosix (floor (toFloat (Date.toRataDie (Date.fromPosix Time.utc model.selectedDateTime)) - epochStartOffset) * (1000 * 60 * 60 * 24))
                         , errors = List.filter (\error -> error /= errorMsg) model.errors
                       }
                     , Cmd.none
@@ -217,8 +229,42 @@ update msg model =
                     else
                         ( { model | dateTfText = text, selectedDate = Nothing, errors = List.append model.errors [ errorMsg ] }, Cmd.none )
 
+        ReceiveTime time ->
+            ( { model | today = Date.fromPosix Time.utc time, selectedDateTime = time }, Cmd.none )
+
         CreateAssignment ->
             ( model, Cmd.none )
+
+        Add1Day ->
+            let
+                date =
+                    Date.fromPosix Time.utc
+                        (Time.millisToPosix
+                            (floor
+                                (toFloat
+                                    (Time.posixToMillis
+                                        model.selectedDateTime
+                                        + (1000 * 60 * 60 * 24)
+                                    )
+                                )
+                            )
+                        )
+
+                -- days between the birth of jesus and 1970-01-01
+                epochStartOffset =
+                    719162
+
+                debugThing =
+                    Debug.log "date" (toGermanDateString date)
+            in
+            ( { model
+                | selectedDate = Just date
+                , selectedDateTime = Time.millisToPosix (floor (toFloat (Date.toRataDie (Date.fromPosix Time.utc model.selectedDateTime)) - epochStartOffset) * (1000 * 60 * 60 * 24))
+                , dateTfText = toGermanDateString date
+                , errors = List.filter (\error -> error /= "invalid date") model.errors
+              }
+            , Cmd.none
+            )
 
 
 subscriptions : Model -> Sub Msg
@@ -315,7 +361,19 @@ view model =
                     , spacing 30
                     ]
                     [ viewOustandingAssignments model
-                    , row [ width fill, height fill ] [ viewCreateAssignmentForm model, el [ width (fillPortion 1) ] none ]
+                    , row [ width fill, height shrink, spacing 30 ]
+                        [ viewCreateAssignmentForm model
+                        , el
+                            [ width (fillPortion 1)
+                            , Background.color lighterGreyColor
+                            , height fill
+                            , Border.rounded borderRadius
+                            ]
+                            (el
+                                [ centerX, centerY, Font.italic ]
+                                (text "coming soon...")
+                            )
+                        ]
                     ]
                 ]
             )
@@ -342,11 +400,22 @@ errorToString error =
             "timeout"
 
 
-viewUser : Api.Data User -> Element msg
-viewUser data =
-    case data of
+viewUser : Api.Data User -> Api.Data (List Course) -> Element msg
+viewUser userData courseData =
+    case userData of
         Success user ->
-            viewUserComponent user
+            case courseData of
+                Success courses ->
+                    viewUserComponent user courses
+
+                Loading ->
+                    text "Loading..."
+
+                Failure error ->
+                    text (errorToString error)
+
+                NotAsked ->
+                    Element.none
 
         Loading ->
             text "Loading..."
@@ -374,11 +443,11 @@ viewSidebar model =
         , padding 40
         , Border.rounded borderRadius
         ]
-        [ viewUser model.userData ]
+        [ viewUser model.userData model.courseData ]
 
 
-viewUserComponent : User -> Element msg
-viewUserComponent user =
+viewUserComponent : User -> List Course -> Element msg
+viewUserComponent user courses =
     column [ centerX, spacing 10 ]
         [ el
             [ Border.rounded 50
@@ -425,6 +494,11 @@ viewUserComponent user =
                 Shared.Normal ->
                     none
             )
+        , el
+            [ centerX
+            , paddingEach { top = 50, bottom = 10, left = 10, right = 10 }
+            ]
+            (column [] [ el [] (text ("Enrolled in " ++ String.fromInt (List.length courses) ++ " courses.")) ])
         ]
 
 
@@ -554,6 +628,7 @@ inputStyle =
     , Border.rounded 10
     , Font.color inputTextColor
     , alignTop
+    , height (px 50)
     ]
 
 
@@ -569,7 +644,7 @@ viewCreateAssignmentFormErrors errors =
                     -0.1
                 )
             , width fill
-            , Border.rounded borderRadius
+            , Border.rounded 10
             , padding 10
             , spacing 5
             ]
@@ -617,6 +692,7 @@ viewCreateAssignmentForm model =
                             , bottomRight = 0
                             }
                     , Font.color (rgb 1 1 1)
+                    , height (px 50)
                     ]
                     { label = Input.labelAbove [ Font.color (rgb 1 1 1) ] (text "search courses (required)")
                     , placeholder = Just (Input.placeholder [] (text "Emily Oliver: History"))
@@ -640,13 +716,29 @@ viewCreateAssignmentForm model =
             [ Input.text
                 (List.append
                     inputStyle
-                    []
+                    [ Border.roundEach { topLeft = 10, topRight = 0, bottomLeft = 10, bottomRight = 0 } ]
                 )
                 { label = Input.labelAbove [ Font.color (rgb 1 1 1) ] (text "due date (required)")
-                , placeholder = Just (Input.placeholder [] (text "13.08.2020"))
+                , placeholder = Just (Input.placeholder [] (text (toGermanDateString model.today)))
                 , onChange = CAFChangeDate
                 , text = model.dateTfText
                 }
+            , el
+                (List.append inputStyle
+                    [ width (px 50)
+                    , height (px 50)
+                    , alignBottom
+                    , Border.roundEach { topLeft = 0, topRight = 10, bottomLeft = 0, bottomRight = 10 }
+                    , Border.widthEach { left = 2, right = 0, bottom = 0, top = 0 }
+                    , Border.dotted
+                    , Border.color inputTextColor
+                    , mouseOver
+                        [ Background.color (darken inputColor -0.05)
+                        ]
+                    , Events.onClick Add1Day
+                    ]
+                )
+                (el [ centerX, centerY, Font.size 30, Font.bold ] (text "+1"))
             ]
         , if not (List.isEmpty model.errors) then
             Input.button
@@ -818,3 +910,8 @@ dateStringToDate input =
 dayMonthYearToDate : Int -> Time.Month -> Int -> Maybe Date.Date
 dayMonthYearToDate day month year =
     Just (Date.fromCalendarDate year month day)
+
+
+toGermanDateString : Date.Date -> String
+toGermanDateString date =
+    Date.format "d.M.y" date
