@@ -4,6 +4,7 @@ import Api exposing (Data(..))
 import Api.Homework.Course exposing (MinimalCourse, getActiveCourses, searchCourses)
 import Api.Homework.User exposing (getUserFromSession)
 import Array
+import Components.Sidebar
 import Date
 import Element exposing (..)
 import Element.Background as Background
@@ -23,6 +24,7 @@ import Spa.Document exposing (Document)
 import Spa.Generated.Route as Route exposing (Route)
 import Spa.Page as Page exposing (Page)
 import Spa.Url exposing (Url)
+import Styling.Colors exposing (..)
 import Task
 import Time
 import Utils.Darken exposing (darken)
@@ -36,7 +38,7 @@ type alias Params =
 
 type alias Model =
     { url : Url Params
-    , userData : Api.Data User
+    , user : Maybe User
     , courseData : Api.Data (List Course)
     , device : Shared.Device
 
@@ -55,8 +57,7 @@ type alias Model =
 
 
 type Msg
-    = GotUserData (Api.Data User)
-    | GotCourseData (Api.Data (List Course))
+    = GotCourseData (Api.Data (List Course))
     | ViewMoreAssignments
       -- create assignment form
     | SearchCourses String
@@ -67,7 +68,6 @@ type Msg
     | CreateAssignment
     | ReceiveTime Time.Posix
     | Add1Day
-    | Refresh
 
 
 page : Page Params Model Msg
@@ -84,8 +84,7 @@ page =
 
 initCommands : List (Cmd Msg)
 initCommands =
-    [ getUserFromSession { onResponse = GotUserData }
-    , getActiveCourses { onResponse = GotCourseData }
+    [ getActiveCourses { onResponse = GotCourseData }
     , Time.now |> Task.perform ReceiveTime
     ]
 
@@ -93,7 +92,7 @@ initCommands =
 init : Shared.Model -> Url Params -> ( Model, Cmd Msg )
 init shared url =
     ( { url = url
-      , userData = NotAsked
+      , user = shared.user
       , courseData = NotAsked
       , searchCoursesData = NotAsked
       , device = shared.device
@@ -114,17 +113,11 @@ init shared url =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        GotUserData data ->
-            ( { model | userData = data }, Cmd.none )
-
         GotCourseData data ->
             ( { model | courseData = data }, Cmd.none )
 
         GotSearchCoursesData data ->
             ( { model | searchCoursesData = data }, Cmd.none )
-
-        Refresh ->
-            ( model, getUserFromSession { onResponse = GotUserData } )
 
         ViewMoreAssignments ->
             ( model, navigate model.url.key Route.Dashboard__Courses )
@@ -302,7 +295,7 @@ subscriptions _ =
 
 load : Shared.Model -> Model -> ( Model, Cmd msg )
 load shared model =
-    ( { model | device = shared.device }, Cmd.none )
+    ( { model | device = shared.device, user = shared.user }, Cmd.none )
 
 
 save : Model -> Shared.Model -> Shared.Model
@@ -313,36 +306,6 @@ save _ shared =
 borderRadius : Int
 borderRadius =
     20
-
-
-blueColor : Color
-blueColor =
-    rgb255 45 156 252
-
-
-redColor : Color
-redColor =
-    rgb255 255 82 96
-
-
-greenColor : Color
-greenColor =
-    rgb255 80 214 68
-
-
-yellowColor : Color
-yellowColor =
-    rgb255 220 200 69
-
-
-lighterGreyColor : Color
-lighterGreyColor =
-    rgb255 29 32 37
-
-
-darkGreyColor : Color
-darkGreyColor =
-    rgb255 26 28 33
 
 
 view : Model -> Document Msg
@@ -372,7 +335,7 @@ view model =
                 , width fill
                 ]
                 [ -- sidebar
-                  viewSidebar model
+                  Components.Sidebar.viewSidebar { user = model.user, courseData = model.courseData, device = model.device, back = Nothing }
 
                 -- content
                 , column
@@ -426,108 +389,6 @@ errorToString error =
 
         Http.Timeout ->
             "timeout"
-
-
-viewUser : Api.Data User -> Api.Data (List Course) -> Element msg
-viewUser userData courseData =
-    case userData of
-        Success user ->
-            case courseData of
-                Success courses ->
-                    viewUserComponent user courses
-
-                Loading ->
-                    text "Loading..."
-
-                Failure error ->
-                    text (errorToString error)
-
-                NotAsked ->
-                    Element.none
-
-        Loading ->
-            text "Loading..."
-
-        Failure error ->
-            text (errorToString error)
-
-        NotAsked ->
-            Element.none
-
-
-viewSidebar : Model -> Element msg
-viewSidebar model =
-    column
-        [ width
-            (case model.device.class of
-                Shared.Desktop ->
-                    fillPortion 1 |> minimum 300
-
-                _ ->
-                    fill
-            )
-        , height fill
-        , Background.color lighterGreyColor
-        , padding 40
-        , Border.rounded borderRadius
-        ]
-        [ viewUser model.userData model.courseData ]
-
-
-viewUserComponent : User -> List Course -> Element msg
-viewUserComponent user courses =
-    column [ centerX, spacing 10 ]
-        [ el
-            [ Border.rounded 50
-            , width (px 100)
-            , height (px 100)
-            , Background.color blueColor
-            , Font.color (rgb 1 1 1)
-            , centerX
-            ]
-            (el
-                [ centerX
-                , centerY
-                , Font.size 60
-                , spacing 100
-                ]
-                (text
-                    (String.toUpper
-                        (String.slice
-                            0
-                            1
-                            user.username
-                        )
-                    )
-                )
-            )
-        , el
-            [ Font.size 30
-            , Font.semiBold
-            , Font.color (rgb 1 1 1)
-            , centerX
-            , Font.center
-            ]
-            (if String.length user.username > 12 then
-                text ("Hey, " ++ String.slice 0 12 user.username ++ "...")
-
-             else
-                text ("Hey, " ++ user.username)
-            )
-        , el [ centerX ]
-            (case user.privilege of
-                Models.Admin ->
-                    text "Administrator"
-
-                Models.Normal ->
-                    none
-            )
-        , el
-            [ centerX
-            , paddingEach { top = 50, bottom = 10, left = 10, right = 10 }
-            ]
-            (column [] [ el [] (text ("Enrolled in " ++ String.fromInt (List.length courses) ++ " courses.")) ])
-        ]
 
 
 
