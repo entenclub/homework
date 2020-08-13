@@ -224,10 +224,23 @@ update msg model =
 
                 Nothing ->
                     if List.member errorMsg model.errors then
-                        ( { model | dateTfText = text, selectedDate = Nothing }, Cmd.none )
+                        ( { model
+                            | dateTfText = text
+                            , selectedDate = Nothing
+                            , selectedDateTime = Time.millisToPosix (floor (toFloat (Date.toRataDie model.today) - epochStartOffset) * (1000 * 60 * 60 * 24) - (1000 * 60 * 60 * 24))
+                          }
+                        , Cmd.none
+                        )
 
                     else
-                        ( { model | dateTfText = text, selectedDate = Nothing, errors = List.append model.errors [ errorMsg ] }, Cmd.none )
+                        ( { model
+                            | dateTfText = text
+                            , selectedDate = Nothing
+                            , errors = List.append model.errors [ errorMsg ]
+                            , selectedDateTime = Time.millisToPosix (floor (toFloat (Date.toRataDie model.today) - epochStartOffset) * (1000 * 60 * 60 * 24) - (1000 * 60 * 60 * 24))
+                          }
+                        , Cmd.none
+                        )
 
         ReceiveTime time ->
             ( { model | today = Date.fromPosix Time.utc time, selectedDateTime = time }, Cmd.none )
