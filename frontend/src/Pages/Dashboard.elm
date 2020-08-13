@@ -48,6 +48,7 @@ type alias Model =
     , selectedDate : Maybe Date.Date
     , today : Date.Date
     , selectedDateTime : Time.Posix
+    , addDaysDifference : Int
     , errors : List String
     }
 
@@ -102,6 +103,7 @@ init shared url =
       , selectedDate = Nothing
       , today = Date.fromCalendarDate 2019 Time.Jan 1
       , selectedDateTime = Time.millisToPosix 0
+      , addDaysDifference = 0
       , errors = [ "no course selected", "missing title", "invalid date" ]
       }
     , Cmd.batch initCommands
@@ -208,6 +210,9 @@ update msg model =
                 errorMsg =
                     "invalid date"
 
+                errorMsg2 =
+                    "due date is in the past!"
+
                 epochStartOffset =
                     719162
             in
@@ -216,8 +221,16 @@ update msg model =
                     ( { model
                         | dateTfText = text
                         , selectedDate = Just date
-                        , selectedDateTime = Time.millisToPosix (floor (toFloat (Date.toRataDie (Date.fromPosix Time.utc model.selectedDateTime)) - epochStartOffset) * (1000 * 60 * 60 * 24))
-                        , errors = List.filter (\error -> error /= errorMsg) model.errors
+                        , selectedDateTime = Time.millisToPosix (floor (toFloat (Date.toRataDie date) - epochStartOffset) * (1000 * 60 * 60 * 24) - (1000 * 60 * 60 * 24))
+                        , addDaysDifference = Date.toRataDie date - epochStartOffset - (Date.toRataDie model.today - epochStartOffset)
+                        , errors =
+                            List.append (List.filter (\error -> error /= errorMsg && error /= errorMsg2) model.errors)
+                                (if Date.toRataDie date - epochStartOffset - (Date.toRataDie model.today - epochStartOffset) < 0 then
+                                    [ errorMsg2 ]
+
+                                 else
+                                    []
+                                )
                       }
                     , Cmd.none
                     )
@@ -228,6 +241,8 @@ update msg model =
                             | dateTfText = text
                             , selectedDate = Nothing
                             , selectedDateTime = Time.millisToPosix (floor (toFloat (Date.toRataDie model.today) - epochStartOffset) * (1000 * 60 * 60 * 24) - (1000 * 60 * 60 * 24))
+                            , errors = List.filter (\error -> error /= errorMsg2) model.errors
+                            , addDaysDifference = 0
                           }
                         , Cmd.none
                         )
@@ -236,8 +251,9 @@ update msg model =
                         ( { model
                             | dateTfText = text
                             , selectedDate = Nothing
-                            , errors = List.append model.errors [ errorMsg ]
+                            , errors = List.append (List.filter (\error -> error /= errorMsg2) model.errors) [ errorMsg ]
                             , selectedDateTime = Time.millisToPosix (floor (toFloat (Date.toRataDie model.today) - epochStartOffset) * (1000 * 60 * 60 * 24) - (1000 * 60 * 60 * 24))
+                            , addDaysDifference = 0
                           }
                         , Cmd.none
                         )
@@ -266,14 +282,12 @@ update msg model =
                 -- days between the birth of jesus and 1970-01-01
                 epochStartOffset =
                     719162
-
-                debugThing =
-                    Debug.log "date" (toGermanDateString date)
             in
             ( { model
                 | selectedDate = Just date
                 , selectedDateTime = Time.millisToPosix (floor (toFloat (Date.toRataDie (Date.fromPosix Time.utc model.selectedDateTime)) - epochStartOffset) * (1000 * 60 * 60 * 24))
                 , dateTfText = toGermanDateString date
+                , addDaysDifference = Date.toRataDie date - epochStartOffset - (Date.toRataDie model.today - epochStartOffset)
                 , errors = List.filter (\error -> error /= "invalid date") model.errors
               }
             , Cmd.none
@@ -631,10 +645,12 @@ inputColor =
     darken lighterGreyColor -0.05
 
 
+inputTextColor : Color
 inputTextColor =
     rgb 0.8 0.8 0.8
 
 
+inputStyle : List (Attribute Msg)
 inputStyle =
     [ Background.color inputColor
     , Border.width 0
@@ -725,13 +741,24 @@ viewCreateAssignmentForm model =
                 , text = model.titleTfText
                 }
             ]
-        , row [ width fill ]
+        , row
+            [ width fill ]
             [ Input.text
                 (List.append
                     inputStyle
                     [ Border.roundEach { topLeft = 10, topRight = 0, bottomLeft = 10, bottomRight = 0 } ]
                 )
-                { label = Input.labelAbove [ Font.color (rgb 1 1 1) ] (text "due date (required)")
+                { label =
+                    Input.labelAbove [ Font.color (rgb 1 1 1) ]
+                        (text
+                            (case model.selectedDate of
+                                Just _ ->
+                                    "due date (required) -- selected date " ++ String.fromInt model.addDaysDifference ++ " from now."
+
+                                Nothing ->
+                                    "due date (required)"
+                            )
+                        )
                 , placeholder = Just (Input.placeholder [] (text (toGermanDateString model.today)))
                 , onChange = CAFChangeDate
                 , text = model.dateTfText
