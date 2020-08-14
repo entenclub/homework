@@ -1,6 +1,6 @@
 module Models exposing (Assignment, Course, Privilege(..), User)
 
-import Time
+import Date
 
 
 
@@ -26,7 +26,7 @@ type alias Assignment =
     , creator : User
     , title : String
     , description : Maybe String
-    , dueDate : Time.Posix
+    , dueDate : Date.Date
     }
 
 

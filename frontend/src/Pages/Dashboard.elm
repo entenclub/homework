@@ -393,6 +393,42 @@ errorToString error =
 
 
 -- outstanding? assignments
+-- dueDateAfteDate : Date.Date -> Date.Date -> Bool
+
+
+dueDateAfteDate dueDate date =
+    let
+        epochStartOffset =
+            719162
+    in
+    Date.toRataDie date - epochStartOffset - (Date.toRataDie dueDate - epochStartOffset) > 0
+
+
+dateToPosixTime : Date.Date -> Time.Posix
+dateToPosixTime date =
+    Time.millisToPosix (Date.toRataDie date - 719162 * (1000 * 60 * 60 * 24))
+
+
+inNDays : Int -> Date.Date -> Date.Date
+inNDays days today =
+    Date.fromPosix Time.utc
+        (Time.millisToPosix
+            (floor
+                (toFloat
+                    (Time.posixToMillis
+                        (dateToPosixTime today)
+                        + ((1000 * 60 * 60 * 24)
+                            * days
+                          )
+                    )
+                )
+            )
+        )
+
+
+otherOutstandingAssignments : Date.Date -> List Course -> Int
+otherOutstandingAssignments today courses =
+    List.length (List.filter (\assignment -> dueDateAfteDate assignment.dueDate (inNDays 3 today)) (List.concat (List.map (\course -> course.assignments) courses)))
 
 
 viewOustandingAssignments : Model -> Element Msg
@@ -408,7 +444,7 @@ viewOustandingAssignments model =
                 ]
                 [ row
                     [ width fill
-                    , height (px 400)
+                    , height (shrink |> minimum 200)
                     , spacing 30
                     ]
                     [ --today
@@ -416,22 +452,38 @@ viewOustandingAssignments model =
                     , viewAssignmentsDayColumn courses "tomorrow" yellowColor
                     , viewAssignmentsDayColumn courses "the day after tomorrow" greenColor
                     ]
-                , el
-                    [ width fill
-                    , height (px 100)
-                    , Border.rounded borderRadius
-                    , Background.color lighterGreyColor
-                    , mouseOver [ Background.color (darken darkGreyColor -0.1) ]
-                    , Events.onClick ViewMoreAssignments
-                    ]
-                    (row [ centerX, centerY ]
-                        [ el [ centerX, centerY ]
-                            (html (Icons.arrow_forward 50 Inherit))
-                        , el
-                            [ Font.bold, Font.size 30 ]
-                            (text "More")
+                , if otherOutstandingAssignments model.today courses > 0 then
+                    el
+                        [ width fill
+                        , height (px 100)
+                        , Border.rounded borderRadius
+                        , Background.color lighterGreyColor
+                        , mouseOver [ Background.color (darken darkGreyColor -0.1) ]
+                        , Events.onClick ViewMoreAssignments
+                        , pointer
                         ]
-                    )
+                        (row [ centerX, centerY ]
+                            [ el
+                                [ Font.bold, Font.size 30 ]
+                                (row [ spacing 5 ]
+                                    [ el
+                                        [ height (px 30)
+                                        , Background.color (darken lighterGreyColor -0.2)
+                                        , width (px 50)
+                                        , Border.rounded 15
+                                        , centerY
+                                        ]
+                                        (el [ centerX, centerY ] (text (String.fromInt (otherOutstandingAssignments model.today courses))))
+                                    , text "More"
+                                    ]
+                                )
+                            , el [ centerX, centerY ]
+                                (html (Icons.arrow_forward 50 Inherit))
+                            ]
+                        )
+
+                  else
+                    none
                 ]
 
         Loading ->
@@ -460,7 +512,11 @@ viewAssignmentsDayColumn courses title color =
         , spacing 10
         ]
         [ el [ Font.bold ] (text title)
-        , Keyed.column [ width fill ] (List.map (courseGroupToKeyValue color) courses)
+        , if List.isEmpty courses then
+            el [ centerX, centerY, Font.italic ] (text "-- no assignments --")
+
+          else
+            Keyed.column [ width fill ] (List.map (courseGroupToKeyValue color) courses)
         ]
 
 
@@ -530,10 +586,7 @@ viewCreateAssignmentFormErrors errors =
 
     else
         column
-            [ Background.color
-                (darken redColor
-                    -0.1
-                )
+            [ Background.color redColor
             , width fill
             , Border.rounded 10
             , padding 10
@@ -638,6 +691,7 @@ viewCreateAssignmentForm model =
                         [ Background.color (darken inputColor -0.05)
                         ]
                     , Events.onClick Add1Day
+                    , pointer
                     ]
                 )
                 (el [ centerX, centerY, Font.size 30, Font.bold ] (text "+1"))

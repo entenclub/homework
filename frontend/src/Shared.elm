@@ -144,13 +144,14 @@ navBarView maybeUser =
         ]
         (case maybeUser of
             Just _ ->
-                [ el [ alignLeft ] (navBarElement "Home" "/")
-                , el [ alignRight ] (navBarElement "Dashboard" "/dashboard")
+                [ el [ alignLeft ] (navBarElement "hw.3nt3.xyz" "/")
+                , el [ alignRight ] (navBarElement "dashboard" "/dashboard")
+                , el [ alignRight ] (navBarElement "dashboard/courses" "/dashboard/courses")
                 ]
 
             Nothing ->
-                [ el [ alignLeft ] (navBarElement "Home" "/")
-                , el [ alignRight ] (navBarElement "Login" "/login")
+                [ el [ alignLeft ] (navBarElement "hw.3nt3.xyz" "/")
+                , el [ alignRight ] (navBarElement "login" "/login")
                 , el [ alignRight, Font.underline ] (navBarElement "Register" "/register")
                 ]
         )

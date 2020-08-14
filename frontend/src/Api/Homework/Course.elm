@@ -2,6 +2,7 @@ module Api.Homework.Course exposing (..)
 
 import Api
 import Api.Homework.User exposing (userDecoder)
+import Date
 import Http
 import Json.Decode as Json
 import Models exposing (Assignment, Course, User)
@@ -15,11 +16,18 @@ type alias MinimalCourse =
     }
 
 
-dateDecoder : Json.Decoder Time.Posix
+dateDecoder : Json.Decoder Date.Date
 dateDecoder =
-    Json.int
+    Json.string
         |> Json.andThen
-            (\int -> Json.succeed (Time.millisToPosix int))
+            (\str ->
+                case Date.fromIsoString str of
+                    Ok res ->
+                        Json.succeed res
+
+                    Err e ->
+                        Json.fail e
+            )
 
 
 assignmentDecoder : Json.Decoder Assignment
@@ -54,7 +62,20 @@ getActiveCourses : { onResponse : Api.Data (List Course) -> msg } -> Cmd msg
 getActiveCourses options =
     Http.riskyRequest
         { body = Http.emptyBody
-        , url = "http://localhost:5000/assignments/outstanding"
+        , url = "http://localhost:5000/courses/active"
+        , method = "GET"
+        , expect = Api.expectJson options.onResponse (Json.at [ "content" ] (Json.list courseDecoder))
+        , headers = []
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
+
+getMyCourses : { onResponse : Api.Data (List Course) -> msg } -> Cmd msg
+getMyCourses options =
+    Http.riskyRequest
+        { body = Http.emptyBody
+        , url = "http://localhost:5000/courses"
         , method = "GET"
         , expect = Api.expectJson options.onResponse (Json.at [ "content" ] (Json.list courseDecoder))
         , headers = []
