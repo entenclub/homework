@@ -8,6 +8,7 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
+import Http
 import Material.Icons as Icons
 import Material.Icons.Types exposing (Coloring(..))
 import Models exposing (Course, User)
@@ -146,9 +147,28 @@ inputStyle =
     ]
 
 
+errorToString : Http.Error -> String
+errorToString error =
+    case error of
+        Http.BadStatus status ->
+            "bad status: " ++ String.fromInt status
+
+        Http.BadBody err ->
+            "bad body: " ++ err
+
+        Http.BadUrl err ->
+            "bad url: " ++ err
+
+        Http.NetworkError ->
+            "network error"
+
+        Http.Timeout ->
+            "timeout"
+
+
 view : Model -> Document Msg
 view model =
-    { title = "courses"
+    { title = "dashboard/courses"
     , body =
         [ el
             [ width fill
@@ -194,7 +214,7 @@ view model =
                     , Background.color darkGreyColor
                     , spacing 30
                     ]
-                    []
+                    [ viewMyCourses model.courseData ]
                 ]
             )
         ]
@@ -228,3 +248,36 @@ backButton =
             , url = Route.toString Route.Dashboard
             }
         )
+
+
+viewMyCourses : Api.Data (List Course) -> Element Msg
+viewMyCourses courseData =
+    column
+        [ Background.color lighterGreyColor
+        , Border.rounded borderRadius
+        , width fill
+        , height fill
+        , padding 20
+        ]
+        [ el
+            [ Font.bold
+            , Font.size 30
+            ]
+            (text "Your courses")
+        , case courseData of
+            Api.Success courses ->
+                if not (List.isEmpty courses) then
+                    column [] (List.map (\course -> text (course.teacher ++ " : " ++ course.subject)) courses)
+
+                else
+                    el [ centerX, centerY ] (text "You are not enrolled in any courses.")
+
+            Api.Loading ->
+                text "Loading..."
+
+            Api.Failure e ->
+                text (errorToString e)
+
+            Api.NotAsked ->
+                none
+        ]
