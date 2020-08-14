@@ -115,3 +115,16 @@ createCourse subject teacher options =
         , timeout = Nothing
         , tracker = Nothing
         }
+
+
+enrollInCourse : Int -> { onResponse : Api.Data User -> msg } -> Cmd msg
+enrollInCourse id options =
+    Http.riskyRequest
+        { body = Http.emptyBody
+        , url = "http://localhost:5000/courses/" ++ String.fromInt id ++ "/enroll"
+        , expect = Api.expectJson options.onResponse (Json.at [ "content" ] userDecoder)
+        , method = "POST"
+        , headers = []
+        , timeout = Nothing
+        , tracker = Nothing
+        }

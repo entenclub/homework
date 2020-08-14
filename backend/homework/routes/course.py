@@ -48,10 +48,10 @@ def outstanding_assignments():
     courses = []
 
     for course_id in course_ids:
-        courses.append(Course.filter_by(id=course_id).first())
+        courses.append(Course.query.filter_by(id=course_id).first())
 
-    for course in course_ids:
-        assignments = [assignment for assignment in Assignment.query.filter_by(course=course_id).all() if assignment.due_date >= now]
+    for course in courses:
+        assignments = [assignment for assignment in Assignment.query.filter_by(course=course.id).all() if assignment.due_date >= now]
 
         course_dict = course.to_dict()
         course_dict['assignments'] = assignments
@@ -128,4 +128,30 @@ def create_course():
 
     return jsonify(to_response(new_course.to_dict()))
 
+@course_bp.route('/courses/<int:id>/enroll', methods=['POST'])
+def enroll(id):
+    session_cookie = request.cookies.get('hw_session')
+    if not session_cookie:
+        return jsonify(return_error("no session")), 401
+
+    session = Session.query.filter_by(id=session_cookie).first()
+    if session is None:
+        return jsonify(return_error("invalid sesssion")), 401
+
+    user = User.query.filter_by(id=session.user_id).first()
+
+    if user is None:
+        return jsonify(return_error("invalid session")), 401
+
+    if Course.query.filter_by(id=id).first() is None:
+        return jsonify(return_error("invalid course")), 400
+
+    courses = user.decode_courses()
+    courses.append(id)
+    user.set_courses(courses)
+    db.session.add(user)
+
+    db.session.commit()
+
+    return jsonify(to_response(user.to_dict()))
 

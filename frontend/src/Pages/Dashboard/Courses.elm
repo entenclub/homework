@@ -1,7 +1,8 @@
 module Pages.Dashboard.Courses exposing (Model, Msg, Params, page)
 
 import Api
-import Api.Homework.Course exposing (createCourse, getActiveCourses)
+import Api.Homework.Course exposing (createCourse, enrollInCourse, getActiveCourses)
+import Array
 import Components.Sidebar
 import Element exposing (..)
 import Element.Background as Background
@@ -32,6 +33,7 @@ type alias Model =
     , teacherText : String
     , subjectText : String
     , createCourseErrors : List String
+    , inviteCodeText : String
     }
 
 
@@ -41,6 +43,9 @@ type Msg
     | ChangeSubjectText String
     | CreateCourse
     | GotCreateCourseResponse (Api.Data Course)
+    | ChangeInviteCodeText String
+    | EnrollInCourse
+    | GotEnrollData (Api.Data User)
 
 
 type alias Params =
@@ -73,6 +78,7 @@ init shared url =
       , teacherText = ""
       , subjectText = ""
       , createCourseErrors = [ "please set a teacher", "please set a subject" ]
+      , inviteCodeText = ""
       }
     , Cmd.batch initCommands
     )
@@ -138,6 +144,30 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
+        ChangeInviteCodeText text ->
+            ( { model | inviteCodeText = text }, Cmd.none )
+
+        EnrollInCourse ->
+            case List.head (List.reverse (String.split "#" model.inviteCodeText)) of
+                Just idString ->
+                    case String.toInt idString of
+                        Just id ->
+                            ( model, enrollInCourse id { onResponse = GotEnrollData } )
+
+                        Nothing ->
+                            ( model, Cmd.none )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
+        GotEnrollData data ->
+            case data of
+                Api.Success user ->
+                    ( { model | user = Just user }, getActiveCourses { onResponse = GotCourseData } )
+
+                _ ->
+                    ( model, Cmd.none )
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -150,8 +180,12 @@ load shared model =
 
 
 save : Model -> Shared.Model -> Shared.Model
-save _ shared =
-    shared
+save model shared =
+    if model.user /= Nothing then
+        { shared | user = model.user }
+
+    else
+        shared
 
 
 
@@ -460,4 +494,43 @@ viewEnrollInCourse model =
         , spacing 10
         ]
         [ el [ Font.size 30, Font.bold ] (text "Enroll in course")
+        , Input.text inputStyle
+            { label = Input.labelAbove [] (text "invite code")
+            , onChange = ChangeInviteCodeText
+            , text = model.inviteCodeText
+            , placeholder = Nothing
+            }
+        , let
+            active =
+                not (String.isEmpty (String.trim model.inviteCodeText))
+
+            bgColor =
+                if active then
+                    blueColor
+
+                else
+                    darken lighterGreyColor -0.1
+          in
+          Input.button
+            (inputStyle
+                ++ [ width fill
+                   , height (px 50)
+                   , Background.color bgColor
+                   , Font.bold
+                   ]
+                ++ (if active then
+                        [ mouseOver [ Background.color (darken bgColor -0.1) ], pointer ]
+
+                    else
+                        []
+                   )
+            )
+            { label = el [ centerX, centerY ] (text "enroll")
+            , onPress =
+                if active then
+                    Just EnrollInCourse
+
+                else
+                    Nothing
+            }
         ]

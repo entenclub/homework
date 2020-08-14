@@ -14,6 +14,9 @@ class User(db.Model):
     def decode_courses(self):
         return json.loads(self.courses)
 
+    def set_courses(self, courses):
+        self.courses = json.dumps(courses)
+
     def to_dict(self):
         return {"id": self.id, "username": self.username, "email": self.email, "courses": self.decode_courses(), "password_hash": self.password_hash,
                 "privilege": self.privilege}
