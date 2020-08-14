@@ -1,14 +1,16 @@
 module Pages.Dashboard.Courses exposing (Model, Msg, Params, page)
 
 import Api
-import Api.Homework.Course exposing (getActiveCourses)
+import Api.Homework.Course exposing (createCourse, getActiveCourses)
 import Components.Sidebar
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
+import Element.Input as Input
 import Http
+import List
 import Material.Icons as Icons
 import Material.Icons.Types exposing (Coloring(..))
 import Models exposing (Course, User)
@@ -17,6 +19,7 @@ import Spa.Document exposing (Document)
 import Spa.Generated.Route as Route exposing (Route)
 import Spa.Page as Page exposing (Page)
 import Spa.Url exposing (Url)
+import Styling.Colors exposing (..)
 import Utils.Darken exposing (darken)
 import Utils.Route
 
@@ -26,11 +29,18 @@ type alias Model =
     , device : Shared.Device
     , user : Maybe User
     , courseData : Api.Data (List Course)
+    , teacherText : String
+    , subjectText : String
+    , createCourseErrors : List String
     }
 
 
 type Msg
     = GotCourseData (Api.Data (List Course))
+    | ChangeTeacherText String
+    | ChangeSubjectText String
+    | CreateCourse
+    | GotCreateCourseResponse (Api.Data Course)
 
 
 type alias Params =
@@ -60,6 +70,9 @@ init shared url =
       , device = shared.device
       , user = shared.user
       , courseData = Api.NotAsked
+      , teacherText = ""
+      , subjectText = ""
+      , createCourseErrors = [ "please set a teacher", "please set a subject" ]
       }
     , Cmd.batch initCommands
     )
@@ -70,6 +83,60 @@ update msg model =
     case msg of
         GotCourseData data ->
             ( { model | courseData = data }, Cmd.none )
+
+        ChangeTeacherText text ->
+            let
+                errorMsg =
+                    "please set a teacher"
+            in
+            if String.isEmpty (String.trim text) then
+                if List.member errorMsg model.createCourseErrors then
+                    ( { model
+                        | teacherText = text
+                      }
+                    , Cmd.none
+                    )
+
+                else
+                    ( { model | teacherText = text, createCourseErrors = model.createCourseErrors ++ [ errorMsg ] }, Cmd.none )
+
+            else
+                ( { model | teacherText = text, createCourseErrors = List.filter (\error -> error /= errorMsg) model.createCourseErrors }, Cmd.none )
+
+        ChangeSubjectText text ->
+            let
+                errorMsg =
+                    "please set a subject"
+            in
+            if String.isEmpty (String.trim text) then
+                if List.member errorMsg model.createCourseErrors then
+                    ( { model
+                        | subjectText = text
+                      }
+                    , Cmd.none
+                    )
+
+                else
+                    ( { model | subjectText = text, createCourseErrors = model.createCourseErrors ++ [ errorMsg ] }, Cmd.none )
+
+            else
+                ( { model | subjectText = text, createCourseErrors = List.filter (\error -> error /= errorMsg) model.createCourseErrors }, Cmd.none )
+
+        CreateCourse ->
+            ( model, createCourse model.subjectText model.teacherText { onResponse = GotCreateCourseResponse } )
+
+        GotCreateCourseResponse data ->
+            case data of
+                Api.Success course ->
+                    case model.courseData of
+                        Api.Success courses ->
+                            ( { model | courseData = Api.Success (courses ++ [ course ]) }, Cmd.none )
+
+                        _ ->
+                            ( model, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
@@ -198,6 +265,7 @@ view model =
                     , courseData = model.courseData
                     , device = model.device
                     , back = Just backButton
+                    , active = Just "courses"
                     }
 
                 -- content
@@ -214,7 +282,12 @@ view model =
                     , Background.color darkGreyColor
                     , spacing 30
                     ]
-                    [ viewMyCourses model.courseData ]
+                    [ row [ width fill, spacing 30 ]
+                        [ viewCreateCourse model
+                        , viewEnrollInCourse model
+                        ]
+                    , viewMyCourses model.courseData
+                    ]
                 ]
             )
         ]
@@ -280,4 +353,111 @@ viewMyCourses courseData =
 
             Api.NotAsked ->
                 none
+        ]
+
+
+viewCreateCourseFormErrors : List String -> Element Msg
+viewCreateCourseFormErrors errors =
+    if List.isEmpty errors then
+        text ""
+
+    else
+        column
+            [ Background.color redColor
+            , width fill
+            , Border.rounded 10
+            , padding 10
+            , spacing 5
+            ]
+            [ el [ Font.bold, Font.size 30, Font.color (darken redColor 0.8) ] (text "Errors")
+            , column []
+                (List.map
+                    viewCreateCourseFormError
+                    errors
+                )
+            ]
+
+
+viewCreateCourseFormError : String -> Element msg
+viewCreateCourseFormError error =
+    el [ Font.bold, Font.color (darken redColor 0.8) ] (text error)
+
+
+viewCreateCourse : Model -> Element Msg
+viewCreateCourse model =
+    column
+        [ Background.color lighterGreyColor
+        , height (fill |> minimum 400)
+        , width (fillPortion 1)
+        , Border.rounded borderRadius
+        , padding 20
+        , spacing 10
+        ]
+        [ el [ Font.size 30, Font.bold ]
+            (text "Create Course")
+        , viewCreateCourseFormErrors model.createCourseErrors
+        , column [ width fill, spacing 10 ]
+            [ row
+                [ spacing 10, width fill ]
+                [ Input.text (inputStyle ++ [ width fill ])
+                    { label = Input.labelAbove [] (text "teacher (required)")
+                    , text = model.teacherText
+                    , onChange = ChangeTeacherText
+                    , placeholder = Nothing
+                    }
+                , Input.text (inputStyle ++ [ width fill ])
+                    { label = Input.labelAbove [] (text "subject (required)")
+                    , text = model.subjectText
+                    , onChange = ChangeSubjectText
+                    , placeholder = Nothing
+                    }
+                ]
+            , let
+                active =
+                    List.isEmpty model.createCourseErrors
+
+                bgColor =
+                    if active then
+                        blueColor
+
+                    else
+                        darken lighterGreyColor -0.1
+              in
+              Input.button
+                (inputStyle
+                    ++ [ width fill
+                       , height (px 50)
+                       , Background.color bgColor
+                       , Font.bold
+                       ]
+                    ++ (if active then
+                            [ mouseOver [ Background.color (darken bgColor -0.1) ], pointer ]
+
+                        else
+                            []
+                       )
+                )
+                { label = el [ centerX, centerY ] (text "create course")
+                , onPress =
+                    if List.isEmpty model.createCourseErrors then
+                        Just CreateCourse
+
+                    else
+                        Nothing
+                }
+            ]
+        ]
+
+
+viewEnrollInCourse : Model -> Element Msg
+viewEnrollInCourse model =
+    column
+        [ Background.color lighterGreyColor
+        , Border.rounded 20
+        , height (fill |> minimum 400)
+        , width (fillPortion 1)
+        , padding 20
+        , spacing 10
+        ]
+        [ el [ Font.size 30, Font.bold ] (text "Enroll in course")
         ]

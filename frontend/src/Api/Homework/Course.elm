@@ -3,8 +3,9 @@ module Api.Homework.Course exposing (..)
 import Api
 import Api.Homework.User exposing (userDecoder)
 import Date
-import Http
+import Http exposing (jsonBody)
 import Json.Decode as Json
+import Json.Encode as Encode
 import Models exposing (Assignment, Course, User)
 import Time
 
@@ -91,6 +92,25 @@ searchCourses searchterm options =
         , url = "http://localhost:5000/courses/search/" ++ searchterm
         , method = "GET"
         , expect = Api.expectJson options.onResponse (Json.at [ "content" ] (Json.list minimalCourseDecoder))
+        , headers = []
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
+
+createCourse : String -> String -> { onResponse : Api.Data Course -> msg } -> Cmd msg
+createCourse subject teacher options =
+    Http.riskyRequest
+        { body =
+            Http.jsonBody
+                (Encode.object
+                    [ ( "subject", Encode.string subject )
+                    , ( "teacher", Encode.string teacher )
+                    ]
+                )
+        , url = "http://localhost:5000/courses/"
+        , method = "POST"
+        , expect = Api.expectJson options.onResponse (Json.at [ "content" ] courseDecoder)
         , headers = []
         , timeout = Nothing
         , tracker = Nothing

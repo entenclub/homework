@@ -11,7 +11,7 @@ import Material.Icons as Icons
 import Material.Icons.Types exposing (Coloring(..))
 import Models exposing (Course, User)
 import Shared
-import Spa.Generated.Route exposing (Route)
+import Spa.Generated.Route as Route exposing (Route)
 import Styling.Colors exposing (..)
 import Utils.Darken exposing (darken)
 
@@ -44,25 +44,20 @@ viewUser : Maybe User -> Api.Data (List Course) -> Element msg
 viewUser maybeUser courseData =
     case maybeUser of
         Just user ->
-            case courseData of
-                Success courses ->
-                    viewUserComponent user courses
-
-                Loading ->
-                    text "Loading..."
-
-                Failure error ->
-                    text (errorToString error)
-
-                NotAsked ->
-                    Element.none
+            viewUserComponent user
 
         Nothing ->
             Element.none
 
 
-viewSidebar : { user : Maybe User, courseData : Api.Data (List Course), device : Shared.Device, back : Maybe (Element msg) } -> Element msg
+viewSidebar : { user : Maybe User, courseData : Api.Data (List Course), device : Shared.Device, back : Maybe (Element msg), active : Maybe String } -> Element msg
 viewSidebar model =
+    let
+        links =
+            [ ( "dashboard", Route.Dashboard )
+            , ( "courses", Route.Dashboard__Courses )
+            ]
+    in
     column
         [ width
             (case model.device.class of
@@ -80,46 +75,24 @@ viewSidebar model =
         (case model.back of
             Just backButton ->
                 [ viewUser model.user model.courseData
+                , el [ width fill, paddingXY 0 50 ] (viewLinks links model.active)
                 , backButton
                 ]
 
             Nothing ->
-                [ viewUser model.user model.courseData ]
+                [ viewUser model.user model.courseData
+                , el [ width fill, paddingXY 0 50 ] (viewLinks links model.active)
+                ]
         )
 
 
-viewUserComponent : User -> List Course -> Element msg
-viewUserComponent user courses =
-    column [ centerX, spacing 10 ]
+viewUserComponent : User -> Element msg
+viewUserComponent user =
+    column [ spacing 10 ]
         [ el
-            [ Border.rounded 50
-            , width (px 100)
-            , height (px 100)
-            , Background.color blueColor
-            , Font.color (rgb 1 1 1)
-            , centerX
-            ]
-            (el
-                [ centerX
-                , centerY
-                , Font.size 60
-                , spacing 100
-                ]
-                (text
-                    (String.toUpper
-                        (String.slice
-                            0
-                            1
-                            user.username
-                        )
-                    )
-                )
-            )
-        , el
             [ Font.size 30
             , Font.semiBold
             , Font.color (rgb 1 1 1)
-            , centerX
             , Font.center
             ]
             (if String.length user.username > 12 then
@@ -128,7 +101,7 @@ viewUserComponent user courses =
              else
                 text ("Hey, " ++ user.username)
             )
-        , el [ centerX ]
+        , el []
             (case user.privilege of
                 Models.Admin ->
                     text "Administrator"
@@ -136,9 +109,43 @@ viewUserComponent user courses =
                 Models.Normal ->
                     none
             )
-        , el
-            [ centerX
-            , padding 10
-            ]
-            (column [] [ el [] (text ("You are enrolled in " ++ String.fromInt (List.length courses) ++ " courses.")) ])
         ]
+
+
+viewLinks : List ( String, Route ) -> Maybe String -> Element msg
+viewLinks links maybeActive =
+    column [ width fill ]
+        (case maybeActive of
+            Just active ->
+                List.map (\link -> viewLink link (Tuple.first link == active)) links
+
+            Nothing ->
+                List.map (\link -> viewLink link False) links
+        )
+
+
+viewLink : ( String, Route ) -> Bool -> Element msg
+viewLink linkData active =
+    el
+        [ Font.bold
+        , mouseOver
+            [ Background.color (darken lighterGreyColor -0.1)
+            ]
+        , width fill
+        , height (px 50)
+        , Border.rounded 10
+        , padding 10
+        ]
+        (link [ centerY ]
+            { url = Route.toString (Tuple.second linkData)
+            , label =
+                el
+                    (if active then
+                        [ Font.color blueColor ]
+
+                     else
+                        []
+                    )
+                    (text (Tuple.first linkData))
+            }
+        )

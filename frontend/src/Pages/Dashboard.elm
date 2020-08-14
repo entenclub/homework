@@ -335,7 +335,7 @@ view model =
                 , width fill
                 ]
                 [ -- sidebar
-                  Components.Sidebar.viewSidebar { user = model.user, courseData = model.courseData, device = model.device, back = Nothing }
+                  Components.Sidebar.viewSidebar { user = model.user, courseData = model.courseData, device = model.device, back = Nothing, active = Just "dashboard" }
 
                 -- content
                 , column
@@ -433,26 +433,26 @@ otherOutstandingAssignments today courses =
 
 viewOustandingAssignments : Model -> Element Msg
 viewOustandingAssignments model =
-    case model.courseData of
-        Success courses ->
-            column
-                [ width fill
-                , spacing 30
-                , Background.color lighterGreyColor
-                , padding 30
-                , Border.rounded borderRadius
-                ]
-                [ row
-                    [ width fill
-                    , height (shrink |> minimum 200)
-                    , spacing 30
-                    ]
-                    [ --today
-                      viewAssignmentsDayColumn courses "today" redColor
-                    , viewAssignmentsDayColumn courses "tomorrow" yellowColor
-                    , viewAssignmentsDayColumn courses "the day after tomorrow" greenColor
-                    ]
-                , if otherOutstandingAssignments model.today courses > 0 then
+    column
+        [ width fill
+        , spacing 30
+        , Background.color lighterGreyColor
+        , padding 30
+        , Border.rounded borderRadius
+        ]
+        [ row
+            [ width fill
+            , height (shrink |> minimum 200)
+            , spacing 30
+            ]
+            [ --today
+              viewAssignmentsDayColumn model.courseData "today" redColor
+            , viewAssignmentsDayColumn model.courseData "tomorrow" yellowColor
+            , viewAssignmentsDayColumn model.courseData "the day after tomorrow" greenColor
+            ]
+        , case model.courseData of
+            Success courses ->
+                if otherOutstandingAssignments model.today courses > 0 then
                     el
                         [ width fill
                         , height (px 100)
@@ -482,27 +482,16 @@ viewOustandingAssignments model =
                             ]
                         )
 
-                  else
+                else
                     none
-                ]
 
-        Loading ->
-            column [ centerX, centerY, width fill, height fill ]
-                [ text "Loading..."
-                ]
-
-        Failure e ->
-            column [ centerX, centerY, width fill, height fill ]
-                [ text "Error!"
-                , text (errorToString e)
-                ]
-
-        NotAsked ->
-            none
+            _ ->
+                none
+        ]
 
 
-viewAssignmentsDayColumn : List Course -> String -> Color -> Element msg
-viewAssignmentsDayColumn courses title color =
+viewAssignmentsDayColumn : Api.Data (List Course) -> String -> Color -> Element msg
+viewAssignmentsDayColumn courseData title color =
     column
         [ Background.color color
         , height fill
@@ -512,11 +501,22 @@ viewAssignmentsDayColumn courses title color =
         , spacing 10
         ]
         [ el [ Font.bold ] (text title)
-        , if List.isEmpty courses then
-            el [ centerX, centerY, Font.italic ] (text "-- no assignments --")
+        , case courseData of
+            Success courses ->
+                if List.isEmpty courses then
+                    el [ centerX, centerY, Font.italic ] (text "-- no assignments --")
 
-          else
-            Keyed.column [ width fill ] (List.map (courseGroupToKeyValue color) courses)
+                else
+                    Keyed.column [ width fill ] (List.map (courseGroupToKeyValue color) courses)
+
+            Failure e ->
+                text (errorToString e)
+
+            Loading ->
+                text "Loading..."
+
+            NotAsked ->
+                none
         ]
 
 
