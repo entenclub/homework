@@ -108,7 +108,7 @@ createCourse subject teacher options =
                     , ( "teacher", Encode.string teacher )
                     ]
                 )
-        , url = "http://localhost:5000/courses/"
+        , url = "http://localhost:5000/courses"
         , method = "POST"
         , expect = Api.expectJson options.onResponse (Json.at [ "content" ] courseDecoder)
         , headers = []

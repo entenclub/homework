@@ -90,3 +90,42 @@ def my_courses():
 
 
     return jsonify(to_response(courses))
+
+@course_bp.route('/courses', methods=['POST'])
+def create_course():
+    session_cookie = request.cookies.get('hw_session')
+    if not session_cookie:
+        return jsonify(return_error("no session")), 401
+
+    session = Session.query.filter_by(id=session_cookie).first()
+    if session is None:
+        return jsonify(return_error("invalid sesssion")), 401
+
+    user = User.query.filter_by(id=session.user_id).first()
+
+    if user is None:
+        return jsonify(return_error("invalid session")), 401
+
+    data = request.json
+    teacher, subject = data.get('teacher'), data.get('subject')
+
+    if teacher is None or subject is None:
+        return jsonify(return_error('invalid request')), 400
+
+    new_course = Course()
+    new_course.subject = subject
+    new_course.teacher = teacher
+
+    db.session.add(new_course)
+
+    try:
+        db.session.commit()
+
+    except Exception as e:
+        print(e)
+        db.session.rollback()
+        return jsonify(return_error('invalid request')), 500
+
+    return jsonify(to_response(new_course.to_dict()))
+
+
