@@ -9,7 +9,7 @@ class Assignment(db.Model):
     description = db.Column('description', db.Text, nullable=True)
     due_date = db.Column('due_date', db.Date, nullable=False)
     creator = db.Column('creator', db.Integer, nullable=False)
-    created_at = db.Column('created_at', db.Float, nullable=False, default=datetime.utcnow)
+    created_at = db.Column('created_at', db.DateTime, nullable=False, default=datetime.utcnow)
 
     def to_dict(self):
         return {'id': self.id, 'course': self.course, 'title': self.title, 'description': self.description, 'dueDate': self.due_date, 'creator': self.creator, 'created_at': self.created_at}

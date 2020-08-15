@@ -44,14 +44,19 @@ def outstanding_assignments():
         return jsonify(to_response([])), 200
 
     has_outstanding_assignments = []
-    now = datetime.datetime.utcnow().timetuple()[:3]
+    now = datetime.datetime.utcnow().date()
     courses = []
 
     for course_id in course_ids:
         courses.append(Course.query.filter_by(id=course_id).first())
 
     for course in courses:
-        assignments = [assignment for assignment in Assignment.query.filter_by(course=course.id).all() if assignment.due_date >= now]
+        assignments = [assignment.to_dict() for assignment in Assignment.query.filter_by(course=course.id).all() if assignment.due_date >= now]
+
+        for i in range(len(assignments)):
+            creator = User.query.filter_by(id=assignments[i]['creator']).first()
+            assignments[i]['creator'] = creator.to_safe_dict()
+            assignments[i]['dueDate'] = datetime.datetime.strftime(assignments[i]['dueDate'], '%Y-%m-%d')
 
         course_dict = course.to_dict()
         course_dict['assignments'] = assignments

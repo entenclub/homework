@@ -39,7 +39,7 @@ def create_assignment():
     new_assignment.title = title
     new_assignment.creator = user.id
     new_assignment.course = course
-    new_assignment.due_date = date
+    new_assignment.due_date = date.date()
 
     db.session.add(new_assignment)
     try:

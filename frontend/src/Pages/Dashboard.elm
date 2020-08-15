@@ -1,6 +1,7 @@
 module Pages.Dashboard exposing (Model, Msg, Params, page)
 
 import Api exposing (Data(..))
+import Api.Homework.Assignment exposing (createAssignment)
 import Api.Homework.Course exposing (MinimalCourse, getActiveCourses, searchCourses)
 import Api.Homework.User exposing (getUserFromSession)
 import Array
@@ -66,6 +67,7 @@ type Msg
     | CAFChangeTitle String
     | CAFChangeDate String
     | CreateAssignment
+    | GotCreateAssignmentData (Api.Data Assignment)
     | ReceiveTime Time.Posix
     | Add1Day
 
@@ -256,7 +258,20 @@ update msg model =
             ( { model | today = Date.fromPosix Time.utc time, selectedDateTime = time }, Cmd.none )
 
         CreateAssignment ->
-            ( model, Cmd.none )
+            case model.selectedCourse of
+                Just course ->
+                    case model.selectedDate of
+                        Just dueDate ->
+                            ( model, createAssignment { courseId = course, title = model.titleTfText, dueDate = dueDate } { onResponse = GotCreateAssignmentData } )
+
+                        _ ->
+                            ( model, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        GotCreateAssignmentData data ->
+            ( model, getActiveCourses { onResponse = GotCourseData } )
 
         Add1Day ->
             let
@@ -446,9 +461,9 @@ viewOustandingAssignments model =
             , spacing 30
             ]
             [ --today
-              viewAssignmentsDayColumn model.courseData "today" redColor
-            , viewAssignmentsDayColumn model.courseData "tomorrow" yellowColor
-            , viewAssignmentsDayColumn model.courseData "the day after tomorrow" greenColor
+              viewAssignmentsDayColumn model.courseData "today" redColor model.today
+            , viewAssignmentsDayColumn model.courseData "tomorrow" yellowColor (Date.add Date.Days 1 model.today)
+            , viewAssignmentsDayColumn model.courseData "the day after tomorrow" greenColor (Date.add Date.Days 2 model.today)
             ]
         , case model.courseData of
             Success courses ->
@@ -490,8 +505,35 @@ viewOustandingAssignments model =
         ]
 
 
-viewAssignmentsDayColumn : Api.Data (List Course) -> String -> Color -> Element msg
-viewAssignmentsDayColumn courseData title color =
+filterCoursesByWhetherAssignmentsAreDueOnDate : List Course -> Date.Date -> List Course
+filterCoursesByWhetherAssignmentsAreDueOnDate courses date =
+    let
+        validCourses =
+            List.map (\idAssignmentTuple -> Tuple.first idAssignmentTuple)
+                (List.filter
+                    (\_ ->
+                        not
+                            (List.isEmpty
+                                (List.filter (\assignment -> assignment.dueDate == date)
+                                    (List.concat (List.map (\course -> course.assignments) courses))
+                                )
+                            )
+                    )
+                    (List.map (\course -> ( course.id, course.assignments )) courses)
+                )
+
+        irgendwas =
+            Debug.log "valid courses" (List.filter (\course -> List.member course.id validCourses) courses)
+    in
+    courses
+
+
+
+--List.filter (\course -> List.member course.id validCourses) courses
+
+
+viewAssignmentsDayColumn : Api.Data (List Course) -> String -> Color -> Date.Date -> Element msg
+viewAssignmentsDayColumn courseData title color date =
     column
         [ Background.color color
         , height fill
@@ -502,12 +544,16 @@ viewAssignmentsDayColumn courseData title color =
         ]
         [ el [ Font.bold ] (text title)
         , case courseData of
-            Success courses ->
+            Success allCourses ->
+                let
+                    courses =
+                        filterCoursesByWhetherAssignmentsAreDueOnDate allCourses date
+                in
                 if List.isEmpty courses then
                     el [ centerX, centerY, Font.italic ] (text "-- no assignments --")
 
                 else
-                    Keyed.column [ width fill ] (List.map (courseGroupToKeyValue color) courses)
+                    Keyed.column [ width fill, spacing 5 ] (List.map (courseGroupToKeyValue color date) courses)
 
             Failure e ->
                 text (errorToString e)
@@ -520,23 +566,31 @@ viewAssignmentsDayColumn courseData title color =
         ]
 
 
-courseGroupToKeyValue : Color -> Course -> ( String, Element msg )
-courseGroupToKeyValue color course =
-    ( String.fromInt course.id, viewAssignmentCourseGroup course color )
+courseGroupToKeyValue : Color -> Date.Date -> Course -> ( String, Element msg )
+courseGroupToKeyValue color date course =
+    ( String.fromInt course.id, viewAssignmentCourseGroup course color date )
 
 
-viewAssignmentCourseGroup : Course -> Color -> Element msg
-viewAssignmentCourseGroup course color =
-    column
-        [ Background.color (darken color 0.05)
-        , padding 10
-        , spacing 10
-        , Border.rounded 10
-        , width fill
-        ]
-        [ el [ Font.bold ] (text (course.teacher ++ " - " ++ course.subject))
-        , Keyed.column [] (List.map (assignmentToKeyValue color) course.assignments)
-        ]
+viewAssignmentCourseGroup : Course -> Color -> Date.Date -> Element msg
+viewAssignmentCourseGroup course color date =
+    let
+        assignments =
+            List.filter (\assignment -> assignment.dueDate == date) course.assignments
+    in
+    if not (List.isEmpty assignments) then
+        column
+            [ Background.color (darken color 0.05)
+            , padding 10
+            , spacing 10
+            , Border.rounded 10
+            , width fill
+            ]
+            [ el [ Font.bold ] (text (course.teacher ++ " - " ++ course.subject))
+            , Keyed.column [ spacing 5 ] (List.map (assignmentToKeyValue color) assignments)
+            ]
+
+    else
+        none
 
 
 assignmentToKeyValue : Color -> Assignment -> ( String, Element msg )

@@ -11,10 +11,10 @@ import Models exposing (Assignment)
 
 dateEncoder : Date.Date -> String
 dateEncoder date =
-    Date.format "y-M-d" date
+    Date.format "d-M-y" date
 
 
-assignmentEncoder : Assignment -> Encode.Value
+assignmentEncoder : { title : String, courseId : Int, dueDate : Date.Date } -> Encode.Value
 assignmentEncoder assignment =
     Encode.object
         [ ( "title", Encode.string assignment.title )
@@ -23,14 +23,14 @@ assignmentEncoder assignment =
         ]
 
 
-createAssignment : Assignment -> { onRespose : Api.Data Assignment -> msg } -> Cmd msg
+createAssignment : { title : String, courseId : Int, dueDate : Date.Date } -> { onResponse : Api.Data Assignment -> msg } -> Cmd msg
 createAssignment assignment options =
     Http.riskyRequest
         { method = "POST"
         , url = "http://localhost:5000/assignment"
         , headers = []
         , body = Http.jsonBody (assignmentEncoder assignment)
-        , expect = Api.expectJson options.onRespose (Json.at [ "content" ] assignmentDecoder)
+        , expect = Api.expectJson options.onResponse (Json.at [ "content" ] assignmentDecoder)
         , timeout = Nothing
         , tracker = Nothing
         }
