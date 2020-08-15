@@ -176,7 +176,7 @@ subscriptions model =
 
 load : Shared.Model -> Model -> ( Model, Cmd msg )
 load shared model =
-    ( { model | device = shared.device }, Cmd.none )
+    ( { model | device = shared.device, user = shared.user }, Cmd.none )
 
 
 save : Model -> Shared.Model -> Shared.Model
@@ -365,6 +365,7 @@ viewMyCourses courseData =
         , width fill
         , height fill
         , padding 20
+        , spacing 10
         ]
         [ el
             [ Font.bold
@@ -374,7 +375,7 @@ viewMyCourses courseData =
         , case courseData of
             Api.Success courses ->
                 if not (List.isEmpty courses) then
-                    column [] (List.map (\course -> text (course.teacher ++ " : " ++ course.subject)) courses)
+                    column [ width fill ] (List.map (\course -> viewCourseRow course) courses)
 
                 else
                     el [ centerX, centerY ] (text "You are not enrolled in any courses.")
@@ -387,6 +388,38 @@ viewMyCourses courseData =
 
             Api.NotAsked ->
                 none
+        ]
+
+
+generateInviteCode : Course -> String
+generateInviteCode course =
+    let
+        maybeLastname =
+            List.head (List.reverse (String.split " " course.teacher))
+    in
+    case maybeLastname of
+        Just lastName ->
+            String.slice 0 3 lastName ++ String.slice 0 3 course.subject ++ "#" ++ String.fromInt course.id
+
+        Nothing ->
+            String.slice 0 3 course.subject ++ "#" ++ String.fromInt course.id
+
+
+viewCourseRow : Course -> Element msg
+viewCourseRow course =
+    row
+        [ height (shrink |> minimum 50)
+        , width fill
+        , spacing 50
+        , Border.widthEach { top = 0, right = 0, left = 0, bottom = 2 }
+        , Border.color inputTextColor
+        ]
+        [ text (course.teacher ++ ": " ++ course.subject)
+        , el
+            [ alignRight ]
+            (text
+                (generateInviteCode course)
+            )
         ]
 
 
@@ -516,6 +549,7 @@ viewEnrollInCourse model =
                 ++ [ width fill
                    , height (px 50)
                    , Background.color bgColor
+                   , alignTop
                    , Font.bold
                    ]
                 ++ (if active then
