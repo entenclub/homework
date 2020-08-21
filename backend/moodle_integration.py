@@ -18,7 +18,7 @@ if not auth_request.ok:
     exit()
 
 creds = auth_request.json()
-#print(creds)
+print(creds)
 
 """
 $ curl "https://your.site.com/moodle/webservice/rest/server.php?wstoken=...&wsfunction=...&moodlewsrestformat=json"
@@ -32,4 +32,5 @@ courses = courses_reqest.json()
 for course in courses:
     print(course["fullname"])
 
+print('\n')
 print("time elapsed: {}".format(time.time() - start))
