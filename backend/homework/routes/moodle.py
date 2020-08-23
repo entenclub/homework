@@ -6,6 +6,7 @@ from flask_cors import CORS
 from homework.database.session import Session
 from homework.database.user import User
 from homework.routes import return_error, to_response
+from homework import db
 
 moodle_bp = Blueprint('moodle', __name__)
 CORS(moodle_bp, supports_credentials=True)
@@ -25,27 +26,54 @@ def get_courses():
     if user is None:
         return jsonify(return_error('invalid session')), 401
 
-    base_url = 'https://gym-haan.lms.schulon.org'
+    base_url = user.moodle_url
+    token = user.moodle_token
 
-    username, password = 'id4009', 'g0z89u1baISbAz4VAbUH2RKFL6JAZPdSIqft0GCAtd3G9YhWBMOPTwF1IOizV8XQ#'
-
-    body = {'username': username, 'password': password}
-
-    auth_request = requests.post(base_url + '/login/token.php?service=moodle_mobile_app', body)
-    # print(r.status_code, r.text)
-
-    if not auth_request.ok:
-        return jsonify(return_error('invalid moodle credentials')), 403
-
-    creds = auth_request.json()
-    # print(creds)
+    if token is None or base_url is None:
+        return jsonify(return_error('no moodle connection')), 403
 
     """
     $ curl "https://your.site.com/moodle/webservice/rest/server.php?wstoken=...&wsfunction=...&moodlewsrestformat=json"
     """
 
-    courses_reqest = requests.get(base_url + '/webservice/rest/server.php' + '?wstoken=' + creds[
-        'token'] + '&wsfunction=' + 'core_enrol_get_users_courses' + '&moodlewsrestformat=json' + '&userid=412')
+    courses_reqest = requests.get(base_url + '/webservice/rest/server.php' + '?wstoken=' + token + '&wsfunction=' + 'core_enrol_get_users_courses' + '&moodlewsrestformat=json' + '&userid=412')
 
     courses = courses_reqest.json()
-    return to_response(courses)
+    return jsonify(to_response(courses))
+
+@moodle_bp.route('/moodle/authenticate', methods=['POST'])
+def authenticate():
+    session_cookie = request.cookies.get('hw_session')
+    if not session_cookie:
+        return jsonify(return_error('no session')), 401
+
+    session = Session.query.filter_by(id=session_cookie).first()
+    if session is None:
+        return jsonify(return_error('invalid session')), 401
+
+    user = User.query.filter_by(id=session.user_id).first()
+    if user is None:
+        return jsonify(return_error('invalid session')), 401
+
+
+    base_url, username, password = request.json.get('baseUrl'), request.json.get('username'), request.json.get('password')
+
+    if username is None or password is None or base_url is None:
+        return jsonify(return_error('missing credentials')), 400
+
+    body = {'username': username, 'password': password}
+    auth_request = requests.post(base_url + '/login/token.php?service=moodle_mobile_app', body)
+    print(auth_request.json())
+
+    if not auth_request.ok or auth_request.json().get('errorcode') is not None:
+        return jsonify(return_error('invalid moodle credentials')), 401
+
+    creds = auth_request.json()
+
+    user.moodle_url = base_url
+    user.moodle_token = creds['token']
+
+    db.session.add(user)
+    db.session.commit()
+
+    return jsonify(to_response(user.to_safe_dict()))

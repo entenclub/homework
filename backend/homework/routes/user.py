@@ -35,7 +35,7 @@ def login():
 
     correct = bcrypt.checkpw(
         password.encode('utf-8'), user.password_hash.encode('utf-8'))
-    if not corect:
+    if not correct:
         return jsonify(return_error("incorrect password")), 401
 
     new_session = Session()
