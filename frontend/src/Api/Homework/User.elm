@@ -1,4 +1,4 @@
-module Api.Homework.User exposing (getUserFromSession, login, register, userDecoder)
+module Api.Homework.User exposing (getUserFromSession, login, logout, register, userDecoder)
 
 import Api
 import Http
@@ -25,11 +25,12 @@ intToPrivilege privilege =
 
 userDecoder : Json.Decoder User
 userDecoder =
-    Json.map4 User
+    Json.map5 User
         (Json.field "id" Json.int)
         (Json.field "username" Json.string)
         (Json.field "email" Json.string)
         (Json.field "privilege" (Json.andThen (\priv -> intToPrivilege priv) Json.int))
+        (Json.field "moodle_url" Json.string)
 
 
 credentialsEncoder : Credentials -> Encode.Value
@@ -98,6 +99,19 @@ login credentials options =
         , headers = []
         , method = "POST"
         , expect = Api.expectJson options.onResponse userDecoder
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
+
+logout : { onResponse : Result Http.Error () -> msg } -> Cmd msg
+logout options =
+    Http.riskyRequest
+        { url = "http://localhost:5000/user/logout"
+        , body = Http.emptyBody
+        , headers = []
+        , method = "POST"
+        , expect = Http.expectWhatever options.onResponse
         , timeout = Nothing
         , tracker = Nothing
         }

@@ -80,7 +80,7 @@ update msg model =
         GotLoginData data ->
             case data of
                 Api.Success _ ->
-                    ( model, Utils.Route.navigate model.url.key Route.Dashboard )
+                    ( { model | loginStatus = data }, Utils.Route.navigate model.url.key Route.Dashboard )
 
                 _ ->
                     ( { model | loginStatus = data }, Cmd.none )

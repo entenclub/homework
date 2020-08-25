@@ -17,6 +17,7 @@ type alias User =
     , username : String
     , email : String
     , privilege : Privilege
+    , moodleUrl : String
     }
 
 

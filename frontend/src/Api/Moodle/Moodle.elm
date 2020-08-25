@@ -1,9 +1,11 @@
-module Api.Moodle.Moodle exposing (getSiteName)
+module Api.Moodle.Moodle exposing (authenticateUser, getSiteName)
 
 import Api
+import Api.Homework.User exposing (userDecoder)
 import Http exposing (jsonBody)
 import Json.Decode as Json
 import Json.Encode as Encode
+import Models exposing (User)
 
 
 
@@ -20,11 +22,32 @@ encoder url =
     Encode.object
         [ ( "url", Encode.string url ) ]
 
-
 getSiteName : String -> { onResponse : Api.Data String -> msg } -> Cmd msg
 getSiteName url options =
     Http.post
         { url = "http://localhost:5000/moodle/get-school-info"
         , expect = Api.expectJson options.onResponse decoder
         , body = jsonBody (encoder url)
+        }
+
+
+credentialsEncoder : String -> String -> String -> Encode.Value
+credentialsEncoder url username password =
+    Encode.object
+        [ ( "url", Encode.string url )
+        , ( "username", Encode.string username )
+        , ( "password", Encode.string password )
+        ]
+
+
+authenticateUser : String -> String -> String -> { onResponse : Api.Data User -> msg } -> Cmd msg
+authenticateUser url username password options =
+    Http.riskyRequest
+        { method = "POST"
+        , body = jsonBody (credentialsEncoder url username password)
+        , headers = []
+        , tracker = Nothing
+        , url = "localhost:5000/moodle/authenticate"
+        , timeout = Nothing
+        , expect = Api.expectJson options.onResponse (Json.at [ "content" ] userDecoder)
         }

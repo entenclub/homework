@@ -1,20 +1,22 @@
 module Pages.Dashboard.Moodle exposing (Model, Msg, Params, page)
 
 import Api
-import Api.Moodle.Moodle exposing (getSiteName)
+import Api.Moodle.Moodle exposing (authenticateUser, getSiteName)
 import Components.Sidebar
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
+import Element.Events as Events
 import Element.Font as Font
 import Element.Input as Input
+import Element.Region as Region
 import Models exposing (Course, User)
 import Shared
 import Spa.Document exposing (Document)
-import Spa.Generated.Route as Route exposing (Route)
 import Spa.Page as Page exposing (Page)
 import Spa.Url exposing (Url)
-import Styling.Colors exposing (darkGreyColor, lighterGreyColor)
+import String
+import Styling.Colors exposing (blueColor, darkGreyColor, lighterGreyColor)
 import Utils.Darken exposing (darken)
 
 
@@ -31,12 +33,19 @@ type alias Model =
     --credentials form
     , moodleUrlInput : String
     , moodleSiteName : Api.Data String
+    , moodleUsernameInput : String
+    , moodlePasswordInput : String
+    , authenticationData : Api.Data User
     }
 
 
 type Msg
     = ChangeMoodleUrlInput String
     | GotSiteData (Api.Data String)
+    | ChangeMoodleUsernameInput String
+    | ChangeMoodlePasswordInput String
+    | Authenticate
+    | GotAuthenticationData (Api.Data User)
 
 
 page : Page Params Model Msg
@@ -61,6 +70,9 @@ init shared url =
       --credentials form
       , moodleUrlInput = ""
       , moodleSiteName = Api.NotAsked
+      , moodleUsernameInput = ""
+      , moodlePasswordInput = ""
+      , authenticationData = Api.NotAsked
       }
     , Cmd.none
     )
@@ -75,9 +87,21 @@ update msg model =
         GotSiteData data ->
             ( { model | moodleSiteName = data }, Cmd.none )
 
+        ChangeMoodleUsernameInput text ->
+            ( { model | moodleUsernameInput = text }, Cmd.none )
+
+        ChangeMoodlePasswordInput text ->
+            ( { model | moodlePasswordInput = text }, Cmd.none )
+
+        Authenticate ->
+            ( model, authenticateUser model.moodleUrlInput model.moodleUsernameInput model.moodlePasswordInput { onResponse = GotAuthenticationData } )
+
+        GotAuthenticationData data ->
+            ( { model | authenticationData = data }, Cmd.none )
+
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions _ =
     Sub.none
 
 
@@ -87,8 +111,13 @@ load shared model =
 
 
 save : Model -> Shared.Model -> Shared.Model
-save _ shared =
-    shared
+save model shared =
+    case model.authenticationData of
+        Api.Success user ->
+            { shared | user = Just user }
+
+        _ ->
+            shared
 
 
 borderRadius : Int
@@ -193,6 +222,8 @@ viewCredentialsForm model =
                     , Font.bold
                     , paddingXY 0 10
                     , Font.size 30
+                    , Events.onClick (GotSiteData Api.NotAsked)
+                    , pointer
                     ]
                     (text name)
 
@@ -201,12 +232,52 @@ viewCredentialsForm model =
 
             _ ->
                 text ""
-        , column [ width fill ]
-            [ Input.text inputStyle
-                { label = Input.labelAbove [] (text "moodle url")
-                , placeholder = Just (Input.placeholder [] (text "https://gym-haan.lms.schulon.org"))
-                , text = model.moodleUrlInput
-                , onChange = ChangeMoodleUrlInput
-                }
-            ]
+        , column [ width fill, spacing 10 ]
+            (case model.moodleSiteName of
+                Api.Success _ ->
+                    [ Input.text inputStyle
+                        { label = Input.labelAbove [] (text "username")
+                        , placeholder = Just (Input.placeholder [] (text "username"))
+                        , text = model.moodleUsernameInput
+                        , onChange = ChangeMoodleUsernameInput
+                        }
+                    , Input.currentPassword inputStyle
+                        { label = Input.labelAbove [] (text "password")
+                        , placeholder = Just (Input.placeholder [] (text "password"))
+                        , text = model.moodlePasswordInput
+                        , onChange = ChangeMoodlePasswordInput
+                        , show = False
+                        }
+                    , Input.button
+                        (inputStyle
+                            ++ (if String.isEmpty model.moodleUsernameInput || String.isEmpty model.moodlePasswordInput then
+                                    [ Background.color inputColor, Region.description "Username and password are required." ]
+
+                                else
+                                    [ Background.color blueColor, pointer ]
+                               )
+                            ++ [ Font.bold
+                               , width fill
+                               ]
+                        )
+                        { label = el [ centerX, centerY ] (text "Authenticate")
+                        , onPress =
+                            if String.isEmpty model.moodleUsernameInput || String.isEmpty model.moodlePasswordInput then
+                                Nothing
+
+                            else
+                                Just Authenticate
+                        }
+                    ]
+
+                _ ->
+                    [ Input.text inputStyle
+                        { label = Input.labelAbove [] (text "moodle url")
+                        , placeholder = Just (Input.placeholder [] (text "https://gym-haan.lms.schulon.org"))
+                        , text = model.moodleUrlInput
+                        , onChange = ChangeMoodleUrlInput
+                        }
+                    ]
+            )
+        , paragraph [ alignBottom, Font.color (rgb 0.8 0.8 0.8) ] [ text "We don't save your username or password. We just use them to get a token from your moodle site. This token is also kept safe of course." ]
         ]

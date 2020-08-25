@@ -1,4 +1,4 @@
-module Shared exposing
+port module Shared exposing
     ( Device
     , DeviceClass(..)
     , Flags
@@ -11,17 +11,26 @@ module Shared exposing
     )
 
 import Api
-import Api.Homework.User exposing (getUserFromSession)
+import Api.Homework.User exposing (getUserFromSession, logout)
 import Browser.Events
 import Browser.Navigation exposing (Key)
 import Element exposing (..)
 import Element.Background as Background
+import Element.Events as Events
 import Element.Font as Font
+import Http
 import Models exposing (User)
 import Spa.Document exposing (Document)
 import Spa.Generated.Route as Route
 import Time
 import Url exposing (Url)
+
+
+
+-- PORTS
+
+
+port deleteCookie : () -> Cmd msg
 
 
 
@@ -88,6 +97,7 @@ type Msg
     = GotUser (Api.Data User)
     | Logout
     | Resize Int Int
+    | GotLogoutData (Result Http.Error ())
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -102,14 +112,17 @@ update msg model =
                     ( { model | user = Nothing }, Cmd.none )
 
         Logout ->
-            ( { model | user = Nothing }, Cmd.none )
+            ( { model | user = Nothing }, logout { onResponse = GotLogoutData } )
 
         Resize w h ->
             ( { model | device = classifyDevice { width = w, height = h } }, Cmd.none )
 
+        GotLogoutData _ ->
+            ( model, deleteCookie () )
+
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions _ =
     Browser.Events.onResize (\w h -> Resize w h)
 
 
@@ -127,8 +140,8 @@ navBarElement label url =
     el [] (link [] { label = text label, url = url })
 
 
-navBarView : Maybe User -> Element msg
-navBarView maybeUser =
+navBarView : Maybe User -> { toMsg : Msg -> msg } -> Element msg
+navBarView maybeUser options =
     row
         [ Background.color lighterGreyColor
         , Font.color (rgb255 255 255 255)
@@ -144,13 +157,14 @@ navBarView maybeUser =
         ]
         (case maybeUser of
             Just _ ->
-                [ el [ alignLeft ] (navBarElement "hw.3nt3.xyz" "/")
+                [ el [ alignLeft ] (navBarElement "hausis.3nt3.de" "/")
                 , el [ alignRight ] (navBarElement "dashboard" "/dashboard")
                 , el [ alignRight ] (navBarElement "dashboard/courses" "/dashboard/courses")
+                , el [ alignRight, Events.onClick (options.toMsg Logout) ] (navBarElement "logout" "/")
                 ]
 
             Nothing ->
-                [ el [ alignLeft ] (navBarElement "hw.3nt3.xyz" "/")
+                [ el [ alignLeft ] (navBarElement "hausis.3nt3.de" "/")
                 , el [ alignRight ] (navBarElement "login" "/login")
                 , el [ alignRight, Font.underline ] (navBarElement "Register" "/register")
                 ]
@@ -165,7 +179,7 @@ view { page, toMsg } model =
     { title = page.title
     , body =
         [ -- body
-          navBarView model.user
+          navBarView model.user { toMsg = toMsg }
         , column [ height fill, width fill ] page.body
         ]
     }

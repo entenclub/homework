@@ -7,3 +7,6 @@ var app = Elm.Main.init({ flags: flags });
 
 // Ports go here
 // https://guide.elm-lang.org/interop/ports.html
+app.ports.deleteCookie.subscribe(() => {
+  document.cookie = "hw_session=; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+});

@@ -44,7 +44,7 @@ def login():
     db.session.commit()
 
     resp = make_response(jsonify(user.to_safe_dict()))
-    resp.set_cookie('hw_session', str(new_session.id), max_age=60*60*24*183)
+    resp.set_cookie('hw_session', str(new_session.id), max_age=60 * 60 * 24 * 183)
 
     return resp, 200
 
@@ -106,6 +106,22 @@ def register():
     print(type(new_session.id))
 
     resp = make_response(jsonify(new_user.to_safe_dict()))
-    resp.set_cookie('hw_session', str(new_session.id), max_age=60*60*24*183)
+    resp.set_cookie('hw_session', str(new_session.id), max_age=60 * 60 * 24 * 183)
 
     return resp, 200
+
+
+@user_bp.route('/user/logout', methods=['POST'])
+def logout():
+    session_cookie = request.cookies.get('hw_session')
+    if not session_cookie:
+        return jsonify(return_error("no session")), 401
+
+    try:
+        Session.query.filter_by(id=session_cookie).delete()
+
+    except Exception as e:
+        print(e)
+        return jsonify(return_error("invalid sesssion")), 401
+
+    return jsonify(to_response(None)), 200
