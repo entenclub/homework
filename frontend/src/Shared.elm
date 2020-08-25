@@ -157,16 +157,16 @@ navBarView maybeUser options =
         ]
         (case maybeUser of
             Just _ ->
-                [ el [ alignLeft ] (navBarElement "hausis.3nt3.de" "/")
+                [ el [ alignLeft ] (navBarElement "beta.hausis.3nt3.de" "/")
                 , el [ alignRight ] (navBarElement "dashboard" "/dashboard")
                 , el [ alignRight ] (navBarElement "dashboard/courses" "/dashboard/courses")
                 , el [ alignRight, Events.onClick (options.toMsg Logout) ] (navBarElement "logout" "/")
                 ]
 
             Nothing ->
-                [ el [ alignLeft ] (navBarElement "hausis.3nt3.de" "/")
+                [ el [ alignLeft ] (navBarElement "beta.hausis.3nt3.de" "/")
                 , el [ alignRight ] (navBarElement "login" "/login")
-                , el [ alignRight, Font.underline ] (navBarElement "Register" "/register")
+                , el [ alignRight, Font.underline ] (navBarElement "register" "/register")
                 ]
         )
 
