@@ -15,6 +15,7 @@ import Spa.Document exposing (Document)
 import Spa.Generated.Route as Route
 import Spa.Page as Page exposing (Page)
 import Spa.Url exposing (Url)
+import Utils.OnEnter exposing (onEnter)
 import Utils.Route
 
 
@@ -149,7 +150,7 @@ view model =
                         ]
                         (text "Login")
                     , column [ width fill ]
-                        [ Input.text inputStyle
+                        [ Input.text (inputStyle ++ [ onEnter Login ])
                             { label = Input.labelHidden "username"
                             , placeholder = Just (Input.placeholder [] (text "enter username"))
                             , onChange = UsernameInput
@@ -158,7 +159,7 @@ view model =
                         ]
                     , column [ width fill, spacing 5 ]
                         [ Input.currentPassword
-                            inputStyle
+                            (inputStyle ++ [ onEnter Login ])
                             { label = Input.labelHidden "password"
                             , placeholder = Just (Input.placeholder [] (text "enter password"))
                             , onChange = PasswordInput

@@ -26,6 +26,10 @@ class User(db.Model):
                 'moodle_token': self.moodle_token}
 
     def to_safe_dict(self):
+        if self.moodle_url is None:
+            moodle_url = ''
+        else:
+            moodle_url = self.moodle_url
         return {"id": self.id, "username": self.username, "email": self.email,
                 "courses": self.decode_courses(),
-                "privilege": self.privilege, 'moodle_url': self.moodle_url}
+                "privilege": self.privilege, 'moodle_url': moodle_url}

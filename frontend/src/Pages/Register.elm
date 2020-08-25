@@ -8,6 +8,7 @@ import Element.Background as Background
 import Element.Border as Border exposing (rounded)
 import Element.Font as Font
 import Element.Input as Input
+import Http
 import Material.Icons as Icons
 import Material.Icons.Types exposing (Coloring(..))
 import Models
@@ -16,6 +17,7 @@ import Spa.Document exposing (Document)
 import Spa.Generated.Route as Route
 import Spa.Page as Page exposing (Page)
 import Spa.Url exposing (Url)
+import Utils.OnEnter exposing (onEnter)
 import Utils.Route
 
 
@@ -40,6 +42,26 @@ type alias Errors =
     , password : Maybe String
     , email : Maybe String
     }
+
+
+areErrorsEmpty : Errors -> Bool
+areErrorsEmpty errors =
+    case errors.username of
+        Just _ ->
+            False
+
+        Nothing ->
+            case errors.password of
+                Just _ ->
+                    False
+
+                Nothing ->
+                    case errors.email of
+                        Just _ ->
+                            False
+
+                        Nothing ->
+                            True
 
 
 type alias Model =
@@ -181,20 +203,24 @@ update msg model =
         GotRegistrationData data ->
             case data of
                 Api.Success _ ->
-                    ( model, Utils.Route.navigate model.url.key Route.Dashboard )
+                    ( { model | registrationStatus = data }, Utils.Route.navigate model.url.key Route.Dashboard )
 
                 _ ->
                     ( { model | registrationStatus = data }, Cmd.none )
 
         Register ->
-            ( model
-            , Api.Homework.User.register
-                { username = model.usernameInput
-                , password = model.passwordInput
-                , email = Just model.emailInput
-                }
-                { onResponse = GotRegistrationData }
-            )
+            if areErrorsEmpty model.errors then
+                ( model
+                , Api.Homework.User.register
+                    { username = model.usernameInput
+                    , password = model.passwordInput
+                    , email = Just model.emailInput
+                    }
+                    { onResponse = GotRegistrationData }
+                )
+
+            else
+                ( model, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
@@ -250,7 +276,7 @@ view model =
                         ]
                         (text "Register")
                     , row [ spacing 10 ]
-                        [ column [ width (fillPortion 20) ]
+                        [ column [ width (fillPortion 20), onEnter Register ]
                             [ viewInputError model "email"
                             , Input.email inputStyle
                                 { label = Input.labelHidden "email"
@@ -259,7 +285,7 @@ view model =
                                 , text = model.emailInput
                                 }
                             ]
-                        , column [ width (fillPortion 18) ]
+                        , column [ width (fillPortion 18), alignBottom ]
                             [ Input.text inputStyle
                                 { label = Input.labelHidden "username"
                                 , placeholder = Just (Input.placeholder [] (text "enter username"))
@@ -268,18 +294,18 @@ view model =
                                 }
                             ]
                         , el
-                            [ width (px 55)
-                            , height (px 55)
+                            [ width (px 50)
+                            , height (px 50)
                             , Background.color (rgb 1 1 1)
                             , Border.rounded 3
-                            , height fill
                             , Border.solid
                             , Border.width 1
                             , Border.color (rgb 0.7 0.7 0.7)
+                            , alignBottom
                             ]
                             (viewUsernameTaken model)
                         ]
-                    , column [ width fill, spacing 5 ]
+                    , column [ width fill, spacing 5, onEnter Register ]
                         [ viewInputError model "password"
                         , passwordStrengthIndicator model.passwordInput
                         , Input.newPassword
@@ -291,7 +317,7 @@ view model =
                             , show = False
                             }
                         ]
-                    , Input.currentPassword inputStyle
+                    , Input.currentPassword (inputStyle ++ [ onEnter Register ])
                         { label = Input.labelHidden "validate password"
                         , placeholder = Just (Input.placeholder [] (text "repeat password"))
                         , onChange = ValidatePasswordInput
@@ -306,6 +332,7 @@ view model =
                         , centerX
                         , paddingXY 30 15
                         , Font.bold
+                        , onEnter Register
                         ]
                         { label = viewRegistrationButton model
                         , onPress = Just Register
@@ -420,6 +447,25 @@ viewUsernameTaken model =
         )
 
 
+errorToString : Http.Error -> String
+errorToString error =
+    case error of
+        Http.BadStatus status ->
+            "bad status: " ++ String.fromInt status
+
+        Http.BadBody err ->
+            "bad body: " ++ err
+
+        Http.BadUrl err ->
+            "bad url: " ++ err
+
+        Http.NetworkError ->
+            "network error"
+
+        Http.Timeout ->
+            "timeout"
+
+
 viewRegistrationButton : Model -> Element Msg
 viewRegistrationButton model =
     let
@@ -434,10 +480,12 @@ viewRegistrationButton model =
             Api.Loading ->
                 el [ centerX, centerY ] (html (Icons.hourglass_bottom size Inherit))
 
-            Api.Failure _ ->
-                el [ centerX, centerY, Font.color errorColor ]
-                    (html (Icons.close size Inherit))
+            Api.Failure err ->
+                text
+                    (errorToString err)
 
+            --el [ centerX, centerY, Font.color errorColor ]
+            --   (html (Icons.close size Inherit))
             Api.NotAsked ->
                 text "register"
         )
