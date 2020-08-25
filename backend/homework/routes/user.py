@@ -44,7 +44,7 @@ def login():
     db.session.commit()
 
     resp = make_response(jsonify(user.to_safe_dict()))
-    resp.set_cookie('hw_session', str(new_session.id))
+    resp.set_cookie('hw_session', str(new_session.id), max_age=60*60*24*183)
 
     return resp, 200
 

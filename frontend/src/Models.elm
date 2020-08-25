@@ -35,4 +35,5 @@ type alias Course =
     , subject : String
     , teacher : String
     , assignments : List Assignment
+    , fromMoodle : Bool
     }

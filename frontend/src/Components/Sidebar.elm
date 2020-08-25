@@ -50,12 +50,13 @@ viewUser maybeUser courseData =
             Element.none
 
 
-viewSidebar : { user : Maybe User, courseData : Api.Data (List Course), device : Shared.Device, back : Maybe (Element msg), active : Maybe String } -> Element msg
+viewSidebar : { user : Maybe User, courseData : Api.Data (List Course), device : Shared.Device, active : Maybe String } -> Element msg
 viewSidebar model =
     let
         links =
             [ ( "dashboard", Route.Dashboard )
             , ( "courses", Route.Dashboard__Courses )
+            , ( "moodle integration", Route.Dashboard__Moodle )
             ]
     in
     column
@@ -72,18 +73,9 @@ viewSidebar model =
         , padding 40
         , Border.rounded borderRadius
         ]
-        (case model.back of
-            Just backButton ->
-                [ viewUser model.user model.courseData
-                , el [ width fill, paddingXY 0 50 ] (viewLinks links model.active)
-                , backButton
-                ]
-
-            Nothing ->
-                [ viewUser model.user model.courseData
-                , el [ width fill, paddingXY 0 50 ] (viewLinks links model.active)
-                ]
-        )
+        [ viewUser model.user model.courseData
+        , el [ width fill, paddingXY 0 50 ] (viewLinks links model.active)
+        ]
 
 
 viewUserComponent : User -> Element msg

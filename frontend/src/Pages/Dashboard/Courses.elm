@@ -298,7 +298,6 @@ view model =
                     { user = model.user
                     , courseData = model.courseData
                     , device = model.device
-                    , back = Just backButton
                     , active = Just "courses"
                     }
 

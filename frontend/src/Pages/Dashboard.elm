@@ -350,7 +350,7 @@ view model =
                 , width fill
                 ]
                 [ -- sidebar
-                  Components.Sidebar.viewSidebar { user = model.user, courseData = model.courseData, device = model.device, back = Nothing, active = Just "dashboard" }
+                  Components.Sidebar.viewSidebar { user = model.user, courseData = model.courseData, device = model.device, active = Just "dashboard" }
 
                 -- content
                 , column
@@ -521,9 +521,6 @@ filterCoursesByWhetherAssignmentsAreDueOnDate courses date =
                     )
                     (List.map (\course -> ( course.id, course.assignments )) courses)
                 )
-
-        irgendwas =
-            Debug.log "valid courses" (List.filter (\course -> List.member course.id validCourses) courses)
     in
     courses
 
@@ -619,7 +616,7 @@ inputColor =
 
 inputTextColor : Color
 inputTextColor =
-    rgb 0.8 0.8 0.8
+    rgb 1 1 1
 
 
 inputStyle : List (Attribute Msg)
@@ -835,8 +832,24 @@ viewSearchDropdownElement course isLast =
             [ Background.color (darken inputColor -0.05)
             ]
         , Events.onClick (CAFSelectCourse course)
+        , spacing 10
         ]
-        [ el [ Font.bold, Font.color inputTextColor ] (text (course.teacher ++ ": " ++ course.subject))
+        [ if course.fromMoodle then
+            el [ Background.color (rgb255 249 128 18), Font.bold, Font.color (rgb 1 1 1), Border.rounded 5, padding 5 ]
+                (text "moodle")
+
+          else
+            none
+        , el
+            [ Font.bold, Font.color inputTextColor ]
+            (text
+                (if course.fromMoodle then
+                    course.subject
+
+                 else
+                    course.teacher ++ ": " ++ course.subject
+                )
+            )
         ]
 
 

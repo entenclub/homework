@@ -14,6 +14,7 @@ type alias MinimalCourse =
     { id : Int
     , subject : String
     , teacher : String
+    , fromMoodle : Bool
     }
 
 
@@ -44,19 +45,31 @@ assignmentDecoder =
 
 courseDecoder : Json.Decoder Course
 courseDecoder =
-    Json.map4 Course
+    Json.map5 Course
         (Json.field "id" Json.int)
         (Json.field "subject" Json.string)
         (Json.field "teacher" Json.string)
         (Json.field "assignments" (Json.list assignmentDecoder))
+        (Json.field "fromMoodle" Json.bool)
 
 
 minimalCourseDecoder : Json.Decoder MinimalCourse
 minimalCourseDecoder =
-    Json.map3 MinimalCourse
+    Json.map4 MinimalCourse
         (Json.field "id" Json.int)
         (Json.field "subject" Json.string)
         (Json.field "teacher" Json.string)
+        (Json.field "from_moodle" (Json.nullable Json.bool)
+            |> Json.andThen
+                (\maybeBool ->
+                    case maybeBool of
+                        Just bool ->
+                            Json.succeed bool
+
+                        Nothing ->
+                            Json.succeed False
+                )
+        )
 
 
 getActiveCourses : { onResponse : Api.Data (List Course) -> msg } -> Cmd msg
