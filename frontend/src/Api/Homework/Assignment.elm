@@ -27,7 +27,7 @@ createAssignment : { title : String, courseId : Int, dueDate : Date.Date } -> { 
 createAssignment assignment options =
     Http.riskyRequest
         { method = "POST"
-        , url = "http://localhost:5000/assignment"
+        , url = "https://api.hausis.3nt3.de/assignment"
         , headers = []
         , body = Http.jsonBody (assignmentEncoder assignment)
         , expect = Api.expectJson options.onResponse (Json.at [ "content" ] assignmentDecoder)

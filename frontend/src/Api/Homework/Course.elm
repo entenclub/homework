@@ -76,7 +76,7 @@ getActiveCourses : { onResponse : Api.Data (List Course) -> msg } -> Cmd msg
 getActiveCourses options =
     Http.riskyRequest
         { body = Http.emptyBody
-        , url = "http://localhost:5000/courses/active"
+        , url = "https://api.hausis.3nt3.de/courses/active"
         , method = "GET"
         , expect = Api.expectJson options.onResponse (Json.at [ "content" ] (Json.list courseDecoder))
         , headers = []
@@ -89,7 +89,7 @@ getMyCourses : { onResponse : Api.Data (List Course) -> msg } -> Cmd msg
 getMyCourses options =
     Http.riskyRequest
         { body = Http.emptyBody
-        , url = "http://localhost:5000/courses"
+        , url = "https://api.hausis.3nt3.de/courses"
         , method = "GET"
         , expect = Api.expectJson options.onResponse (Json.at [ "content" ] (Json.list courseDecoder))
         , headers = []
@@ -102,7 +102,7 @@ searchCourses : String -> { onResponse : Api.Data (List MinimalCourse) -> msg } 
 searchCourses searchterm options =
     Http.riskyRequest
         { body = Http.emptyBody
-        , url = "http://localhost:5000/courses/search/" ++ searchterm
+        , url = "https://api.hausis.3nt3.de/courses/search/" ++ searchterm
         , method = "GET"
         , expect = Api.expectJson options.onResponse (Json.at [ "content" ] (Json.list minimalCourseDecoder))
         , headers = []
@@ -121,7 +121,7 @@ createCourse subject teacher options =
                     , ( "teacher", Encode.string teacher )
                     ]
                 )
-        , url = "http://localhost:5000/courses"
+        , url = "https://api.hausis.3nt3.de/courses"
         , method = "POST"
         , expect = Api.expectJson options.onResponse (Json.at [ "content" ] courseDecoder)
         , headers = []
@@ -134,7 +134,7 @@ enrollInCourse : Int -> { onResponse : Api.Data User -> msg } -> Cmd msg
 enrollInCourse id options =
     Http.riskyRequest
         { body = Http.emptyBody
-        , url = "http://localhost:5000/courses/" ++ String.fromInt id ++ "/enroll"
+        , url = "https://api.hausis.3nt3.de/courses/" ++ String.fromInt id ++ "/enroll"
         , expect = Api.expectJson options.onResponse (Json.at [ "content" ] userDecoder)
         , method = "POST"
         , headers = []

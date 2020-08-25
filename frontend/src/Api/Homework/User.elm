@@ -56,7 +56,7 @@ getUserById : Int -> { onResponse : Api.Data User -> msg } -> Cmd msg
 getUserById id options =
     Http.riskyRequest
         { body = Http.emptyBody
-        , url = "http://localhost:5000/user/" ++ String.fromInt id
+        , url = "https://api.hausis.3nt3.de/user/" ++ String.fromInt id
         , method = "GET"
         , expect = Api.expectJson options.onResponse (Json.at [ "content" ] userDecoder)
         , headers = []
@@ -68,7 +68,7 @@ getUserById id options =
 getUserFromSession : { onResponse : Api.Data User -> msg } -> Cmd msg
 getUserFromSession options =
     Http.riskyRequest
-        { url = "http://localhost:5000/user"
+        { url = "https://api.hausis.3nt3.de/user"
         , method = "GET"
         , body = Http.emptyBody
         , expect = Api.expectJson options.onResponse (Json.at [ "content" ] userDecoder)
@@ -81,7 +81,7 @@ getUserFromSession options =
 register : Credentials -> { onResponse : Api.Data User -> msg } -> Cmd msg
 register credentials options =
     Http.riskyRequest
-        { url = "http://localhost:5000/user/register"
+        { url = "https://api.hausis.3nt3.de/user/register"
         , body = Http.jsonBody (credentialsEncoder credentials)
         , headers = []
         , method = "POST"
@@ -94,7 +94,7 @@ register credentials options =
 login : Credentials -> { onResponse : Api.Data User -> msg } -> Cmd msg
 login credentials options =
     Http.riskyRequest
-        { url = "http://localhost:5000/user/login"
+        { url = "https://api.hausis.3nt3.de/user/login"
         , body = Http.jsonBody (credentialsEncoder credentials)
         , headers = []
         , method = "POST"
@@ -107,7 +107,7 @@ login credentials options =
 logout : { onResponse : Result Http.Error () -> msg } -> Cmd msg
 logout options =
     Http.riskyRequest
-        { url = "http://localhost:5000/user/logout"
+        { url = "https://api.hausis.3nt3.de/user/logout"
         , body = Http.emptyBody
         , headers = []
         , method = "POST"
