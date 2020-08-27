@@ -21,9 +21,9 @@ class User(db.Model):
 
     def to_dict(self):
         return {"id": self.id, "username": self.username, "email": self.email,
-                "courses": self.decode_courses(), "password_hash": self.password_hash,
-                "privilege": self.privilege, 'moodle_url': self.moodle_url,
-                'moodle_token': self.moodle_token}
+                "courses": self.decode_courses(), "passwordHash": self.password_hash,
+                "privilege": self.privilege, 'moodleUrl': self.moodle_url,
+                'moodleToken': self.moodle_token}
 
     def to_safe_dict(self):
         if self.moodle_url is None:
@@ -32,4 +32,4 @@ class User(db.Model):
             moodle_url = self.moodle_url
         return {"id": self.id, "username": self.username, "email": self.email,
                 "courses": self.decode_courses(),
-                "privilege": self.privilege, 'moodle_url': moodle_url}
+                "privilege": self.privilege, 'moodleUrl': moodle_url}

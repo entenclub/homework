@@ -59,7 +59,7 @@ def authenticate():
     if user is None:
         return jsonify(return_error('invalid session')), 401
 
-    base_url, username, password = request.json.get('baseUrl'), request.json.get(
+    base_url, username, password = request.json.get('url'), request.json.get(
         'username'), request.json.get('password')
 
     if username is None or password is None or base_url is None:
