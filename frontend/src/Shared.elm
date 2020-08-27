@@ -16,12 +16,14 @@ import Browser.Events
 import Browser.Navigation exposing (Key)
 import Element exposing (..)
 import Element.Background as Background
+import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
 import Http
 import Models exposing (User)
 import Spa.Document exposing (Document)
 import Spa.Generated.Route as Route
+import Styling.Colors exposing (redColor)
 import Time
 import Url exposing (Url)
 
@@ -135,9 +137,23 @@ lighterGreyColor =
     rgb255 29 32 37
 
 
-navBarElement : String -> String -> Element msg
+navBarElement : Element msg -> String -> Element msg
 navBarElement label url =
-    el [] (link [] { label = text label, url = url })
+    el [] (link [] { label = label, url = url })
+
+
+viewHomeButton =
+    row [ spacing 7 ]
+        [ text "beta.hausis.3nt3.de"
+        , el
+            [ padding 3
+            , Background.color redColor
+            , Font.color
+                (rgb 1 1 1)
+            , Border.rounded 5
+            ]
+            (text "v0.2")
+        ]
 
 
 navBarView : Maybe User -> { toMsg : Msg -> msg } -> Element msg
@@ -157,16 +173,24 @@ navBarView maybeUser options =
         ]
         (case maybeUser of
             Just _ ->
-                [ el [ alignLeft ] (navBarElement "beta.hausis.3nt3.de" "/")
-                , el [ alignRight ] (navBarElement "dashboard" "/dashboard")
-                , el [ alignRight ] (navBarElement "dashboard/courses" "/dashboard/courses")
-                , el [ alignRight, Events.onClick (options.toMsg Logout) ] (navBarElement "logout" "/")
+                [ el [ alignLeft ]
+                    (navBarElement
+                        viewHomeButton
+                        "/"
+                    )
+                , el [ alignRight ] (navBarElement (text "dashboard") "/dashboard")
+                , el [ alignRight ] (navBarElement (text "dashboard/courses") "/dashboard/courses")
+                , el [ alignRight, Events.onClick (options.toMsg Logout) ] (navBarElement (text "logout") "/")
                 ]
 
             Nothing ->
-                [ el [ alignLeft ] (navBarElement "beta.hausis.3nt3.de" "/")
-                , el [ alignRight ] (navBarElement "login" "/login")
-                , el [ alignRight, Font.underline ] (navBarElement "register" "/register")
+                [ el [ alignLeft ]
+                    (navBarElement
+                        viewHomeButton
+                        "/"
+                    )
+                , el [ alignRight ] (navBarElement (text "login") "/login")
+                , el [ alignRight, Font.underline ] (navBarElement (text "register") "/register")
                 ]
         )
 

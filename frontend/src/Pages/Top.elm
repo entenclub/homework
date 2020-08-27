@@ -7,6 +7,7 @@ import Element.Font as Font
 import Spa.Document exposing (Document)
 import Spa.Page as Page exposing (Page)
 import Spa.Url exposing (Url)
+import Styling.Colors exposing (redColor)
 
 
 type alias Params =
@@ -58,19 +59,17 @@ view { params } =
                 ]
                 (column [ centerX, centerY, spacing 10 ]
                     [ el [ centerX, Font.size 80 ] (text "Homework Organizer")
-                    , el [ centerX, Font.size 20 ]
-                        (link
-                            [ padding 15
-                            , Background.color primaryColor
-                            , Border.rounded 7
-                            , Font.color (rgb255 255 255 255)
-                            , Font.family
-                                [ Font.typeface "Roboto"
-                                , Font.sansSerif
-                                ]
-                            ]
-                            { url = "/register", label = text "Register now" }
-                        )
+                    , el
+                        [ centerX
+                        , Font.size 30
+                        , Font.family [ Font.typeface "Source Sans Pro" ]
+                        , Font.bold
+                        , Background.color redColor
+                        , Font.color (rgb 1 1 1)
+                        , padding 5
+                        , Border.rounded 5
+                        ]
+                        (text "Beta v0.2")
                     ]
                 )
 
@@ -90,7 +89,7 @@ view { params } =
                     , el
                         []
                         (paragraph [ Font.size 24 ]
-                            [ text "Adipisicing ut culpa in ex Lorem aliqua aliqua aute qui. Cupidatat proident mollit id ad sunt veniam veniam qui sit eiusmod proident. Officia do adipisicing magna laborum excepteur.Qui Lorem aliqua Lorem sint fugiat pariatur nostrud. Culpa deserunt minim laboris aliquip nisi cillum et fugiat ea id adipisicing in. Veniam esse irure cillum incididunt. Cillum consequat mollit aute laboris adipisicing laboris id sint nisi."
+                            [ text "This is a tool created to help you organize homework assignments collaboratively with your classmates."
                             ]
                         )
                     ]
