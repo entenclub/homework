@@ -591,7 +591,7 @@ viewAssignmentCourseGroup course color date =
                         course.teacher ++ ": " ++ course.subject
                     )
                 )
-            , Keyed.column [ spacing 5 ] (List.map (assignmentToKeyValue color) assignments)
+            , Keyed.column [ spacing 5, width fill ] (List.map (assignmentToKeyValue color) assignments)
             ]
 
     else
@@ -609,8 +609,9 @@ viewAssignment assignment color =
         [ Background.color (darken color 0.1)
         , padding 10
         , Border.rounded 10
+        , width fill
         ]
-        [ el [] (text assignment.title) ]
+        [ el [] (text assignment.title), el [ alignRight, Font.italic ] (text assignment.creator.username) ]
 
 
 
