@@ -164,7 +164,12 @@ update msg model =
 
         CAFSelectCourse course ->
             ( { model
-                | searchCoursesText = course.teacher ++ ": " ++ course.subject
+                | searchCoursesText =
+                    if course.fromMoodle then
+                        course.name
+
+                    else
+                        course.teacher ++ ": " ++ course.subject
                 , searchCoursesData = NotAsked
                 , selectedCourse = Just course.id
                 , errors = List.filter (\error -> error /= "no course selected") model.errors
@@ -369,16 +374,18 @@ view model =
                     [ viewOustandingAssignments model
                     , row [ width fill, height shrink, spacing 30 ]
                         [ viewCreateAssignmentForm model
-                        , el
-                            [ width (fillPortion 1)
-                            , Background.color lighterGreyColor
-                            , height fill
-                            , Border.rounded borderRadius
-                            ]
-                            (el
-                                [ centerX, centerY, Font.italic ]
-                                (text "coming soon...")
-                            )
+                        , case model.device.class of
+                            Shared.Desktop ->
+                                el
+                                    [ width (fillPortion 1)
+                                    , Background.color lighterGreyColor
+                                    , height fill
+                                    , Border.rounded borderRadius
+                                    ]
+                                    (el [ centerX, centerY, Font.italic ] (text "coming soon..."))
+
+                            _ ->
+                                none
                         ]
                     ]
                 ]
@@ -455,7 +462,13 @@ viewOustandingAssignments model =
         , padding 30
         , Border.rounded borderRadius
         ]
-        [ row
+        [ (case model.device.class of
+            Shared.Desktop ->
+                row
+
+            _ ->
+                column
+          )
             [ width fill
             , height (shrink |> minimum 200)
             , spacing 30
@@ -583,13 +596,15 @@ viewAssignmentCourseGroup course color date =
             , width fill
             ]
             [ el [ Font.bold ]
-                (text
-                    (if course.fromMoodle then
-                        course.name
+                (paragraph []
+                    [ text
+                        (if course.fromMoodle then
+                            course.name
 
-                     else
-                        course.teacher ++ ": " ++ course.subject
-                    )
+                         else
+                            course.teacher ++ ": " ++ course.subject
+                        )
+                    ]
                 )
             , Keyed.column [ spacing 5, width fill ] (List.map (assignmentToKeyValue color) assignments)
             ]
@@ -611,7 +626,7 @@ viewAssignment assignment color =
         , Border.rounded 10
         , width fill
         ]
-        [ el [] (text assignment.title), el [ alignRight, Font.italic ] (text assignment.creator.username) ]
+        [ el [] (paragraph [] [ text assignment.title ]), el [ alignRight, Font.italic ] (text assignment.creator.username) ]
 
 
 
@@ -680,7 +695,14 @@ viewCreateAssignmentForm model =
         [ el [ Font.bold, Font.size 30, Font.color inputTextColor ]
             (text "Create Assignment")
         , viewCreateAssignmentFormErrors model.errors
-        , row [ width fill, spacing 10 ]
+        , (case model.device.class of
+            Shared.Phone ->
+                column
+
+            _ ->
+                row
+          )
+            [ width fill, spacing 10 ]
             [ column [ width fill ]
                 [ Input.text
                     [ Background.color inputColor
@@ -792,7 +814,7 @@ viewSearchDropdown data =
         Success courses ->
             let
                 shortedCourses =
-                    Array.toList (Array.slice 0 5 (Array.fromList courses))
+                    Array.toList (Array.slice 0 10 (Array.fromList courses))
 
                 maybeLast =
                     List.head (List.reverse shortedCourses)
@@ -802,9 +824,7 @@ viewSearchDropdown data =
                     Keyed.column [ width fill, height fill, scrollbarY ]
                         (List.map
                             (courseToKeyValue last)
-                            (Array.toList
-                                (Array.slice 0 5 (Array.fromList courses))
-                            )
+                            shortedCourses
                         )
 
                 Nothing ->
@@ -830,7 +850,7 @@ viewSearchDropdownElement course isLast =
     row
         [ Background.color inputColor
         , width fill
-        , height (px 50)
+        , height (shrink |> minimum 50)
         , padding 15
         , if isLast then
             Border.roundEach { topLeft = 0, bottomLeft = 10, bottomRight = 10, topRight = 0 }
@@ -850,14 +870,16 @@ viewSearchDropdownElement course isLast =
           else
             none
         , el
-            [ Font.bold, Font.color inputTextColor ]
-            (text
-                (if course.fromMoodle then
-                    course.name
+            [ Font.bold, Font.color inputTextColor, width fill ]
+            (paragraph [ width fill ]
+                [ text
+                    (if course.fromMoodle then
+                        course.name
 
-                 else
-                    course.teacher ++ ": " ++ course.subject
-                )
+                     else
+                        course.teacher ++ ": " ++ course.subject
+                    )
+                ]
             )
         ]
 

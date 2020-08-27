@@ -9018,7 +9018,7 @@ var $author$project$Pages$Dashboard$update = F2(
 								},
 								model.f),
 							ba: $author$project$Api$NotAsked,
-							bb: course.i3 + (': ' + course.iZ),
+							bb: course.hs ? course.h$ : (course.i3 + (': ' + course.iZ)),
 							aS: $elm$core$Maybe$Just(course.hC)
 						}),
 					$elm$core$Platform$Cmd$none);
@@ -14687,6 +14687,8 @@ var $mdgriffith$elm_ui$Element$fill = $mdgriffith$elm_ui$Internal$Model$Fill(1);
 var $mdgriffith$elm_ui$Element$fillPortion = $mdgriffith$elm_ui$Internal$Model$Fill;
 var $mdgriffith$elm_ui$Element$Font$italic = $mdgriffith$elm_ui$Internal$Model$htmlClass($mdgriffith$elm_ui$Internal$Style$classes.hP);
 var $author$project$Styling$Colors$lighterGreyColor = A3($mdgriffith$elm_ui$Element$rgb255, 29, 32, 37);
+var $mdgriffith$elm_ui$Internal$Model$Empty = {$: 3};
+var $mdgriffith$elm_ui$Element$none = $mdgriffith$elm_ui$Internal$Model$Empty;
 var $mdgriffith$elm_ui$Internal$Model$PaddingStyle = F5(
 	function (a, b, c, d, e) {
 		return {$: 7, a: a, b: b, c: c, d: d, e: e};
@@ -15024,7 +15026,6 @@ var $mdgriffith$elm_ui$Internal$Model$TransformComponent = F2(
 	function (a, b) {
 		return {$: 10, a: a, b: b};
 	});
-var $mdgriffith$elm_ui$Internal$Model$Empty = {$: 3};
 var $elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
 var $mdgriffith$elm_ui$Internal$Model$map = F2(
 	function (fn, el) {
@@ -16124,7 +16125,25 @@ var $mdgriffith$elm_ui$Element$Keyed$column = F2(
 var $author$project$Pages$Dashboard$CAFSelectCourse = function (a) {
 	return {$: 4, a: a};
 };
-var $mdgriffith$elm_ui$Element$none = $mdgriffith$elm_ui$Internal$Model$Empty;
+var $mdgriffith$elm_ui$Internal$Model$Paragraph = {$: 9};
+var $mdgriffith$elm_ui$Element$paragraph = F2(
+	function (attrs, children) {
+		return A4(
+			$mdgriffith$elm_ui$Internal$Model$element,
+			$mdgriffith$elm_ui$Internal$Model$asParagraph,
+			$mdgriffith$elm_ui$Internal$Model$div,
+			A2(
+				$elm$core$List$cons,
+				$mdgriffith$elm_ui$Internal$Model$Describe($mdgriffith$elm_ui$Internal$Model$Paragraph),
+				A2(
+					$elm$core$List$cons,
+					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
+					A2(
+						$elm$core$List$cons,
+						$mdgriffith$elm_ui$Element$spacing(5),
+						attrs))),
+			$mdgriffith$elm_ui$Internal$Model$Unkeyed(children));
+	});
 var $author$project$Pages$Dashboard$viewSearchDropdownElement = F2(
 	function (course, isLast) {
 		return A2(
@@ -16134,7 +16153,7 @@ var $author$project$Pages$Dashboard$viewSearchDropdownElement = F2(
 					$mdgriffith$elm_ui$Element$Background$color($author$project$Pages$Dashboard$inputColor),
 					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
 					$mdgriffith$elm_ui$Element$height(
-					$mdgriffith$elm_ui$Element$px(50)),
+					A2($mdgriffith$elm_ui$Element$minimum, 50, $mdgriffith$elm_ui$Element$shrink)),
 					$mdgriffith$elm_ui$Element$padding(15),
 					isLast ? $mdgriffith$elm_ui$Element$Border$roundEach(
 					{cu: 10, cv: 10, c6: 0, c7: 0}) : $mdgriffith$elm_ui$Element$Border$rounded(0),
@@ -16168,10 +16187,20 @@ var $author$project$Pages$Dashboard$viewSearchDropdownElement = F2(
 					_List_fromArray(
 						[
 							$mdgriffith$elm_ui$Element$Font$bold,
-							$mdgriffith$elm_ui$Element$Font$color($author$project$Pages$Dashboard$inputTextColor)
+							$mdgriffith$elm_ui$Element$Font$color($author$project$Pages$Dashboard$inputTextColor),
+							$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill)
 						]),
-					$mdgriffith$elm_ui$Element$text(
-						course.hs ? course.h$ : (course.i3 + (': ' + course.iZ))))
+					A2(
+						$mdgriffith$elm_ui$Element$paragraph,
+						_List_fromArray(
+							[
+								$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill)
+							]),
+						_List_fromArray(
+							[
+								$mdgriffith$elm_ui$Element$text(
+								course.hs ? course.h$ : (course.i3 + (': ' + course.iZ)))
+							])))
 				]));
 	});
 var $author$project$Pages$Dashboard$courseToKeyValue = F2(
@@ -16432,7 +16461,7 @@ var $author$project$Pages$Dashboard$viewSearchDropdown = function (data) {
 				A3(
 					$elm$core$Array$slice,
 					0,
-					5,
+					10,
 					$elm$core$Array$fromList(courses)));
 			var maybeLast = $elm$core$List$head(
 				$elm$core$List$reverse(shortedCourses));
@@ -16449,12 +16478,7 @@ var $author$project$Pages$Dashboard$viewSearchDropdown = function (data) {
 					A2(
 						$elm$core$List$map,
 						$author$project$Pages$Dashboard$courseToKeyValue(last),
-						$elm$core$Array$toList(
-							A3(
-								$elm$core$Array$slice,
-								0,
-								5,
-								$elm$core$Array$fromList(courses)))));
+						shortedCourses));
 			} else {
 				return $mdgriffith$elm_ui$Element$none;
 			}
@@ -16525,7 +16549,14 @@ var $author$project$Pages$Dashboard$viewCreateAssignmentForm = function (model) 
 				$mdgriffith$elm_ui$Element$text('Create Assignment')),
 				$author$project$Pages$Dashboard$viewCreateAssignmentFormErrors(model.f),
 				A2(
-				$mdgriffith$elm_ui$Element$row,
+				function () {
+					var _v0 = model.hc.gW;
+					if (!_v0) {
+						return $mdgriffith$elm_ui$Element$column;
+					} else {
+						return $mdgriffith$elm_ui$Element$row;
+					}
+				}(),
 				_List_fromArray(
 					[
 						$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
@@ -16626,8 +16657,8 @@ var $author$project$Pages$Dashboard$viewCreateAssignmentForm = function (model) 
 									]),
 								$mdgriffith$elm_ui$Element$text(
 									function () {
-										var _v0 = model.aT;
-										if (!_v0.$) {
+										var _v1 = model.aT;
+										if (!_v1.$) {
 											return 'due date (required) -- selected date ' + ($elm$core$String$fromInt(model.aY) + ' from now.');
 										} else {
 											return 'due date (required)';
@@ -16904,7 +16935,13 @@ var $author$project$Pages$Dashboard$viewAssignment = F2(
 					A2(
 					$mdgriffith$elm_ui$Element$el,
 					_List_Nil,
-					$mdgriffith$elm_ui$Element$text(assignment.jj)),
+					A2(
+						$mdgriffith$elm_ui$Element$paragraph,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$mdgriffith$elm_ui$Element$text(assignment.jj)
+							]))),
 					A2(
 					$mdgriffith$elm_ui$Element$el,
 					_List_fromArray(
@@ -16943,8 +16980,14 @@ var $author$project$Pages$Dashboard$viewAssignmentCourseGroup = F3(
 					$mdgriffith$elm_ui$Element$el,
 					_List_fromArray(
 						[$mdgriffith$elm_ui$Element$Font$bold]),
-					$mdgriffith$elm_ui$Element$text(
-						course.hs ? course.h$ : (course.i3 + (': ' + course.iZ)))),
+					A2(
+						$mdgriffith$elm_ui$Element$paragraph,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$mdgriffith$elm_ui$Element$text(
+								course.hs ? course.h$ : (course.i3 + (': ' + course.iZ)))
+							]))),
 					A2(
 					$mdgriffith$elm_ui$Element$Keyed$column,
 					_List_fromArray(
@@ -17064,7 +17107,14 @@ var $author$project$Pages$Dashboard$viewOustandingAssignments = function (model)
 		_List_fromArray(
 			[
 				A2(
-				$mdgriffith$elm_ui$Element$row,
+				function () {
+					var _v0 = model.hc.gW;
+					if (_v0 === 2) {
+						return $mdgriffith$elm_ui$Element$row;
+					} else {
+						return $mdgriffith$elm_ui$Element$column;
+					}
+				}(),
 				_List_fromArray(
 					[
 						$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
@@ -17089,9 +17139,9 @@ var $author$project$Pages$Dashboard$viewOustandingAssignments = function (model)
 						A3($justinmimbs$date$Date$add, 3, 2, model.D))
 					])),
 				function () {
-				var _v0 = model.g2;
-				if (_v0.$ === 3) {
-					var courses = _v0.a;
+				var _v1 = model.g2;
+				if (_v1.$ === 3) {
+					var courses = _v1.a;
 					return (A2($author$project$Pages$Dashboard$otherOutstandingAssignments, model.D, courses) > 0) ? A2(
 						$mdgriffith$elm_ui$Element$el,
 						_List_fromArray(
@@ -17615,21 +17665,28 @@ var $author$project$Pages$Dashboard$view = function (model) {
 									_List_fromArray(
 										[
 											$author$project$Pages$Dashboard$viewCreateAssignmentForm(model),
-											A2(
-											$mdgriffith$elm_ui$Element$el,
-											_List_fromArray(
-												[
-													$mdgriffith$elm_ui$Element$width(
-													$mdgriffith$elm_ui$Element$fillPortion(1)),
-													$mdgriffith$elm_ui$Element$Background$color($author$project$Styling$Colors$lighterGreyColor),
-													$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
-													$mdgriffith$elm_ui$Element$Border$rounded($author$project$Pages$Dashboard$borderRadius)
-												]),
-											A2(
-												$mdgriffith$elm_ui$Element$el,
-												_List_fromArray(
-													[$mdgriffith$elm_ui$Element$centerX, $mdgriffith$elm_ui$Element$centerY, $mdgriffith$elm_ui$Element$Font$italic]),
-												$mdgriffith$elm_ui$Element$text('coming soon...')))
+											function () {
+											var _v2 = model.hc.gW;
+											if (_v2 === 2) {
+												return A2(
+													$mdgriffith$elm_ui$Element$el,
+													_List_fromArray(
+														[
+															$mdgriffith$elm_ui$Element$width(
+															$mdgriffith$elm_ui$Element$fillPortion(1)),
+															$mdgriffith$elm_ui$Element$Background$color($author$project$Styling$Colors$lighterGreyColor),
+															$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
+															$mdgriffith$elm_ui$Element$Border$rounded($author$project$Pages$Dashboard$borderRadius)
+														]),
+													A2(
+														$mdgriffith$elm_ui$Element$el,
+														_List_fromArray(
+															[$mdgriffith$elm_ui$Element$centerX, $mdgriffith$elm_ui$Element$centerY, $mdgriffith$elm_ui$Element$Font$italic]),
+														$mdgriffith$elm_ui$Element$text('coming soon...')));
+											} else {
+												return $mdgriffith$elm_ui$Element$none;
+											}
+										}()
 										]))
 								]))
 						])))
@@ -18554,25 +18611,6 @@ var $author$project$Pages$Dashboard$Moodle$inputStyle = _List_fromArray(
 		$mdgriffith$elm_ui$Element$height(
 		$mdgriffith$elm_ui$Element$px(50))
 	]);
-var $mdgriffith$elm_ui$Internal$Model$Paragraph = {$: 9};
-var $mdgriffith$elm_ui$Element$paragraph = F2(
-	function (attrs, children) {
-		return A4(
-			$mdgriffith$elm_ui$Internal$Model$element,
-			$mdgriffith$elm_ui$Internal$Model$asParagraph,
-			$mdgriffith$elm_ui$Internal$Model$div,
-			A2(
-				$elm$core$List$cons,
-				$mdgriffith$elm_ui$Internal$Model$Describe($mdgriffith$elm_ui$Internal$Model$Paragraph),
-				A2(
-					$elm$core$List$cons,
-					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
-					A2(
-						$elm$core$List$cons,
-						$mdgriffith$elm_ui$Element$spacing(5),
-						attrs))),
-			$mdgriffith$elm_ui$Internal$Model$Unkeyed(children));
-	});
 var $author$project$Pages$Dashboard$Moodle$viewCredentialsForm = function (model) {
 	return A2(
 		$mdgriffith$elm_ui$Element$column,
@@ -21118,10 +21156,17 @@ var $author$project$Shared$viewHomeButton = A2(
 				]),
 			$mdgriffith$elm_ui$Element$text('v0.2'))
 		]));
-var $author$project$Shared$navBarView = F2(
-	function (maybeUser, options) {
+var $author$project$Shared$navBarView = F3(
+	function (device, maybeUser, options) {
 		return A2(
-			$mdgriffith$elm_ui$Element$row,
+			function () {
+				var _v0 = device.gW;
+				if (!_v0) {
+					return $mdgriffith$elm_ui$Element$column;
+				} else {
+					return $mdgriffith$elm_ui$Element$row;
+				}
+			}(),
 			_List_fromArray(
 				[
 					$mdgriffith$elm_ui$Element$Background$color($author$project$Shared$lighterGreyColor),
@@ -21137,7 +21182,9 @@ var $author$project$Shared$navBarView = F2(
 					$mdgriffith$elm_ui$Element$Font$semiBold,
 					A2($mdgriffith$elm_ui$Element$paddingXY, 60, 30),
 					$mdgriffith$elm_ui$Element$spacing(40),
-					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill)
+					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
+					$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$shrink),
+					$mdgriffith$elm_ui$Element$Font$center
 				]),
 			function () {
 				if (!maybeUser.$) {
@@ -21146,12 +21193,32 @@ var $author$project$Shared$navBarView = F2(
 							A2(
 							$mdgriffith$elm_ui$Element$el,
 							_List_fromArray(
-								[$mdgriffith$elm_ui$Element$alignLeft]),
+								[
+									function () {
+									var _v2 = device.gW;
+									if (!_v2) {
+										return $mdgriffith$elm_ui$Element$alignBottom;
+									} else {
+										return $mdgriffith$elm_ui$Element$alignRight;
+									}
+								}(),
+									$mdgriffith$elm_ui$Element$paddingEach(
+									{gP: 20, hS: 0, iz: 0, jr: 0})
+								]),
 							A2($author$project$Shared$navBarElement, $author$project$Shared$viewHomeButton, '/')),
 							A2(
 							$mdgriffith$elm_ui$Element$el,
 							_List_fromArray(
-								[$mdgriffith$elm_ui$Element$alignRight]),
+								[
+									function () {
+									var _v3 = device.gW;
+									if (!_v3) {
+										return $mdgriffith$elm_ui$Element$alignBottom;
+									} else {
+										return $mdgriffith$elm_ui$Element$alignRight;
+									}
+								}()
+								]),
 							A2(
 								$author$project$Shared$navBarElement,
 								$mdgriffith$elm_ui$Element$text('dashboard'),
@@ -21159,7 +21226,16 @@ var $author$project$Shared$navBarView = F2(
 							A2(
 							$mdgriffith$elm_ui$Element$el,
 							_List_fromArray(
-								[$mdgriffith$elm_ui$Element$alignRight]),
+								[
+									function () {
+									var _v4 = device.gW;
+									if (!_v4) {
+										return $mdgriffith$elm_ui$Element$alignBottom;
+									} else {
+										return $mdgriffith$elm_ui$Element$alignRight;
+									}
+								}()
+								]),
 							A2(
 								$author$project$Shared$navBarElement,
 								$mdgriffith$elm_ui$Element$text('dashboard/courses'),
@@ -21168,7 +21244,14 @@ var $author$project$Shared$navBarView = F2(
 							$mdgriffith$elm_ui$Element$el,
 							_List_fromArray(
 								[
-									$mdgriffith$elm_ui$Element$alignRight,
+									function () {
+									var _v5 = device.gW;
+									if (!_v5) {
+										return $mdgriffith$elm_ui$Element$alignBottom;
+									} else {
+										return $mdgriffith$elm_ui$Element$alignRight;
+									}
+								}(),
 									$mdgriffith$elm_ui$Element$Events$onClick(
 									options.jn($author$project$Shared$Logout))
 								]),
@@ -21183,12 +21266,30 @@ var $author$project$Shared$navBarView = F2(
 							A2(
 							$mdgriffith$elm_ui$Element$el,
 							_List_fromArray(
-								[$mdgriffith$elm_ui$Element$alignLeft]),
+								[
+									function () {
+									var _v6 = device.gW;
+									if (!_v6) {
+										return $mdgriffith$elm_ui$Element$alignTop;
+									} else {
+										return $mdgriffith$elm_ui$Element$alignLeft;
+									}
+								}()
+								]),
 							A2($author$project$Shared$navBarElement, $author$project$Shared$viewHomeButton, '/')),
 							A2(
 							$mdgriffith$elm_ui$Element$el,
 							_List_fromArray(
-								[$mdgriffith$elm_ui$Element$alignRight]),
+								[
+									function () {
+									var _v7 = device.gW;
+									if (!_v7) {
+										return $mdgriffith$elm_ui$Element$alignBottom;
+									} else {
+										return $mdgriffith$elm_ui$Element$alignLeft;
+									}
+								}()
+								]),
 							A2(
 								$author$project$Shared$navBarElement,
 								$mdgriffith$elm_ui$Element$text('login'),
@@ -21196,7 +21297,17 @@ var $author$project$Shared$navBarView = F2(
 							A2(
 							$mdgriffith$elm_ui$Element$el,
 							_List_fromArray(
-								[$mdgriffith$elm_ui$Element$alignRight, $mdgriffith$elm_ui$Element$Font$underline]),
+								[
+									function () {
+									var _v8 = device.gW;
+									if (!_v8) {
+										return $mdgriffith$elm_ui$Element$alignBottom;
+									} else {
+										return $mdgriffith$elm_ui$Element$alignLeft;
+									}
+								}(),
+									$mdgriffith$elm_ui$Element$Font$underline
+								]),
 							A2(
 								$author$project$Shared$navBarElement,
 								$mdgriffith$elm_ui$Element$text('register'),
@@ -21212,8 +21323,9 @@ var $author$project$Shared$view = F2(
 		return {
 			gJ: _List_fromArray(
 				[
-					A2(
+					A3(
 					$author$project$Shared$navBarView,
+					model.hc,
 					model.jw,
 					{jn: toMsg}),
 					A2(

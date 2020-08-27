@@ -156,9 +156,15 @@ viewHomeButton =
         ]
 
 
-navBarView : Maybe User -> { toMsg : Msg -> msg } -> Element msg
-navBarView maybeUser options =
-    row
+navBarView : Device -> Maybe User -> { toMsg : Msg -> msg } -> Element msg
+navBarView device maybeUser options =
+    (case device.class of
+        Phone ->
+            column
+
+        _ ->
+            row
+    )
         [ Background.color lighterGreyColor
         , Font.color (rgb255 255 255 255)
         , Font.size 20
@@ -170,27 +176,86 @@ navBarView maybeUser options =
         , Element.paddingXY 60 30
         , spacing 40
         , width fill
+        , height shrink
+        , Font.center
         ]
         (case maybeUser of
             Just _ ->
-                [ el [ alignLeft ]
+                [ el
+                    [ case device.class of
+                        Phone ->
+                            alignBottom
+
+                        _ ->
+                            alignRight
+                    , paddingEach { bottom = 20, top = 0, left = 0, right = 0 }
+                    ]
                     (navBarElement
                         viewHomeButton
                         "/"
                     )
-                , el [ alignRight ] (navBarElement (text "dashboard") "/dashboard")
-                , el [ alignRight ] (navBarElement (text "dashboard/courses") "/dashboard/courses")
-                , el [ alignRight, Events.onClick (options.toMsg Logout) ] (navBarElement (text "logout") "/")
+                , el
+                    [ case device.class of
+                        Phone ->
+                            alignBottom
+
+                        _ ->
+                            alignRight
+                    ]
+                    (navBarElement (text "dashboard") "/dashboard")
+                , el
+                    [ case device.class of
+                        Phone ->
+                            alignBottom
+
+                        _ ->
+                            alignRight
+                    ]
+                    (navBarElement (text "dashboard/courses") "/dashboard/courses")
+                , el
+                    [ case device.class of
+                        Phone ->
+                            alignBottom
+
+                        _ ->
+                            alignRight
+                    , Events.onClick (options.toMsg Logout)
+                    ]
+                    (navBarElement (text "logout") "/")
                 ]
 
             Nothing ->
-                [ el [ alignLeft ]
+                [ el
+                    [ case device.class of
+                        Phone ->
+                            alignTop
+
+                        _ ->
+                            alignLeft
+                    ]
                     (navBarElement
                         viewHomeButton
                         "/"
                     )
-                , el [ alignRight ] (navBarElement (text "login") "/login")
-                , el [ alignRight, Font.underline ] (navBarElement (text "register") "/register")
+                , el
+                    [ case device.class of
+                        Phone ->
+                            alignBottom
+
+                        _ ->
+                            alignLeft
+                    ]
+                    (navBarElement (text "login") "/login")
+                , el
+                    [ case device.class of
+                        Phone ->
+                            alignBottom
+
+                        _ ->
+                            alignLeft
+                    , Font.underline
+                    ]
+                    (navBarElement (text "register") "/register")
                 ]
         )
 
@@ -203,7 +268,7 @@ view { page, toMsg } model =
     { title = page.title
     , body =
         [ -- body
-          navBarView model.user { toMsg = toMsg }
+          navBarView model.device model.user { toMsg = toMsg }
         , column [ height fill, width fill ] page.body
         ]
     }
