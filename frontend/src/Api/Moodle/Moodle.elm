@@ -22,10 +22,11 @@ encoder url =
     Encode.object
         [ ( "url", Encode.string url ) ]
 
+
 getSiteName : String -> { onResponse : Api.Data String -> msg } -> Cmd msg
 getSiteName url options =
     Http.post
-        { url = "http://localhost:5000/moodle/get-school-info"
+        { url = "https://api.hausis.3nt3.de/moodle/get-school-info"
         , expect = Api.expectJson options.onResponse decoder
         , body = jsonBody (encoder url)
         }

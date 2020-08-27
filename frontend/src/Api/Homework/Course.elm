@@ -59,7 +59,7 @@ minimalCourseDecoder =
         (Json.field "id" Json.int)
         (Json.field "subject" Json.string)
         (Json.field "teacher" Json.string)
-        (Json.field "from_moodle" (Json.nullable Json.bool)
+        (Json.field "fromMoodle" (Json.nullable Json.bool)
             |> Json.andThen
                 (\maybeBool ->
                     case maybeBool of

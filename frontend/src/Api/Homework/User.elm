@@ -30,7 +30,7 @@ userDecoder =
         (Json.field "username" Json.string)
         (Json.field "email" Json.string)
         (Json.field "privilege" (Json.andThen (\priv -> intToPrivilege priv) Json.int))
-        (Json.field "moodle_url" Json.string)
+        (Json.field "moodleUrl" Json.string)
 
 
 credentialsEncoder : Credentials -> Encode.Value
