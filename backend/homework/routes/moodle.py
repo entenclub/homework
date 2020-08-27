@@ -1,3 +1,4 @@
+import datetime
 import re
 
 import requests
@@ -5,10 +6,11 @@ from flask import Blueprint, jsonify, request
 
 from flask_cors import CORS
 
+from homework.database.assignment import Assignment
 from homework.database.session import Session
 from homework.database.user import User
 from homework.routes import return_error, to_response
-from homework import db
+from homework import db, moodle
 
 moodle_bp = Blueprint('moodle', __name__)
 CORS(moodle_bp, supports_credentials=True)
@@ -28,20 +30,27 @@ def get_courses():
     if user is None:
         return jsonify(return_error('invalid session')), 401
 
-    base_url = user.moodle_url
-    token = user.moodle_token
+    courses_raw = moodle.get_user_courses(user)
+    courses = []
+    for course in courses_raw:
+        assignments = [assignment.to_dict() for assignment in
+                       Assignment.query.filter_by(course=course['id'])]
 
-    if token is None or base_url is None:
-        return jsonify(return_error('no moodle connection')), 403
+        # convert dates to iso
+        for i in range(len(assignments)):
+            assignments[i]['dueDate'] = datetime.datetime.strftime(assignments[i]['dueDate'],
+                                                                   '%Y-%m-%d')
 
-    """
-    $ curl "https://your.site.com/moodle/webservice/rest/server.php?wstoken=...&wsfunction=...&moodlewsrestformat=json"
-    """
+        course = {
+            "id": course['id'],
+            'name': course['displayname'],
+            'creator': user.id,
+            'assignments': assignments,
+            'fromMoodle': True
+        }
 
-    courses_reqest = requests.get(
-        base_url + '/webservice/rest/server.php' + '?wstoken=' + token + '&wsfunction=' + 'core_enrol_get_users_courses' + '&moodlewsrestformat=json' + '&userid=412')
+        courses.append(course)
 
-    courses = courses_reqest.json()
     return jsonify(to_response(courses))
 
 

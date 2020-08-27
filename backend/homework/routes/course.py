@@ -9,6 +9,7 @@ from flask_cors import CORS
 from .. import db
 from random import sample
 import datetime
+from homework import moodle
 
 course_bp = Blueprint('course', __name__)
 CORS(course_bp, supports_credentials=True)
@@ -65,8 +66,9 @@ def search_courses(searchterm):
         return jsonify(to_response(filtered_courses + filtered_moodle_courses))
 
 
+# active courses -> courses which have assignments due in the future
 @course_bp.route('/courses/active', methods=['GET'])
-def outstanding_assignments():
+def active_courses():
     session_cookie = request.cookies.get('hw_session')
     if not session_cookie:
         return jsonify(return_error("no session")), 401
@@ -81,8 +83,6 @@ def outstanding_assignments():
         return jsonify(return_error("invalid session")), 401
 
     course_ids = user.decode_courses()
-    if not course_ids:
-        return jsonify(to_response([])), 200
 
     has_outstanding_assignments = []
     now = datetime.datetime.utcnow().date()
@@ -95,10 +95,10 @@ def outstanding_assignments():
         assignments = [assignment.to_dict() for assignment in
                        Assignment.query.filter_by(course=course.id).all() if
                        assignment.due_date >= now]
+        if not assignments:
+            continue
 
         for i in range(len(assignments)):
-            creator = User.query.filter_by(id=assignments[i]['creator']).first()
-            assignments[i]['creator'] = creator.to_safe_dict()
             assignments[i]['dueDate'] = datetime.datetime.strftime(assignments[i]['dueDate'],
                                                                    '%Y-%m-%d')
 
@@ -106,7 +106,39 @@ def outstanding_assignments():
         course_dict['assignments'] = assignments
         has_outstanding_assignments.append(course_dict)
 
-    print(to_response(has_outstanding_assignments))
+    if user.moodle_token is None:
+        return jsonify(to_response(has_outstanding_assignments))
+
+    moodle_courses = moodle.get_user_courses(user)
+    if moodle_courses is None:
+        return jsonify(to_response(has_outstanding_assignments))
+
+    active_moodle_courses = moodle
+
+    for m_course in moodle_courses:
+        assignments = [assignment.to_dict() for assignment in
+                       Assignment.query.filter(
+                           Assignment.course == m_course['id'] and Assignment.from_moodle is True)
+                       if
+                       assignment.due_date >= now]
+        if not assignments:
+            continue
+
+        # convert dates to iso
+        for i in range(len(assignments)):
+            assignments[i]['dueDate'] = datetime.datetime.strftime(assignments[i]['dueDate'],
+                                                                   '%Y-%m-%d')
+
+        course = {
+            "id": m_course['id'],
+            'name': m_course['displayname'],
+            'creator': user.id,
+            'assignments': assignments,
+            'fromMoodle': True
+        }
+
+        has_outstanding_assignments.append(course)
+
     return jsonify(to_response(has_outstanding_assignments))
 
 
@@ -167,6 +199,7 @@ def create_course():
     new_course = Course()
     new_course.subject = subject
     new_course.teacher = teacher
+    new_course.creator = user.id
 
     db.session.add(new_course)
 
@@ -206,4 +239,4 @@ def enroll(id):
 
     db.session.commit()
 
-    return jsonify(to_response(user.to_dict()))
+    return jsonify(to_response(user.to_safe_dict()))

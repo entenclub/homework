@@ -29,8 +29,5 @@ courses_reqest = requests.get(base_url + '/webservice/rest/server.php' + '?wstok
 
 courses = courses_reqest.json()
 
-for course in courses:
-    print(course["fullname"])
+print(courses_reqest.text)
 
-print('\n')
-print("time elapsed: {}".format(time.time() - start))

@@ -1,6 +1,7 @@
 from homework import db
 from datetime import datetime
 
+
 class Assignment(db.Model):
     __tablename__ = 'assignments'
     id = db.Column('id', db.Integer, primary_key=True, nullable=False)
@@ -13,4 +14,6 @@ class Assignment(db.Model):
     from_moodle = db.Column('from_moodle', db.Boolean, default=False)
 
     def to_dict(self):
-        return {'id': self.id, 'course': self.course, 'title': self.title, 'description': self.description, 'dueDate': self.due_date, 'creator': self.creator, 'createdAt': self.created_at, 'fromMoodle': self.from_moodle}
+        return {'id': self.id, 'course': self.course, 'title': self.title,
+                'description': self.description, 'dueDate': self.due_date, 'creator': self.creator,
+                'createdAt': self.created_at, 'fromMoodle': self.from_moodle}

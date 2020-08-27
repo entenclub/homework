@@ -28,7 +28,10 @@ def create_assignment():
         return jsonify(return_error("invalid session")), 401
 
     data = request.json
-    title, raw_date, course = data.get('title'), data.get('dueDate'), data.get('course')
+    if not data:
+        return jsonify(return_error('invalid request')), 400
+
+    title, raw_date, course, from_moodle = data.get('title'), data.get('dueDate'), data.get('course'), data.get('fromMoodle')
 
     if title is None or raw_date is None or course is None:
         return jsonify(return_error('invalid request')), 400
@@ -40,6 +43,9 @@ def create_assignment():
     new_assignment.creator = user.id
     new_assignment.course = course
     new_assignment.due_date = date.date()
+
+    if from_moodle is not None:
+        new_assignment.from_moodle = from_moodle
 
     db.session.add(new_assignment)
     try:
