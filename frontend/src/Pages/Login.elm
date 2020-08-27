@@ -230,5 +230,5 @@ viewLoginButton model =
                     (html (Icons.close size Inherit))
 
             Api.NotAsked ->
-                text "register"
+                text "Login"
         )
