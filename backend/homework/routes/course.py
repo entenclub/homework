@@ -58,9 +58,11 @@ def search_courses(searchterm):
 
         filtered_moodle_courses = [{
             'id': course.get('id'),
-            'from_moodle': True,
-            'subject': course.get('fullname'),
-            'teacher': ''
+            'fromMoodle': True,
+            'name': course.get('displayname'),
+            'subject': '',
+            'teacher': '',
+            'creator': user.id
         } for course in filtered_moodle_courses]
 
         return jsonify(to_response(filtered_courses + filtered_moodle_courses))
@@ -101,6 +103,7 @@ def active_courses():
         for i in range(len(assignments)):
             assignments[i]['dueDate'] = datetime.datetime.strftime(assignments[i]['dueDate'],
                                                                    '%Y-%m-%d')
+            assignments[i]['creator'] = user.to_safe_dict()
 
         course_dict = course.to_dict()
         course_dict['assignments'] = assignments
@@ -112,8 +115,6 @@ def active_courses():
     moodle_courses = moodle.get_user_courses(user)
     if moodle_courses is None:
         return jsonify(to_response(has_outstanding_assignments))
-
-    active_moodle_courses = moodle
 
     for m_course in moodle_courses:
         assignments = [assignment.to_dict() for assignment in
@@ -128,13 +129,16 @@ def active_courses():
         for i in range(len(assignments)):
             assignments[i]['dueDate'] = datetime.datetime.strftime(assignments[i]['dueDate'],
                                                                    '%Y-%m-%d')
+            assignments[i]['creator'] = user.to_safe_dict()
 
         course = {
             "id": m_course['id'],
             'name': m_course['displayname'],
             'creator': user.id,
             'assignments': assignments,
-            'fromMoodle': True
+            'fromMoodle': True,
+            'teacher': '',
+            'subject': '',
         }
 
         has_outstanding_assignments.append(course)
@@ -165,11 +169,22 @@ def my_courses():
 
     courses = []
     for course_id in course_ids:
-        assignments = [assignment for assignment in
-                       Assignment.query.filter_by(course=course_id).all() if
-                       assignment.due_date >= now]
-        course_dict = course_id.to_dict()
-        course_ids['assignments'] = assignments
+        course = Course.query.filter_by(id=course_id).first()
+        assignments = [assignment.to_dict() for assignment in
+                       Assignment.query.filter_by(course=course_id).all()]
+
+        for i in range(len(assignments)):
+            assignments[i]['dueDate'] = datetime.datetime.strftime(assignments[i]['dueDate'],
+                                                                   '%Y-%m-%d')
+            creator = User.query.filter_by(id=assignments[i]['creator']).first()
+            if creator is None:
+                assignments.remove(assignments[i])
+                i -= 1
+                continue
+            assignments[i]['creator'] = creator.to_safe_dict()
+
+        course_dict = course.to_dict()
+        course_dict['assignments'] = assignments
         courses.append(course_dict)
 
     return jsonify(to_response(courses))
@@ -210,6 +225,10 @@ def create_course():
         print(e)
         db.session.rollback()
         return jsonify(return_error('invalid request')), 500
+
+    user.set_courses((user.decode_courses() + [new_course.id]))
+    db.session.add(user)
+    db.session.commit()
 
     return jsonify(to_response(new_course.to_dict()))
 

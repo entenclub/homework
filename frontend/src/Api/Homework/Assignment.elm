@@ -1,6 +1,7 @@
 module Api.Homework.Assignment exposing (createAssignment)
 
 import Api
+import Api.Api exposing (apiAddress)
 import Api.Homework.Course exposing (assignmentDecoder)
 import Date
 import Http
@@ -27,7 +28,7 @@ createAssignment : { title : String, courseId : Int, dueDate : Date.Date } -> { 
 createAssignment assignment options =
     Http.riskyRequest
         { method = "POST"
-        , url = "https://api.hausis.3nt3.de/assignment"
+        , url = apiAddress ++ "/assignment"
         , headers = []
         , body = Http.jsonBody (assignmentEncoder assignment)
         , expect = Api.expectJson options.onResponse (Json.at [ "content" ] assignmentDecoder)

@@ -1,6 +1,7 @@
 module Api.Homework.Course exposing (..)
 
 import Api
+import Api.Api exposing (apiAddress)
 import Api.Homework.User exposing (userDecoder)
 import Date
 import Http exposing (jsonBody)
@@ -12,6 +13,7 @@ import Time
 
 type alias MinimalCourse =
     { id : Int
+    , name : String
     , subject : String
     , teacher : String
     , fromMoodle : Bool
@@ -45,18 +47,21 @@ assignmentDecoder =
 
 courseDecoder : Json.Decoder Course
 courseDecoder =
-    Json.map5 Course
+    Json.map7 Course
         (Json.field "id" Json.int)
+        (Json.field "name" Json.string)
         (Json.field "subject" Json.string)
         (Json.field "teacher" Json.string)
         (Json.field "assignments" (Json.list assignmentDecoder))
         (Json.field "fromMoodle" Json.bool)
+        (Json.field "creator" Json.int)
 
 
 minimalCourseDecoder : Json.Decoder MinimalCourse
 minimalCourseDecoder =
-    Json.map4 MinimalCourse
+    Json.map5 MinimalCourse
         (Json.field "id" Json.int)
+        (Json.field "name" Json.string)
         (Json.field "subject" Json.string)
         (Json.field "teacher" Json.string)
         (Json.field "fromMoodle" (Json.nullable Json.bool)
@@ -76,7 +81,7 @@ getActiveCourses : { onResponse : Api.Data (List Course) -> msg } -> Cmd msg
 getActiveCourses options =
     Http.riskyRequest
         { body = Http.emptyBody
-        , url = "https://api.hausis.3nt3.de/courses/active"
+        , url = apiAddress ++ "/courses/active"
         , method = "GET"
         , expect = Api.expectJson options.onResponse (Json.at [ "content" ] (Json.list courseDecoder))
         , headers = []
@@ -89,7 +94,7 @@ getMyCourses : { onResponse : Api.Data (List Course) -> msg } -> Cmd msg
 getMyCourses options =
     Http.riskyRequest
         { body = Http.emptyBody
-        , url = "https://api.hausis.3nt3.de/courses"
+        , url = apiAddress ++ "/courses"
         , method = "GET"
         , expect = Api.expectJson options.onResponse (Json.at [ "content" ] (Json.list courseDecoder))
         , headers = []
@@ -102,7 +107,7 @@ searchCourses : String -> { onResponse : Api.Data (List MinimalCourse) -> msg } 
 searchCourses searchterm options =
     Http.riskyRequest
         { body = Http.emptyBody
-        , url = "https://api.hausis.3nt3.de/courses/search/" ++ searchterm
+        , url = apiAddress ++ "/courses/search/" ++ searchterm
         , method = "GET"
         , expect = Api.expectJson options.onResponse (Json.at [ "content" ] (Json.list minimalCourseDecoder))
         , headers = []
@@ -121,7 +126,7 @@ createCourse subject teacher options =
                     , ( "teacher", Encode.string teacher )
                     ]
                 )
-        , url = "https://api.hausis.3nt3.de/courses"
+        , url = apiAddress ++ "/courses"
         , method = "POST"
         , expect = Api.expectJson options.onResponse (Json.at [ "content" ] courseDecoder)
         , headers = []
@@ -134,7 +139,7 @@ enrollInCourse : Int -> { onResponse : Api.Data User -> msg } -> Cmd msg
 enrollInCourse id options =
     Http.riskyRequest
         { body = Http.emptyBody
-        , url = "https://api.hausis.3nt3.de/courses/" ++ String.fromInt id ++ "/enroll"
+        , url = apiAddress ++ "/courses/" ++ String.fromInt id ++ "/enroll"
         , expect = Api.expectJson options.onResponse (Json.at [ "content" ] userDecoder)
         , method = "POST"
         , headers = []

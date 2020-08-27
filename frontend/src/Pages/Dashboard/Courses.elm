@@ -1,7 +1,7 @@
 module Pages.Dashboard.Courses exposing (Model, Msg, Params, page)
 
 import Api
-import Api.Homework.Course exposing (createCourse, enrollInCourse, getActiveCourses)
+import Api.Homework.Course exposing (createCourse, enrollInCourse, getMyCourses)
 import Array
 import Components.Sidebar
 import Element exposing (..)
@@ -66,7 +66,7 @@ page =
 
 initCommands : List (Cmd Msg)
 initCommands =
-    [ getActiveCourses { onResponse = GotCourseData } ]
+    [ getMyCourses { onResponse = GotCourseData } ]
 
 
 init : Shared.Model -> Url Params -> ( Model, Cmd Msg )
@@ -163,7 +163,7 @@ update msg model =
         GotEnrollData data ->
             case data of
                 Api.Success user ->
-                    ( { model | user = Just user }, getActiveCourses { onResponse = GotCourseData } )
+                    ( { model | user = Just user }, getMyCourses { onResponse = GotCourseData } )
 
                 _ ->
                     ( model, Cmd.none )
@@ -390,18 +390,18 @@ viewMyCourses courseData =
         ]
 
 
-generateInviteCode : Course -> String
-generateInviteCode course =
+generateInviteCode : Int -> String -> String -> String
+generateInviteCode id teacher subject =
     let
         maybeLastname =
-            List.head (List.reverse (String.split " " course.teacher))
+            List.head (List.reverse (String.split " " teacher))
     in
     case maybeLastname of
         Just lastName ->
-            String.slice 0 3 lastName ++ String.slice 0 3 course.subject ++ "#" ++ String.fromInt course.id
+            String.slice 0 3 lastName ++ String.slice 0 3 subject ++ "#" ++ String.fromInt id
 
         Nothing ->
-            String.slice 0 3 course.subject ++ "#" ++ String.fromInt course.id
+            String.slice 0 3 subject ++ "#" ++ String.fromInt id
 
 
 viewCourseRow : Course -> Element msg
@@ -413,13 +413,12 @@ viewCourseRow course =
         , Border.widthEach { top = 0, right = 0, left = 0, bottom = 2 }
         , Border.color inputTextColor
         ]
-        [ text (course.teacher ++ ": " ++ course.subject)
-        , el
-            [ alignRight ]
-            (text
-                (generateInviteCode course)
-            )
-        ]
+        (if course.fromMoodle then
+            [ text course.name ]
+
+         else
+            [ text (course.teacher ++ " - " ++ course.subject), el [ alignRight ] (text (generateInviteCode course.id course.teacher course.subject)) ]
+        )
 
 
 viewCreateCourseFormErrors : List String -> Element Msg

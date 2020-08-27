@@ -33,8 +33,10 @@ type alias Assignment =
 
 type alias Course =
     { id : Int
+    , name : String
     , subject : String
     , teacher : String
     , assignments : List Assignment
     , fromMoodle : Bool
+    , creator : Int
     }

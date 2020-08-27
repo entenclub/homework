@@ -11,4 +11,4 @@ class Course(db.Model):
 
     def to_dict(self):
         return {"id": self.id, "subject": self.subject,
-                "teacher": self.teacher, "fromMoodle": False}
+                "teacher": self.teacher, "fromMoodle": False, "name": "", "creator": self.creator}

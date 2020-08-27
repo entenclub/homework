@@ -61,7 +61,7 @@ classifyDevice options =
     if options.width < 450 then
         Device Phone Portrait options.width options.height
 
-    else if options.width < 1200 then
+    else if options.width < 1400 then
         Device Tablet Portrait options.width options.height
 
     else

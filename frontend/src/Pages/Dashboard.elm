@@ -582,7 +582,15 @@ viewAssignmentCourseGroup course color date =
             , Border.rounded 10
             , width fill
             ]
-            [ el [ Font.bold ] (text (course.teacher ++ " - " ++ course.subject))
+            [ el [ Font.bold ]
+                (text
+                    (if course.fromMoodle then
+                        course.name
+
+                     else
+                        course.teacher ++ ": " ++ course.subject
+                    )
+                )
             , Keyed.column [ spacing 5 ] (List.map (assignmentToKeyValue color) assignments)
             ]
 
@@ -844,7 +852,7 @@ viewSearchDropdownElement course isLast =
             [ Font.bold, Font.color inputTextColor ]
             (text
                 (if course.fromMoodle then
-                    course.subject
+                    course.name
 
                  else
                     course.teacher ++ ": " ++ course.subject
