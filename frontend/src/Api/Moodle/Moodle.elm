@@ -1,6 +1,7 @@
 module Api.Moodle.Moodle exposing (authenticateUser, getSiteName)
 
 import Api
+import Api.Api exposing (apiAddress)
 import Api.Homework.User exposing (userDecoder)
 import Http exposing (jsonBody)
 import Json.Decode as Json
@@ -48,7 +49,7 @@ authenticateUser url username password options =
         , body = jsonBody (credentialsEncoder url username password)
         , headers = []
         , tracker = Nothing
-        , url = "localhost:5000/moodle/authenticate"
+        , url = apiAddress ++ "/moodle/authenticate"
         , timeout = Nothing
         , expect = Api.expectJson options.onResponse (Json.at [ "content" ] userDecoder)
         }

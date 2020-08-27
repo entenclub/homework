@@ -18429,7 +18429,7 @@ var $author$project$Api$Moodle$Moodle$authenticateUser = F4(
 				hX: 'POST',
 				ji: $elm$core$Maybe$Nothing,
 				js: $elm$core$Maybe$Nothing,
-				jv: 'localhost:5000/moodle/authenticate'
+				jv: $author$project$Api$Api$apiAddress + '/moodle/authenticate'
 			});
 	});
 var $author$project$Api$Moodle$Moodle$decoder = A2(
