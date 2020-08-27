@@ -6,7 +6,8 @@ import json
 start = time.time()
 base_url = 'https://gym-haan.lms.schulon.org'
 
-username, password = 'id4009', 'g0z89u1baISbAz4VAbUH2RKFL6JAZPdSIqft0GCAtd3G9YhWBMOPTwF1IOizV8XQ#'
+#username, password = 'id4009', 'g0z89u1baISbAz4VAbUH2RKFL6JAZPdSIqft0GCAtd3G9YhWBMOPTwF1IOizV8XQ#'
+username, password = 'id4539', 'Gurke0810!'
 
 body = {'username': username, 'password': password}
 

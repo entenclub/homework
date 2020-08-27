@@ -83,8 +83,14 @@ def authenticate():
 
     creds = auth_request.json()
 
+    # get user id
+    user_request = requests.post(base_url + '/webservice/rest/server.php?wstoken={}&wsfunction=core_user_get_users_by_field&field=username&values[0]={}&moodlewsrestformat=json'.format(creds['token'], username))
+
+    print(user_request.text)
+
     user.moodle_url = base_url
     user.moodle_token = creds['token']
+    user.moodle_user_id = user_request.json()[0]['id']
 
     db.session.add(user)
     db.session.commit()

@@ -12,6 +12,7 @@ class User(db.Model):
     privilege = db.Column('privilege', db.Integer, default=0)
     moodle_url = db.Column('moodle_url', db.String(255), nullable=True)
     moodle_token = db.Column('moodle_token', db.String(255), nullable=True)
+    moodle_user_id = db.Column('moodle_user_id', db.Integer, nullable=True)
 
     def decode_courses(self):
         return json.loads(self.courses)
@@ -23,7 +24,7 @@ class User(db.Model):
         return {"id": self.id, "username": self.username, "email": self.email,
                 "courses": self.decode_courses(), "passwordHash": self.password_hash,
                 "privilege": self.privilege, 'moodleUrl': self.moodle_url,
-                'moodleToken': self.moodle_token}
+                'moodleToken': self.moodle_token, 'moodleUserId': self.moodle_user_id}
 
     def to_safe_dict(self):
         if self.moodle_url is None:
