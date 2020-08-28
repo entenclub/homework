@@ -56,5 +56,7 @@ def create_assignment():
 
     assignment_dict = new_assignment.to_dict()
     assignment_dict['creator'] = user.to_safe_dict()
+    assignment_dict['dueDate'] = datetime.datetime.strftime(new_assignment['dueDate'],
+                                                             '%Y-%m-%d')
 
     return jsonify(to_response(assignment_dict))
