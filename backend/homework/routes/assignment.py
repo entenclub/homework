@@ -54,4 +54,7 @@ def create_assignment():
         print(e)
         return jsonify(return_error('server error')), 500
 
-    return jsonify(to_response(new_assignment.to_dict()))
+    assignment_dict = new_assignment.to_dict()
+    assignment_dict['creator'] = user.to_safe_dict()
+
+    return jsonify(to_response(assignment_dict))
