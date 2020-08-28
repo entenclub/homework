@@ -16,7 +16,7 @@ backend/.webassets-cache
 
 
 
-backend/__pycache__/
+__pycache__/
 backend/*.py[cod]
 backend/*$py.class
 
@@ -253,7 +253,7 @@ backend/.python-version
 
 
 
-backend/__pypackages__/
+__pypackages__/
 
 
 backend/celerybeat-schedule
