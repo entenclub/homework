@@ -152,7 +152,7 @@ viewHomeButton =
                 (rgb 1 1 1)
             , Border.rounded 5
             ]
-            (text "v0.2")
+            (text "v0.3")
         ]
 
 
