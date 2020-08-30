@@ -129,7 +129,8 @@ def active_courses():
         for i in range(len(assignments)):
             assignments[i]['dueDate'] = datetime.datetime.strftime(assignments[i]['dueDate'],
                                                                    '%Y-%m-%d')
-            assignments[i]['creator'] = user.to_safe_dict()
+            assignment_creator = User.query.filter_by(id=assignments[i]['creator']).first()
+            assignments[i]['creator'] = assignment_creator.to_safe_dict()
 
         course = {
             "id": m_course['id'],

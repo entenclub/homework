@@ -31,7 +31,6 @@ import Time
 import Utils.Darken exposing (darken)
 import Utils.Route exposing (navigate)
 import Utils.Vh exposing (vh, vw)
-import Utils.Route
 
 
 type alias Params =
@@ -111,12 +110,7 @@ init shared url =
       , addDaysDifference = 0
       , errors = []
       }
-    , case shared.user of
-        Just user ->
-            Cmd.batch initCommands
-
-        Nothing ->
-            Utils.Route.navigate url.key Route.Login
+    , Cmd.batch initCommands
     )
 
 
@@ -124,7 +118,21 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         GotCourseData data ->
-            ( { model | courseData = data }, Cmd.none )
+            case data of
+                Failure e ->
+                    case e of
+                        Http.BadStatus s ->
+                            if s == 401 || s == 403 then
+                                ( model, Utils.Route.navigate model.url.key Route.Login )
+
+                            else
+                                ( { model | courseData = data }, Cmd.none )
+
+                        _ ->
+                            ( { model | courseData = data }, Cmd.none )
+
+                _ ->
+                    ( { model | courseData = data }, Cmd.none )
 
         GotSearchCoursesData data ->
             ( { model | searchCoursesData = data }, Cmd.none )
@@ -814,7 +822,7 @@ viewCreateAssignmentForm model =
                 )
                 (el [ centerX, centerY, Font.size 30, Font.bold ] (text "+1"))
             ]
-        , if not (List.isEmpty model.errors) then
+        , if not (List.isEmpty model.errors) || (String.isEmpty model.titleTfText || String.isEmpty model.searchCoursesText || String.isEmpty model.dateTfText) then
             Input.button
                 [ width fill
                 , height (px 50)

@@ -10,13 +10,14 @@ import Element.Events as Events
 import Element.Font as Font
 import Element.Input as Input
 import Element.Region as Region
+import Http
 import Models exposing (Course, User)
 import Shared
 import Spa.Document exposing (Document)
 import Spa.Page as Page exposing (Page)
 import Spa.Url exposing (Url)
 import String
-import Styling.Colors exposing (blueColor, darkGreyColor, lighterGreyColor)
+import Styling.Colors exposing (blueColor, darkGreyColor, greenColor, lighterGreyColor, redColor)
 import Utils.Darken exposing (darken)
 
 
@@ -97,7 +98,25 @@ update msg model =
             ( model, authenticateUser model.moodleUrlInput model.moodleUsernameInput model.moodlePasswordInput { onResponse = GotAuthenticationData } )
 
         GotAuthenticationData data ->
-            ( { model | authenticationData = data }, Cmd.none )
+            let
+                sitename =
+                    case data of
+                        Api.Failure e ->
+                            case e of
+                                Http.BadStatus status ->
+                                    if status == 401 then
+                                        model.moodleSiteName
+
+                                    else
+                                        Api.NotAsked
+
+                                _ ->
+                                    Api.NotAsked
+
+                        _ ->
+                            model.moodleSiteName
+            in
+            ( { model | authenticationData = data, moodlePasswordInput = "", moodleUsernameInput = "", moodleSiteName = sitename }, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
@@ -235,7 +254,8 @@ viewCredentialsForm model =
         , column [ width fill, spacing 10 ]
             (case model.moodleSiteName of
                 Api.Success _ ->
-                    [ Input.text inputStyle
+                    [ viewStatusIndicatorThingy model.authenticationData
+                    , Input.text inputStyle
                         { label = Input.labelAbove [] (text "username")
                         , placeholder = Just (Input.placeholder [] (text "username"))
                         , text = model.moodleUsernameInput
@@ -280,4 +300,48 @@ viewCredentialsForm model =
                     ]
             )
         , paragraph [ alignBottom, Font.color (rgb 0.8 0.8 0.8) ] [ text "We don't save your username or password. We just use them to get a token from your moodle site. This token is also kept safe of course." ]
+        ]
+
+
+viewStatusIndicatorThingy : Api.Data User -> Element msg
+viewStatusIndicatorThingy userData =
+    let
+        color =
+            case userData of
+                Api.Failure _ ->
+                    redColor
+
+                Api.Success _ ->
+                    greenColor
+
+                _ ->
+                    lighterGreyColor
+
+        message =
+            case userData of
+                Api.Failure e ->
+                    case e of
+                        Http.BadStatus status ->
+                            if status == 401 then
+                                "invalid credentials"
+
+                            else
+                                "unknown error"
+
+                        _ ->
+                            "unknown error"
+
+                Api.Success _ ->
+                    "Success 🎉"
+
+                _ ->
+                    ""
+    in
+    column
+        [ Background.color color
+        , Border.rounded 10
+        , padding 10
+        , width fill
+        ]
+        [ el [ Font.size 25, Font.bold ] (text message)
         ]
