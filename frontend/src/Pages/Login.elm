@@ -230,5 +230,5 @@ viewLoginButton model =
                     (html (Icons.close size Inherit))
 
             Api.NotAsked ->
-                text "Login"
+                el [ Font.family [ Font.typeface "Source Sans Pro" ] ] (text "Login")
         )

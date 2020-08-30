@@ -487,5 +487,5 @@ viewRegistrationButton model =
             --el [ centerX, centerY, Font.color errorColor ]
             --   (html (Icons.close size Inherit))
             Api.NotAsked ->
-                text "register"
+                el [ Font.family [ Font.typeface "Source Sans Pro" ] ] (text "register")
         )

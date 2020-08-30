@@ -10,17 +10,18 @@ blueColor =
 
 redColor : Color
 redColor =
-    rgb255 255 82 96
+    --rgb255 255 82 96
+    rgb255 231 76 60
 
 
 greenColor : Color
 greenColor =
-    rgb255 80 214 68
+    rgb255 46 204 113
 
 
 yellowColor : Color
 yellowColor =
-    rgb255 220 200 69
+    rgb255 241 196 15
 
 
 lighterGreyColor : Color

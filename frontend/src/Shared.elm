@@ -60,7 +60,7 @@ type Orientation
 
 classifyDevice : { window | height : Int, width : Int } -> Device
 classifyDevice options =
-    if options.width < 450 then
+    if options.width < 900 then
         Device Phone Portrait options.width options.height
 
     else if options.width < 1400 then
@@ -182,14 +182,18 @@ navBarView device maybeUser options =
         (case maybeUser of
             Just _ ->
                 [ el
-                    [ case device.class of
-                        Phone ->
-                            alignBottom
+                    ([ centerY
+                     ]
+                        ++ (case device.class of
+                                Phone ->
+                                    [ alignBottom
+                                    , paddingEach { bottom = 20, top = 0, left = 0, right = 0 }
+                                    ]
 
-                        _ ->
-                            alignRight
-                    , paddingEach { bottom = 20, top = 0, left = 0, right = 0 }
-                    ]
+                                _ ->
+                                    [ alignLeft ]
+                           )
+                    )
                     (navBarElement
                         viewHomeButton
                         "/"
@@ -232,6 +236,7 @@ navBarView device maybeUser options =
 
                         _ ->
                             alignLeft
+                    , centerY
                     ]
                     (navBarElement
                         viewHomeButton
@@ -243,16 +248,16 @@ navBarView device maybeUser options =
                             alignBottom
 
                         _ ->
-                            alignLeft
+                            alignRight
                     ]
                     (navBarElement (text "login") "/login")
                 , el
                     [ case device.class of
-                        Phone ->
-                            alignBottom
+                        Desktop ->
+                            alignLeft
 
                         _ ->
-                            alignLeft
+                            alignBottom
                     , Font.underline
                     ]
                     (navBarElement (text "register") "/register")

@@ -31,7 +31,8 @@ def create_assignment():
     if not data:
         return jsonify(return_error('invalid request')), 400
 
-    title, raw_date, course, from_moodle = data.get('title'), data.get('dueDate'), data.get('course'), data.get('fromMoodle')
+    title, raw_date, course, from_moodle = data.get('title'), data.get('dueDate'), data.get(
+        'course'), data.get('fromMoodle')
 
     if title is None or raw_date is None or course is None:
         return jsonify(return_error('invalid request')), 400
@@ -56,7 +57,7 @@ def create_assignment():
 
     assignment_dict = new_assignment.to_dict()
     assignment_dict['creator'] = user.to_safe_dict()
-    assignment_dict['dueDate'] = datetime.datetime.strftime(new_assignment['dueDate'],
-                                                             '%Y-%m-%d')
+    assignment_dict['dueDate'] = datetime.strftime(assignment_dict['dueDate'],
+                                                   '%Y-%m-%d')
 
     return jsonify(to_response(assignment_dict))

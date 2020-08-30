@@ -31,6 +31,7 @@ import Time
 import Utils.Darken exposing (darken)
 import Utils.Route exposing (navigate)
 import Utils.Vh exposing (vh, vw)
+import Utils.Route
 
 
 type alias Params =
@@ -44,6 +45,7 @@ type alias Model =
     , device : Shared.Device
 
     -- create assignment form
+    , createAssignmentData : Api.Data Assignment
     , searchCoursesText : String
     , searchCoursesData : Api.Data (List MinimalCourse)
     , selectedCourse : Maybe Int
@@ -98,6 +100,7 @@ init shared url =
       , courseData = NotAsked
       , searchCoursesData = NotAsked
       , device = shared.device
+      , createAssignmentData = NotAsked
       , searchCoursesText = ""
       , selectedCourse = Nothing
       , titleTfText = ""
@@ -106,9 +109,14 @@ init shared url =
       , today = Date.fromCalendarDate 2019 Time.Jan 1
       , selectedDateTime = Time.millisToPosix 0
       , addDaysDifference = 0
-      , errors = [ "no course selected", "missing title", "invalid date" ]
+      , errors = []
       }
-    , Cmd.batch initCommands
+    , case shared.user of
+        Just user ->
+            Cmd.batch initCommands
+
+        Nothing ->
+            Utils.Route.navigate url.key Route.Login
     )
 
 
@@ -267,7 +275,7 @@ update msg model =
                 Just course ->
                     case model.selectedDate of
                         Just dueDate ->
-                            ( model, createAssignment { courseId = course, title = model.titleTfText, dueDate = dueDate } { onResponse = GotCreateAssignmentData } )
+                            ( { model | dateTfText = "", searchCoursesText = "", searchCoursesData = NotAsked, selectedCourse = Nothing, errors = [] }, createAssignment { courseId = course, title = model.titleTfText, dueDate = dueDate } { onResponse = GotCreateAssignmentData } )
 
                         _ ->
                             ( model, Cmd.none )
@@ -276,7 +284,7 @@ update msg model =
                     ( model, Cmd.none )
 
         GotCreateAssignmentData data ->
-            ( model, getActiveCourses { onResponse = GotCourseData } )
+            ( { model | createAssignmentData = data }, getActiveCourses { onResponse = GotCourseData } )
 
         Add1Day ->
             let
@@ -535,7 +543,7 @@ filterCoursesByWhetherAssignmentsAreDueOnDate courses date =
                     (List.map (\course -> ( course.id, course.assignments )) courses)
                 )
     in
-    courses
+    List.filter (\course -> List.member course.id validCourses) courses
 
 
 
@@ -546,7 +554,7 @@ viewAssignmentsDayColumn : Api.Data (List Course) -> String -> Color -> Date.Dat
 viewAssignmentsDayColumn courseData title color date =
     column
         [ Background.color color
-        , height fill
+        , height (fill |> minimum 200)
         , Border.rounded borderRadius
         , padding 20
         , width (fillPortion 1)
@@ -560,7 +568,7 @@ viewAssignmentsDayColumn courseData title color date =
                         filterCoursesByWhetherAssignmentsAreDueOnDate allCourses date
                 in
                 if List.isEmpty courses then
-                    el [ centerX, centerY, Font.italic ] (text "-- no assignments --")
+                    el [ centerX, centerY, Font.size 30, Font.bold ] (text "*nothing 🎉*")
 
                 else
                     Keyed.column [ width fill, spacing 5 ] (List.map (courseGroupToKeyValue color date) courses)
@@ -569,10 +577,10 @@ viewAssignmentsDayColumn courseData title color date =
                 text (errorToString e)
 
             Loading ->
-                text "Loading..."
+                el [ centerX, centerY, Font.size 30, Font.bold ] (text "Loading...")
 
             NotAsked ->
-                none
+                el [ centerX, centerY, Font.size 30, Font.bold ] (text "Loading...")
         ]
 
 
@@ -681,6 +689,33 @@ viewCreateAssignmentFormError error =
     el [ Font.bold, Font.color (darken redColor 0.8) ] (text error)
 
 
+viewCreateAssignmentFormStatus : Api.Data Assignment -> Element msg
+viewCreateAssignmentFormStatus data =
+    case data of
+        Success _ ->
+            column
+                [ Background.color greenColor
+                , width fill
+                , Border.rounded 10
+                , paddingXY 10 20
+                , spacing 5
+                ]
+                [ el [ Font.bold, Font.size 20, Font.color (darken greenColor 0.8) ] (text "Success 🎉") ]
+
+        Failure _ ->
+            column
+                [ Background.color redColor
+                , width fill
+                , Border.rounded 10
+                , paddingXY 10 30
+                , spacing 5
+                ]
+                [ el [ Font.bold, Font.size 30, Font.color (darken redColor 0.8) ] (text "Error. Try again?") ]
+
+        _ ->
+            none
+
+
 viewCreateAssignmentForm : Model -> Element Msg
 viewCreateAssignmentForm model =
     column
@@ -695,6 +730,7 @@ viewCreateAssignmentForm model =
         [ el [ Font.bold, Font.size 30, Font.color inputTextColor ]
             (text "Create Assignment")
         , viewCreateAssignmentFormErrors model.errors
+        , viewCreateAssignmentFormStatus model.createAssignmentData
         , (case model.device.class of
             Shared.Phone ->
                 column
@@ -750,7 +786,7 @@ viewCreateAssignmentForm model =
                         (text
                             (case model.selectedDate of
                                 Just _ ->
-                                    "due date (required) -- selected date " ++ String.fromInt model.addDaysDifference ++ " from now."
+                                    "due date (required) -- selected date " ++ String.fromInt model.addDaysDifference ++ " days from now."
 
                                 Nothing ->
                                     "due date (required)"
