@@ -2,4 +2,4 @@ module Api.Api exposing (apiAddress)
 
 
 apiAddress =
-    "http://localhost:5000"
+    "https://api.hausis.3nt3.de"

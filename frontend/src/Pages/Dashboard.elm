@@ -39,6 +39,7 @@ type alias Params =
 
 type alias Model =
     { url : Url Params
+    , gotUser : Bool
     , user : Maybe User
     , courseData : Api.Data (List Course)
     , device : Shared.Device
@@ -96,6 +97,7 @@ init : Shared.Model -> Url Params -> ( Model, Cmd Msg )
 init shared url =
     ( { url = url
       , user = shared.user
+      , gotUser = False
       , courseData = NotAsked
       , searchCoursesData = NotAsked
       , device = shared.device
@@ -122,7 +124,7 @@ update msg model =
                 Failure e ->
                     case e of
                         Http.BadStatus s ->
-                            if s == 401 || s == 403 then
+                            if s == 401 || s == 403 && model.gotUser then
                                 ( model, Utils.Route.navigate model.url.key Route.Login )
 
                             else
@@ -331,7 +333,7 @@ subscriptions _ =
 
 load : Shared.Model -> Model -> ( Model, Cmd msg )
 load shared model =
-    ( { model | device = shared.device, user = shared.user }, Cmd.none )
+    ( { model | device = shared.device, user = shared.user, gotUser = True }, Cmd.none )
 
 
 save : Model -> Shared.Model -> Shared.Model
