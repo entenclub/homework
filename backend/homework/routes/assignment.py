@@ -44,9 +44,7 @@ def create_assignment():
     new_assignment.creator = user.id
     new_assignment.course = course
     new_assignment.due_date = date.date()
-
-    if from_moodle is not None:
-        new_assignment.from_moodle = from_moodle
+    new_assignment.from_moodle = from_moodle or False
 
     db.session.add(new_assignment)
     try:

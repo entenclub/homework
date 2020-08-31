@@ -18,10 +18,12 @@ from .routes.user import user_bp
 from .routes.assignment import assignment_bp
 from .routes.course import course_bp
 from .routes.moodle import moodle_bp
+from .routes.analytics import analytics_bp
 app.register_blueprint(user_bp)
 app.register_blueprint(assignment_bp)
 app.register_blueprint(course_bp)
 app.register_blueprint(moodle_bp)
+app.register_blueprint(analytics_bp)
 
 # initialize database
 db.create_all()

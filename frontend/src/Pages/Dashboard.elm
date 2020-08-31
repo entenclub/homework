@@ -1,10 +1,12 @@
 module Pages.Dashboard exposing (Model, Msg, Params, page)
 
 import Api exposing (Data(..))
+import Api.Homework.Analytics exposing (getCourseAnalytics)
 import Api.Homework.Assignment exposing (createAssignment)
 import Api.Homework.Course exposing (MinimalCourse, getActiveCourses, searchCourses)
 import Api.Homework.User exposing (getUserFromSession)
 import Array
+import Components.CourseChart
 import Components.Sidebar
 import Date
 import Element exposing (..)
@@ -42,6 +44,7 @@ type alias Model =
     , gotUser : Bool
     , user : Maybe User
     , courseData : Api.Data (List Course)
+    , courseAnalyticsData : Api.Data (List Api.Homework.Analytics.CourseAnalyticsData)
     , device : Shared.Device
 
     -- create assignment form
@@ -49,6 +52,7 @@ type alias Model =
     , searchCoursesText : String
     , searchCoursesData : Api.Data (List MinimalCourse)
     , selectedCourse : Maybe Int
+    , selectedCourseFromMoodle : Bool
     , titleTfText : String
     , dateTfText : String
     , selectedDate : Maybe Date.Date
@@ -61,6 +65,7 @@ type alias Model =
 
 type Msg
     = GotCourseData (Api.Data (List Course))
+    | GotCourseAnalyticsData (Api.Data (List Api.Homework.Analytics.CourseAnalyticsData))
     | ViewMoreAssignments
       -- create assignment form
     | SearchCourses String
@@ -89,6 +94,7 @@ page =
 initCommands : List (Cmd Msg)
 initCommands =
     [ getActiveCourses { onResponse = GotCourseData }
+    , getCourseAnalytics { onResponse = GotCourseAnalyticsData }
     , Time.now |> Task.perform ReceiveTime
     ]
 
@@ -99,11 +105,13 @@ init shared url =
       , user = shared.user
       , gotUser = False
       , courseData = NotAsked
+      , courseAnalyticsData = NotAsked
       , searchCoursesData = NotAsked
       , device = shared.device
       , createAssignmentData = NotAsked
       , searchCoursesText = ""
       , selectedCourse = Nothing
+      , selectedCourseFromMoodle = False
       , titleTfText = ""
       , dateTfText = ""
       , selectedDate = Nothing
@@ -135,6 +143,9 @@ update msg model =
 
                 _ ->
                     ( { model | courseData = data }, Cmd.none )
+
+        GotCourseAnalyticsData data ->
+            ( { model | courseAnalyticsData = data }, Cmd.none )
 
         GotSearchCoursesData data ->
             ( { model | searchCoursesData = data }, Cmd.none )
@@ -188,6 +199,7 @@ update msg model =
 
                     else
                         course.teacher ++ ": " ++ course.subject
+                , selectedCourseFromMoodle = course.fromMoodle
                 , searchCoursesData = NotAsked
                 , selectedCourse = Just course.id
                 , errors = List.filter (\error -> error /= "no course selected") model.errors
@@ -285,7 +297,15 @@ update msg model =
                 Just course ->
                     case model.selectedDate of
                         Just dueDate ->
-                            ( { model | dateTfText = "", searchCoursesText = "", searchCoursesData = NotAsked, selectedCourse = Nothing, errors = [] }, createAssignment { courseId = course, title = model.titleTfText, dueDate = dueDate } { onResponse = GotCreateAssignmentData } )
+                            ( { model | dateTfText = "", searchCoursesText = "", searchCoursesData = NotAsked, selectedCourse = Nothing, errors = [] }
+                            , createAssignment
+                                { courseId = course
+                                , title = model.titleTfText
+                                , dueDate = dueDate
+                                , fromMoodle = model.selectedCourseFromMoodle
+                                }
+                                { onResponse = GotCreateAssignmentData }
+                            )
 
                         _ ->
                             ( model, Cmd.none )
@@ -294,7 +314,7 @@ update msg model =
                     ( model, Cmd.none )
 
         GotCreateAssignmentData data ->
-            ( { model | createAssignmentData = data }, getActiveCourses { onResponse = GotCourseData } )
+            ( { model | createAssignmentData = data }, Cmd.batch [ getActiveCourses { onResponse = GotCourseData }, getCourseAnalytics { onResponse = GotCourseAnalyticsData } ] )
 
         Add1Day ->
             let
@@ -390,20 +410,26 @@ view model =
                     , spacing 30
                     ]
                     [ viewOustandingAssignments model
-                    , row [ width fill, height shrink, spacing 30 ]
-                        [ viewCreateAssignmentForm model
-                        , case model.device.class of
-                            Shared.Desktop ->
-                                el
-                                    [ width (fillPortion 1)
-                                    , Background.color lighterGreyColor
-                                    , height fill
-                                    , Border.rounded borderRadius
-                                    ]
-                                    (el [ centerX, centerY, Font.italic ] (text "coming soon..."))
+                    , (case model.device.class of
+                        Shared.Desktop ->
+                            row
 
-                            _ ->
-                                none
+                        _ ->
+                            column
+                      )
+                        [ width fill, height shrink, spacing 30 ]
+                        [ viewCreateAssignmentForm model
+                        , el [ Background.color lighterGreyColor, Border.rounded borderRadius, width fill, height fill ]
+                            (case model.courseAnalyticsData of
+                                Api.Success courseData ->
+                                    el [ centerX, centerY, width fill ] (html (Components.CourseChart.view courseData))
+
+                                Api.Failure e ->
+                                    el [ centerX, centerY ] (text (errorToString e))
+
+                                _ ->
+                                    el [ centerX, centerY ] (text "Loading...")
+                            )
                         ]
                     ]
                 ]
