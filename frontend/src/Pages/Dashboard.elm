@@ -1,13 +1,14 @@
 module Pages.Dashboard exposing (Model, Msg, Params, page)
 
 import Api exposing (Data(..))
-import Api.Homework.Analytics exposing (getCourseAnalytics)
+import Api.Homework.Analytics exposing (getCourseAnalytics, getUserAnalytics)
 import Api.Homework.Assignment exposing (createAssignment)
 import Api.Homework.Course exposing (MinimalCourse, getActiveCourses, searchCourses)
 import Api.Homework.User exposing (getUserFromSession)
 import Array
 import Components.CourseChart
 import Components.Sidebar
+import Components.UserChart
 import Date
 import Element exposing (..)
 import Element.Background as Background
@@ -45,6 +46,7 @@ type alias Model =
     , user : Maybe User
     , courseData : Api.Data (List Course)
     , courseAnalyticsData : Api.Data (List Api.Homework.Analytics.CourseAnalyticsData)
+    , userAnalyticsData : Api.Data (List Api.Homework.Analytics.UserAnalyticsData)
     , device : Shared.Device
 
     -- create assignment form
@@ -66,6 +68,7 @@ type alias Model =
 type Msg
     = GotCourseData (Api.Data (List Course))
     | GotCourseAnalyticsData (Api.Data (List Api.Homework.Analytics.CourseAnalyticsData))
+    | GotUserAnalyticsData (Api.Data (List Api.Homework.Analytics.UserAnalyticsData))
     | ViewMoreAssignments
       -- create assignment form
     | SearchCourses String
@@ -95,6 +98,7 @@ initCommands : List (Cmd Msg)
 initCommands =
     [ getActiveCourses { onResponse = GotCourseData }
     , getCourseAnalytics { onResponse = GotCourseAnalyticsData }
+    , getUserAnalytics {onResponse = GotUserAnalyticsData}
     , Time.now |> Task.perform ReceiveTime
     ]
 
@@ -106,6 +110,7 @@ init shared url =
       , gotUser = False
       , courseData = NotAsked
       , courseAnalyticsData = NotAsked
+      , userAnalyticsData = NotAsked
       , searchCoursesData = NotAsked
       , device = shared.device
       , createAssignmentData = NotAsked
@@ -146,6 +151,9 @@ update msg model =
 
         GotCourseAnalyticsData data ->
             ( { model | courseAnalyticsData = data }, Cmd.none )
+
+        GotUserAnalyticsData data ->
+            ( { model | userAnalyticsData = data }, Cmd.none )
 
         GotSearchCoursesData data ->
             ( { model | searchCoursesData = data }, Cmd.none )
@@ -314,7 +322,7 @@ update msg model =
                     ( model, Cmd.none )
 
         GotCreateAssignmentData data ->
-            ( { model | createAssignmentData = data }, Cmd.batch [ getActiveCourses { onResponse = GotCourseData }, getCourseAnalytics { onResponse = GotCourseAnalyticsData } ] )
+            ( { model | createAssignmentData = data }, Cmd.batch [ getActiveCourses { onResponse = GotCourseData }, getCourseAnalytics { onResponse = GotCourseAnalyticsData }, getUserAnalytics { onResponse = GotUserAnalyticsData } ] )
 
         Add1Day ->
             let
@@ -431,6 +439,17 @@ view model =
                                     el [ centerX, centerY ] (text "Loading...")
                             )
                         ]
+                    , el [ Background.color lighterGreyColor, Border.rounded borderRadius, width fill, height (fill |> minimum 300) ]
+                        (case model.userAnalyticsData of
+                            Api.Success userAnalyticsData ->
+                                el [ centerX, centerY, width fill ] (html (Components.UserChart.view userAnalyticsData))
+
+                            Api.Failure e ->
+                                el [ centerX, centerY ] (text (errorToString e))
+
+                            _ ->
+                                el [ centerX, centerY ] (text "Loading...")
+                        )
                     ]
                 ]
             )

@@ -1,5 +1,6 @@
 module Styling.Colors exposing (..)
 
+import Array exposing (Array)
 import Element exposing (Color, rgb255)
 
 
@@ -32,3 +33,19 @@ lighterGreyColor =
 darkGreyColor : Color
 darkGreyColor =
     rgb255 26 28 33
+
+
+chartColors : Array Color
+chartColors =
+    Array.fromList
+        [ rgb255 77 121 167
+        , rgb255 242 142 43
+        , rgb255 225 86 89
+        , rgb255 118 183 178
+        , rgb255 88 161 78
+        , rgb255 237 201 73
+        , rgb255 175 121 161
+        , rgb255 255 157 167
+        , rgb255 156 117 95
+        , rgb255 186 176 172
+        ]
