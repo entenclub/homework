@@ -2,14 +2,14 @@ module Components.CourseChart exposing (view)
 
 import Api.Homework.Analytics
 import Array exposing (Array)
-import Color exposing (Color)
+import Color exposing (Color, rgb)
 import Path
 import Shape exposing (defaultPieConfig)
 import TypedSvg exposing (g, svg, text_)
-import TypedSvg.Attributes exposing (dy, fill, stroke, textAnchor, transform, viewBox)
+import TypedSvg.Attributes exposing (color, dy, fill, fontFamily, fontSize, fontWeight, stroke, textAnchor, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (height, width)
 import TypedSvg.Core exposing (Svg, text)
-import TypedSvg.Types exposing (AnchorAlignment(..), Paint(..), Transform(..), em)
+import TypedSvg.Types exposing (AnchorAlignment(..), FontWeight(..), Paint(..), Transform(..), em, pt, px)
 
 
 w : Float
@@ -25,13 +25,16 @@ h =
 colors : Array Color
 colors =
     Array.fromList
-        [ Color.rgb255 152 171 198
-        , Color.rgb255 138 137 166
-        , Color.rgb255 123 104 136
-        , Color.rgb255 107 72 107
-        , Color.rgb255 159 92 85
-        , Color.rgb255 208 116 60
-        , Color.rgb255 255 96 0
+        [ Color.rgb255 77 121 167
+        , Color.rgb255 242 142 43
+        , Color.rgb255 225 86 89
+        , Color.rgb255 118 183 178
+        , Color.rgb255 88 161 78
+        , Color.rgb255 237 201 73
+        , Color.rgb255 175 121 161
+        , Color.rgb255 255 157 167
+        , Color.rgb255 156 117 95
+        , Color.rgb255 186 176 172
         ]
 
 
@@ -58,6 +61,10 @@ view model =
                 [ transform [ Translate x y ]
                 , dy (em 0.35)
                 , textAnchor AnchorMiddle
+                , fill <| Paint Color.white
+                , fontSize (pt 24)
+                , fontFamily [ "Source Sans Pro" ]
+                , fontWeight FontWeightBold
                 ]
                 [ text label ]
     in
