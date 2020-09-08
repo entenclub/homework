@@ -1,3 +1,5 @@
+import datetime
+
 from homework import db
 import json
 
@@ -14,6 +16,7 @@ class User(db.Model):
     moodle_url = db.Column('moodle_url', db.String(255), nullable=True)
     moodle_token = db.Column('moodle_token', db.String(255), nullable=True)
     moodle_user_id = db.Column('moodle_user_id', db.Integer, nullable=True)
+    joined_at = db.Column('joined_at', db.DateTime, default=datetime.datetime.now, nullable=False)
 
     def decode_courses(self):
         return json.loads(self.courses)

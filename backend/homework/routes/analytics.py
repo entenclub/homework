@@ -1,3 +1,5 @@
+import datetime
+
 from flask import Blueprint, request, jsonify
 
 from homework.database.assignment import Assignment
@@ -20,7 +22,7 @@ def courses():
 
     session = Session.query.filter_by(id=session_cookie).first()
     if session is None:
-        return jsonify(return_error("invalid sesssion")), 401
+        return jsonify(return_error("invalid ")), 401
 
     user = User.query.filter_by(id=session.user_id).first()
 
@@ -84,7 +86,7 @@ def users():
 
     session = Session.query.filter_by(id=session_cookie).first()
     if session is None:
-        return jsonify(return_error("invalid sesssion")), 401
+        return jsonify(return_error("invalid ")), 401
 
     user = User.query.filter_by(id=session.user_id).first()
 
@@ -139,3 +141,56 @@ def users():
         return jsonify(to_response([(k, v) for k, v in data.items()]))
     else:
         return jsonify(to_response(data))
+
+
+@analytics_bp.route('/analytics/admin/user_growth')
+def admin_user_growth():
+
+    to_tuples = request.args.get('tuples')
+    relative = request.args.get('relative') is not None
+    days = request.args.get('days') or 30
+    days = int(days)
+
+    session_cookie = request.cookies.get('hw_session')
+    if not session_cookie:
+        return jsonify(return_error("no session")), 401
+
+    session = Session.query.filter_by(id=session_cookie).first()
+    if session is None:
+        return jsonify(return_error("invalid session")), 401
+
+    user = User.query.filter_by(id=session.user_id).first()
+
+    if user is None:
+        return jsonify(return_error("invalid session")), 401
+
+    if user.privilege != 1:
+        return jsonify(return_error("permission denied"), 403)
+
+    data = {}
+
+    today = datetime.datetime.today()
+
+    for i in range(days):
+        formatted = datetime.datetime.strftime(today - datetime.timedelta(days=i), '%Y-%m-%d')
+        data[formatted] = 0
+
+    users = User.query.all()
+    previous = 0
+    for date in reversed(data.keys()):
+        new_users = len(list(filter(lambda x: joined_on_date(date, x), users)))
+        if relative:
+            data[date] = new_users
+        else:
+            data[date] = new_users + previous
+            previous += new_users
+
+    if to_tuples is not None:
+        return jsonify(to_response([(k, v) for k, v in data.items()]))
+    else:
+        return jsonify(to_response(data))
+
+
+def joined_on_date(datestr: str, user: User) -> bool:
+    date = datetime.datetime.strptime(datestr, '%Y-%m-%d').date()
+    return user.joined_at.date() == date

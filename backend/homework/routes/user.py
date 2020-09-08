@@ -69,7 +69,7 @@ def user_by_session():
 
     except Exception as e:
         print(e)
-        return jsonify(return_error("invalid sesssion")), 401
+        return jsonify(return_error("invalid session")), 401
 
     try:
         user = User.query.filter_by(id=session.user_id).first()
@@ -122,6 +122,6 @@ def logout():
 
     except Exception as e:
         print(e)
-        return jsonify(return_error("invalid sesssion")), 401
+        return jsonify(return_error("invalid session")), 401
 
     return jsonify(to_response(None)), 200

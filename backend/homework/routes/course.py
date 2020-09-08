@@ -27,7 +27,7 @@ def search_courses(searchterm):
 
     session = Session.query.filter_by(id=session_cookie).first()
     if session is None:
-        return jsonify(return_error("invalid sesssion")), 401
+        return jsonify(return_error("invalid session")), 401
 
     user = User.query.filter_by(id=session.user_id).first()
 
@@ -77,7 +77,7 @@ def active_courses():
 
     session = Session.query.filter_by(id=session_cookie).first()
     if session is None:
-        return jsonify(return_error("invalid sesssion")), 401
+        return jsonify(return_error("invalid session")), 401
 
     user = User.query.filter_by(id=session.user_id).first()
 
@@ -155,7 +155,7 @@ def my_courses():
 
     session = Session.query.filter_by(id=session_cookie).first()
     if session is None:
-        return jsonify(return_error("invalid sesssion")), 401
+        return jsonify(return_error("invalid session")), 401
 
     user = User.query.filter_by(id=session.user_id).first()
 
@@ -199,7 +199,7 @@ def create_course():
 
     session = Session.query.filter_by(id=session_cookie).first()
     if session is None:
-        return jsonify(return_error("invalid sesssion")), 401
+        return jsonify(return_error("invalid session")), 401
 
     user = User.query.filter_by(id=session.user_id).first()
 
@@ -242,7 +242,7 @@ def enroll(id):
 
     session = Session.query.filter_by(id=session_cookie).first()
     if session is None:
-        return jsonify(return_error("invalid sesssion")), 401
+        return jsonify(return_error("invalid session")), 401
 
     user = User.query.filter_by(id=session.user_id).first()
 
