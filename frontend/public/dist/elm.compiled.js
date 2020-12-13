@@ -21558,19 +21558,17 @@ var $author$project$Pages$Dashboard$viewAssignmentsDayColumn = F4(
 				}()
 				]));
 	});
-var $author$project$Styling$Colors$greyGreyColor = A3($mdgriffith$elm_ui$Element$rgb255, 127, 140, 141);
 var $author$project$Pages$Dashboard$viewOtherAssignments = F2(
 	function (apiData, date) {
 		return A2(
 			$mdgriffith$elm_ui$Element$column,
 			_List_fromArray(
 				[
-					$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
 					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
 					$mdgriffith$elm_ui$Element$Border$rounded($author$project$Pages$Dashboard$borderRadius),
 					$mdgriffith$elm_ui$Element$spacing(10),
 					$mdgriffith$elm_ui$Element$padding(20),
-					$mdgriffith$elm_ui$Element$Background$color($author$project$Styling$Colors$greyGreyColor)
+					$mdgriffith$elm_ui$Element$Background$color($author$project$Styling$Colors$greenColor)
 				]),
 			_List_fromArray(
 				[
@@ -21578,7 +21576,7 @@ var $author$project$Pages$Dashboard$viewOtherAssignments = F2(
 					$mdgriffith$elm_ui$Element$el,
 					_List_fromArray(
 						[$mdgriffith$elm_ui$Element$Font$bold]),
-					$mdgriffith$elm_ui$Element$text('other ')),
+					$mdgriffith$elm_ui$Element$text('other')),
 					function () {
 					switch (apiData.$) {
 						case 'Success':
@@ -21597,7 +21595,7 @@ var $author$project$Pages$Dashboard$viewOtherAssignments = F2(
 									]),
 								A2(
 									$elm$core$List$map,
-									A2($author$project$Pages$Dashboard$courseGroupToKeyValue, $author$project$Styling$Colors$greyGreyColor, $elm$core$Maybe$Nothing),
+									A2($author$project$Pages$Dashboard$courseGroupToKeyValue, $author$project$Styling$Colors$greenColor, $elm$core$Maybe$Nothing),
 									courses));
 						case 'Loading':
 							return A2(
@@ -21626,7 +21624,8 @@ var $author$project$Pages$Dashboard$viewOustandingAssignments = function (model)
 				$mdgriffith$elm_ui$Element$spacing(30),
 				$mdgriffith$elm_ui$Element$Background$color($author$project$Styling$Colors$lighterGreyColor),
 				$mdgriffith$elm_ui$Element$padding(30),
-				$mdgriffith$elm_ui$Element$Border$rounded($author$project$Pages$Dashboard$borderRadius)
+				$mdgriffith$elm_ui$Element$Border$rounded($author$project$Pages$Dashboard$borderRadius),
+				$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill)
 			]),
 		_List_fromArray(
 			[
@@ -21643,7 +21642,7 @@ var $author$project$Pages$Dashboard$viewOustandingAssignments = function (model)
 					[
 						$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
 						$mdgriffith$elm_ui$Element$height(
-						A2($mdgriffith$elm_ui$Element$minimum, 200, $mdgriffith$elm_ui$Element$shrink)),
+						A2($mdgriffith$elm_ui$Element$minimum, 200, $mdgriffith$elm_ui$Element$fill)),
 						$mdgriffith$elm_ui$Element$spacing(30)
 					]),
 				_List_fromArray(
@@ -22110,7 +22109,7 @@ var $author$project$Pages$Dashboard$view = function (model) {
 									_List_fromArray(
 										[
 											$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
-											$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$shrink),
+											$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
 											$mdgriffith$elm_ui$Element$spacing(30)
 										]),
 									_List_fromArray(
@@ -25742,23 +25741,6 @@ var $author$project$Shared$navBarView = F3(
 									} else {
 										return $mdgriffith$elm_ui$Element$alignRight;
 									}
-								}()
-								]),
-							A2(
-								$author$project$Shared$navBarElement,
-								$mdgriffith$elm_ui$Element$text('dashboard/courses'),
-								'/dashboard/courses')),
-							A2(
-							$mdgriffith$elm_ui$Element$el,
-							_List_fromArray(
-								[
-									function () {
-									var _v5 = device._class;
-									if (_v5.$ === 'Phone') {
-										return $mdgriffith$elm_ui$Element$alignBottom;
-									} else {
-										return $mdgriffith$elm_ui$Element$alignRight;
-									}
 								}(),
 									$mdgriffith$elm_ui$Element$Events$onClick(
 									options.toMsg($author$project$Shared$Logout))
@@ -25776,8 +25758,8 @@ var $author$project$Shared$navBarView = F3(
 							_List_fromArray(
 								[
 									function () {
-									var _v6 = device._class;
-									if (_v6.$ === 'Phone') {
+									var _v5 = device._class;
+									if (_v5.$ === 'Phone') {
 										return $mdgriffith$elm_ui$Element$alignTop;
 									} else {
 										return $mdgriffith$elm_ui$Element$alignLeft;
@@ -25791,8 +25773,8 @@ var $author$project$Shared$navBarView = F3(
 							_List_fromArray(
 								[
 									function () {
-									var _v7 = device._class;
-									if (_v7.$ === 'Phone') {
+									var _v6 = device._class;
+									if (_v6.$ === 'Phone') {
 										return $mdgriffith$elm_ui$Element$alignBottom;
 									} else {
 										return $mdgriffith$elm_ui$Element$alignRight;
@@ -25808,8 +25790,8 @@ var $author$project$Shared$navBarView = F3(
 							_List_fromArray(
 								[
 									function () {
-									var _v8 = device._class;
-									if (_v8.$ === 'Desktop') {
+									var _v7 = device._class;
+									if (_v7.$ === 'Desktop') {
 										return $mdgriffith$elm_ui$Element$alignLeft;
 									} else {
 										return $mdgriffith$elm_ui$Element$alignBottom;

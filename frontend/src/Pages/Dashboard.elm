@@ -388,7 +388,7 @@ view model =
                     , spacing 30
                     ]
                     [ viewOustandingAssignments model
-                    , row [ width fill, height shrink, spacing 30 ]
+                    , row [ width fill, height fill, spacing 30 ]
                         [ viewCreateAssignmentForm model
                         , case model.device.class of
                             Shared.Desktop ->
@@ -491,6 +491,7 @@ viewOustandingAssignments model =
         , Background.color lighterGreyColor
         , padding 30
         , Border.rounded borderRadius
+        , height fill
         ]
         [ (case model.device.class of
             Shared.Desktop ->
@@ -500,7 +501,7 @@ viewOustandingAssignments model =
                 column
           )
             [ width fill
-            , height (shrink |> minimum 200)
+            , height (fill |> minimum 200)
             , spacing 30
             ]
             [ --today
@@ -582,14 +583,13 @@ viewAssignmentsDayColumn courseData title color date =
 viewOtherAssignments : Api.Data (List Course) -> Date.Date -> Element msg
 viewOtherAssignments apiData date =
     column
-        [ height fill
-        , width fill
+        [ width fill
         , Border.rounded borderRadius
         , spacing 10
         , padding 20
-        , Background.color greyGreyColor
+        , Background.color greenColor
         ]
-        [ el [ Font.bold ] (text "other ")
+        [ el [ Font.bold ] (text "other")
         , case apiData of
             Success data ->
                 let
@@ -603,7 +603,7 @@ viewOtherAssignments apiData date =
                     none
 
                 else
-                    Keyed.column [ width fill, spacing 5 ] (List.map (courseGroupToKeyValue greyGreyColor Nothing) courses)
+                    Keyed.column [ width fill, spacing 5 ] (List.map (courseGroupToKeyValue greenColor Nothing) courses)
 
             Loading ->
                 el [ centerX, centerY, Font.size 30, Font.bold ] (text "Loading...")

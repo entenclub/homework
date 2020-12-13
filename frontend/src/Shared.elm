@@ -214,15 +214,6 @@ navBarView device maybeUser options =
 
                         _ ->
                             alignRight
-                    ]
-                    (navBarElement (text "dashboard/courses") "/dashboard/courses")
-                , el
-                    [ case device.class of
-                        Phone ->
-                            alignBottom
-
-                        _ ->
-                            alignRight
                     , Events.onClick (options.toMsg Logout)
                     ]
                     (navBarElement (text "logout") "/")
