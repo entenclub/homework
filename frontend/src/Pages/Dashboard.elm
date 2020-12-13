@@ -431,15 +431,11 @@ errorToString error =
 
 
 -- outstanding? assignments
--- dueDateAfteDate : Date.Date -> Date.Date -> Bool
 
 
-dueDateAfteDate dueDate date =
-    let
-        epochStartOffset =
-            719162
-    in
-    Date.toRataDie date - epochStartOffset - (Date.toRataDie dueDate - epochStartOffset) > 0
+dueDateAfterDate : Date.Date -> Date.Date -> Bool
+dueDateAfterDate dueDate date =
+    Date.toRataDie dueDate > Date.toRataDie date
 
 
 dateToPosixTime : Date.Date -> Time.Posix
@@ -464,9 +460,27 @@ inNDays days today =
         )
 
 
-otherOutstandingAssignments : Date.Date -> List Course -> Int
+otherOutstandingAssignments : Date.Date -> List Course -> List Course
 otherOutstandingAssignments today courses =
-    List.length (List.filter (\assignment -> dueDateAfteDate assignment.dueDate (inNDays 3 today)) (List.concat (List.map (\course -> course.assignments) courses)))
+    let
+        validAssignments =
+            List.filter
+                (\assignment ->
+                    dueDateAfterDate assignment.dueDate (Date.add Date.Days 3 today)
+                )
+                (List.concat (List.map (\course -> course.assignments) courses))
+
+        validCourseIds =
+            List.map (\assignment -> assignment.courseId) validAssignments
+
+        debugThing =
+            Debug.log "otherOutstandingAssignments()" (Debug.toString courses)
+    in
+    List.map
+        (\course ->
+            { course | assignments = List.filter (\a -> a.courseId == course.id) validAssignments }
+        )
+        (List.filter (\course -> List.member course.id validCourseIds) courses)
 
 
 viewOustandingAssignments : Model -> Element Msg
@@ -496,35 +510,8 @@ viewOustandingAssignments model =
             ]
         , case model.courseData of
             Success courses ->
-                if otherOutstandingAssignments model.today courses > 0 then
-                    el
-                        [ width fill
-                        , height (px 100)
-                        , Border.rounded borderRadius
-                        , Background.color lighterGreyColor
-                        , mouseOver [ Background.color (darken darkGreyColor -0.1) ]
-                        , Events.onClick ViewMoreAssignments
-                        , pointer
-                        ]
-                        (row [ centerX, centerY ]
-                            [ el
-                                [ Font.bold, Font.size 30 ]
-                                (row [ spacing 5 ]
-                                    [ el
-                                        [ height (px 30)
-                                        , Background.color (darken lighterGreyColor -0.2)
-                                        , width (px 50)
-                                        , Border.rounded 15
-                                        , centerY
-                                        ]
-                                        (el [ centerX, centerY ] (text (String.fromInt (otherOutstandingAssignments model.today courses))))
-                                    , text "More"
-                                    ]
-                                )
-                            , el [ centerX, centerY ]
-                                (html (Icons.arrow_forward 50 Inherit))
-                            ]
-                        )
+                if List.length (otherOutstandingAssignments model.today courses) > 0 then
+                    viewOtherAssignments model.courseData model.today
 
                 else
                     none
@@ -532,6 +519,10 @@ viewOustandingAssignments model =
             _ ->
                 none
         ]
+
+
+
+-- BIG OOF FUNCTIONS
 
 
 filterCoursesByWhetherAssignmentsAreDueOnDate : List Course -> Date.Date -> List Course
@@ -552,10 +543,6 @@ filterCoursesByWhetherAssignmentsAreDueOnDate courses date =
                 )
     in
     List.filter (\course -> List.member course.id validCourses) courses
-
-
-
---List.filter (\course -> List.member course.id validCourses) courses
 
 
 viewAssignmentsDayColumn : Api.Data (List Course) -> String -> Color -> Date.Date -> Element msg
@@ -579,7 +566,7 @@ viewAssignmentsDayColumn courseData title color date =
                     el [ centerX, centerY, Font.size 30, Font.bold ] (text "*nothing 🎉*")
 
                 else
-                    Keyed.column [ width fill, spacing 5 ] (List.map (courseGroupToKeyValue color date) courses)
+                    Keyed.column [ width fill, spacing 5 ] (List.map (courseGroupToKeyValue color (Just date)) courses)
 
             Failure e ->
                 text (errorToString e)
@@ -592,16 +579,55 @@ viewAssignmentsDayColumn courseData title color date =
         ]
 
 
-courseGroupToKeyValue : Color -> Date.Date -> Course -> ( String, Element msg )
+viewOtherAssignments : Api.Data (List Course) -> Date.Date -> Element msg
+viewOtherAssignments apiData date =
+    column
+        [ height fill
+        , width fill
+        , Border.rounded borderRadius
+        , spacing 10
+        , padding 20
+        , Background.color greyGreyColor
+        ]
+        [ el [ Font.bold ] (text "other ")
+        , case apiData of
+            Success data ->
+                let
+                    courses =
+                        otherOutstandingAssignments date data
+
+                    debugThing =
+                        Debug.log "viewOtherAssignments()" (Debug.toString courses)
+                in
+                if List.isEmpty courses then
+                    none
+
+                else
+                    Keyed.column [ width fill, spacing 5 ] (List.map (courseGroupToKeyValue greyGreyColor Nothing) courses)
+
+            Loading ->
+                el [ centerX, centerY, Font.size 30, Font.bold ] (text "Loading...")
+
+            _ ->
+                none
+        ]
+
+
+courseGroupToKeyValue : Color -> Maybe Date.Date -> Course -> ( String, Element msg )
 courseGroupToKeyValue color date course =
     ( String.fromInt course.id, viewAssignmentCourseGroup course color date )
 
 
-viewAssignmentCourseGroup : Course -> Color -> Date.Date -> Element msg
-viewAssignmentCourseGroup course color date =
+viewAssignmentCourseGroup : Course -> Color -> Maybe Date.Date -> Element msg
+viewAssignmentCourseGroup course color maybeDate =
     let
         assignments =
-            List.filter (\assignment -> assignment.dueDate == date) course.assignments
+            case maybeDate of
+                Just date ->
+                    List.filter (\assignment -> assignment.dueDate == date) course.assignments
+
+                Nothing ->
+                    course.assignments
     in
     if not (List.isEmpty assignments) then
         column

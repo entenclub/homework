@@ -55,7 +55,6 @@ viewSidebar model =
     let
         links =
             [ ( "dashboard", Route.Dashboard )
-            , ( "courses", Route.Dashboard__Courses )
             , ( "moodle integration", Route.Dashboard__Moodle )
             ]
     in

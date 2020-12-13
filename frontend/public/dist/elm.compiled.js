@@ -11196,7 +11196,7 @@ var $author$project$Shared$Tablet = {$: 'Tablet'};
 var $author$project$Shared$classifyDevice = function (options) {
 	return (options.width < 900) ? A4($author$project$Shared$Device, $author$project$Shared$Phone, $author$project$Shared$Portrait, options.width, options.height) : ((options.width < 1400) ? A4($author$project$Shared$Device, $author$project$Shared$Tablet, $author$project$Shared$Portrait, options.width, options.height) : A4($author$project$Shared$Device, $author$project$Shared$Desktop, $author$project$Shared$Landscape, options.width, options.height));
 };
-var $author$project$Api$Api$apiAddress = 'http://localhost:5000';
+var $author$project$Api$Api$apiAddress = 'https://api.hausis.3nt3.de';
 var $elm$http$Http$BadStatus_ = F2(
 	function (a, b) {
 		return {$: 'BadStatus_', a: a, b: b};
@@ -21258,8 +21258,6 @@ var $author$project$Pages$Dashboard$viewCreateAssignmentForm = function (model) 
 			]));
 };
 var $justinmimbs$date$Date$Days = {$: 'Days'};
-var $icidasset$elm_material_icons$Material$Icons$Types$Inherit = {$: 'Inherit'};
-var $author$project$Pages$Dashboard$ViewMoreAssignments = {$: 'ViewMoreAssignments'};
 var $justinmimbs$date$Date$Months = {$: 'Months'};
 var $justinmimbs$date$Date$add = F3(
 	function (unit, n, _v0) {
@@ -21289,137 +21287,61 @@ var $justinmimbs$date$Date$add = F3(
 				return $justinmimbs$date$Date$RD(rd + n);
 		}
 	});
-var $elm$svg$Svg$Attributes$d = _VirtualDom_attribute('d');
-var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
-var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
-var $elm$svg$Svg$g = $elm$svg$Svg$trustedNode('g');
-var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
-var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
-var $avh4$elm_color$Color$toCssString = function (_v0) {
-	var r = _v0.a;
-	var g = _v0.b;
-	var b = _v0.c;
-	var a = _v0.d;
-	var roundTo = function (x) {
-		return $elm$core$Basics$round(x * 1000) / 1000;
-	};
-	var pct = function (x) {
-		return $elm$core$Basics$round(x * 10000) / 100;
-	};
-	return $elm$core$String$concat(
-		_List_fromArray(
-			[
-				'rgba(',
-				$elm$core$String$fromFloat(
-				pct(r)),
-				'%,',
-				$elm$core$String$fromFloat(
-				pct(g)),
-				'%,',
-				$elm$core$String$fromFloat(
-				pct(b)),
-				'%,',
-				$elm$core$String$fromFloat(
-				roundTo(a)),
-				')'
-			]));
-};
-var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
-var $icidasset$elm_material_icons$Material$Icons$Internal$icon = F4(
-	function (attributes, nodes, size, coloring) {
-		var sizeAsString = $elm$core$String$fromInt(size);
-		return A2(
-			$elm$svg$Svg$svg,
-			_Utils_ap(
-				attributes,
-				_List_fromArray(
-					[
-						$elm$svg$Svg$Attributes$height(sizeAsString),
-						$elm$svg$Svg$Attributes$width(sizeAsString)
-					])),
-			_List_fromArray(
-				[
-					A2(
-					$elm$svg$Svg$g,
-					_List_fromArray(
-						[
-							function () {
-							if (coloring.$ === 'Color') {
-								var color = coloring.a;
-								return $elm$svg$Svg$Attributes$fill(
-									$avh4$elm_color$Color$toCssString(color));
-							} else {
-								return $elm$svg$Svg$Attributes$fill('currentColor');
-							}
-						}()
-						]),
-					nodes)
-				]));
-	});
-var $elm$svg$Svg$path = $elm$svg$Svg$trustedNode('path');
-var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
-var $icidasset$elm_material_icons$Material$Icons$arrow_forward = A2(
-	$icidasset$elm_material_icons$Material$Icons$Internal$icon,
-	_List_fromArray(
-		[
-			$elm$svg$Svg$Attributes$viewBox('0 0 24 24')
-		]),
-	_List_fromArray(
-		[
-			A2(
-			$elm$svg$Svg$path,
-			_List_fromArray(
-				[
-					$elm$svg$Svg$Attributes$d('M0 0h24v24H0z'),
-					$elm$svg$Svg$Attributes$fill('none')
-				]),
-			_List_Nil),
-			A2(
-			$elm$svg$Svg$path,
-			_List_fromArray(
-				[
-					$elm$svg$Svg$Attributes$d('M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z')
-				]),
-			_List_Nil)
-		]));
-var $mdgriffith$elm_ui$Element$html = $mdgriffith$elm_ui$Internal$Model$unstyled;
-var $author$project$Pages$Dashboard$dueDateAfteDate = F2(
+var $author$project$Pages$Dashboard$dueDateAfterDate = F2(
 	function (dueDate, date) {
-		var epochStartOffset = 719162;
-		return (($justinmimbs$date$Date$toRataDie(date) - epochStartOffset) - ($justinmimbs$date$Date$toRataDie(dueDate) - epochStartOffset)) > 0;
+		return _Utils_cmp(
+			$justinmimbs$date$Date$toRataDie(dueDate),
+			$justinmimbs$date$Date$toRataDie(date)) > 0;
 	});
-var $author$project$Pages$Dashboard$dateToPosixTime = function (date) {
-	return $elm$time$Time$millisToPosix(
-		$justinmimbs$date$Date$toRataDie(date) - (719162 * (((1000 * 60) * 60) * 24)));
-};
-var $author$project$Pages$Dashboard$inNDays = F2(
-	function (days, today) {
-		return A2(
-			$justinmimbs$date$Date$fromPosix,
-			$elm$time$Time$utc,
-			$elm$time$Time$millisToPosix(
-				$elm$core$Basics$floor(
-					$elm$time$Time$posixToMillis(
-						$author$project$Pages$Dashboard$dateToPosixTime(today)) + ((((1000 * 60) * 60) * 24) * days))));
-	});
+var $elm$core$Debug$log = _Debug_log;
+var $elm$core$Debug$toString = _Debug_toString;
 var $author$project$Pages$Dashboard$otherOutstandingAssignments = F2(
 	function (today, courses) {
-		return $elm$core$List$length(
+		var validAssignments = A2(
+			$elm$core$List$filter,
+			function (assignment) {
+				return A2(
+					$author$project$Pages$Dashboard$dueDateAfterDate,
+					assignment.dueDate,
+					A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, 3, today));
+			},
+			$elm$core$List$concat(
+				A2(
+					$elm$core$List$map,
+					function (course) {
+						return course.assignments;
+					},
+					courses)));
+		var validCourseIds = A2(
+			$elm$core$List$map,
+			function (assignment) {
+				return assignment.courseId;
+			},
+			validAssignments);
+		var debugThing = A2(
+			$elm$core$Debug$log,
+			'otherOutstandingAssignments()',
+			$elm$core$Debug$toString(courses));
+		return A2(
+			$elm$core$List$map,
+			function (course) {
+				return _Utils_update(
+					course,
+					{
+						assignments: A2(
+							$elm$core$List$filter,
+							function (a) {
+								return _Utils_eq(a.courseId, course.id);
+							},
+							validAssignments)
+					});
+			},
 			A2(
 				$elm$core$List$filter,
-				function (assignment) {
-					return A2(
-						$author$project$Pages$Dashboard$dueDateAfteDate,
-						assignment.dueDate,
-						A2($author$project$Pages$Dashboard$inNDays, 3, today));
+				function (course) {
+					return A2($elm$core$List$member, course.id, validCourseIds);
 				},
-				$elm$core$List$concat(
-					A2(
-						$elm$core$List$map,
-						function (course) {
-							return course.assignments;
-						},
-						courses))));
+				courses));
 	});
 var $mdgriffith$elm_ui$Internal$Model$Right = {$: 'Right'};
 var $mdgriffith$elm_ui$Element$alignRight = $mdgriffith$elm_ui$Internal$Model$AlignX($mdgriffith$elm_ui$Internal$Model$Right);
@@ -21461,13 +21383,20 @@ var $author$project$Pages$Dashboard$assignmentToKeyValue = F2(
 			A2($author$project$Pages$Dashboard$viewAssignment, assignment, color));
 	});
 var $author$project$Pages$Dashboard$viewAssignmentCourseGroup = F3(
-	function (course, color, date) {
-		var assignments = A2(
-			$elm$core$List$filter,
-			function (assignment) {
-				return _Utils_eq(assignment.dueDate, date);
-			},
-			course.assignments);
+	function (course, color, maybeDate) {
+		var assignments = function () {
+			if (maybeDate.$ === 'Just') {
+				var date = maybeDate.a;
+				return A2(
+					$elm$core$List$filter,
+					function (assignment) {
+						return _Utils_eq(assignment.dueDate, date);
+					},
+					course.assignments);
+			} else {
+				return course.assignments;
+			}
+		}();
 		return (!$elm$core$List$isEmpty(assignments)) ? A2(
 			$mdgriffith$elm_ui$Element$column,
 			_List_fromArray(
@@ -21594,7 +21523,10 @@ var $author$project$Pages$Dashboard$viewAssignmentsDayColumn = F4(
 									]),
 								A2(
 									$elm$core$List$map,
-									A2($author$project$Pages$Dashboard$courseGroupToKeyValue, color, date),
+									A2(
+										$author$project$Pages$Dashboard$courseGroupToKeyValue,
+										color,
+										$elm$core$Maybe$Just(date)),
 									courses));
 						case 'Failure':
 							var e = courseData.a;
@@ -21622,6 +21554,64 @@ var $author$project$Pages$Dashboard$viewAssignmentsDayColumn = F4(
 										$mdgriffith$elm_ui$Element$Font$bold
 									]),
 								$mdgriffith$elm_ui$Element$text('Loading...'));
+					}
+				}()
+				]));
+	});
+var $author$project$Styling$Colors$greyGreyColor = A3($mdgriffith$elm_ui$Element$rgb255, 127, 140, 141);
+var $author$project$Pages$Dashboard$viewOtherAssignments = F2(
+	function (apiData, date) {
+		return A2(
+			$mdgriffith$elm_ui$Element$column,
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
+					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
+					$mdgriffith$elm_ui$Element$Border$rounded($author$project$Pages$Dashboard$borderRadius),
+					$mdgriffith$elm_ui$Element$spacing(10),
+					$mdgriffith$elm_ui$Element$padding(20),
+					$mdgriffith$elm_ui$Element$Background$color($author$project$Styling$Colors$greyGreyColor)
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$mdgriffith$elm_ui$Element$el,
+					_List_fromArray(
+						[$mdgriffith$elm_ui$Element$Font$bold]),
+					$mdgriffith$elm_ui$Element$text('other ')),
+					function () {
+					switch (apiData.$) {
+						case 'Success':
+							var data = apiData.a;
+							var courses = A2($author$project$Pages$Dashboard$otherOutstandingAssignments, date, data);
+							var debugThing = A2(
+								$elm$core$Debug$log,
+								'viewOtherAssignments()',
+								$elm$core$Debug$toString(courses));
+							return $elm$core$List$isEmpty(courses) ? $mdgriffith$elm_ui$Element$none : A2(
+								$mdgriffith$elm_ui$Element$Keyed$column,
+								_List_fromArray(
+									[
+										$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
+										$mdgriffith$elm_ui$Element$spacing(5)
+									]),
+								A2(
+									$elm$core$List$map,
+									A2($author$project$Pages$Dashboard$courseGroupToKeyValue, $author$project$Styling$Colors$greyGreyColor, $elm$core$Maybe$Nothing),
+									courses));
+						case 'Loading':
+							return A2(
+								$mdgriffith$elm_ui$Element$el,
+								_List_fromArray(
+									[
+										$mdgriffith$elm_ui$Element$centerX,
+										$mdgriffith$elm_ui$Element$centerY,
+										$mdgriffith$elm_ui$Element$Font$size(30),
+										$mdgriffith$elm_ui$Element$Font$bold
+									]),
+								$mdgriffith$elm_ui$Element$text('Loading...'));
+						default:
+							return $mdgriffith$elm_ui$Element$none;
 					}
 				}()
 				]));
@@ -21676,74 +21666,8 @@ var $author$project$Pages$Dashboard$viewOustandingAssignments = function (model)
 				var _v1 = model.courseData;
 				if (_v1.$ === 'Success') {
 					var courses = _v1.a;
-					return (A2($author$project$Pages$Dashboard$otherOutstandingAssignments, model.today, courses) > 0) ? A2(
-						$mdgriffith$elm_ui$Element$el,
-						_List_fromArray(
-							[
-								$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
-								$mdgriffith$elm_ui$Element$height(
-								$mdgriffith$elm_ui$Element$px(100)),
-								$mdgriffith$elm_ui$Element$Border$rounded($author$project$Pages$Dashboard$borderRadius),
-								$mdgriffith$elm_ui$Element$Background$color($author$project$Styling$Colors$lighterGreyColor),
-								$mdgriffith$elm_ui$Element$mouseOver(
-								_List_fromArray(
-									[
-										$mdgriffith$elm_ui$Element$Background$color(
-										A2($author$project$Utils$Darken$darken, $author$project$Styling$Colors$darkGreyColor, -0.1))
-									])),
-								$mdgriffith$elm_ui$Element$Events$onClick($author$project$Pages$Dashboard$ViewMoreAssignments),
-								$mdgriffith$elm_ui$Element$pointer
-							]),
-						A2(
-							$mdgriffith$elm_ui$Element$row,
-							_List_fromArray(
-								[$mdgriffith$elm_ui$Element$centerX, $mdgriffith$elm_ui$Element$centerY]),
-							_List_fromArray(
-								[
-									A2(
-									$mdgriffith$elm_ui$Element$el,
-									_List_fromArray(
-										[
-											$mdgriffith$elm_ui$Element$Font$bold,
-											$mdgriffith$elm_ui$Element$Font$size(30)
-										]),
-									A2(
-										$mdgriffith$elm_ui$Element$row,
-										_List_fromArray(
-											[
-												$mdgriffith$elm_ui$Element$spacing(5)
-											]),
-										_List_fromArray(
-											[
-												A2(
-												$mdgriffith$elm_ui$Element$el,
-												_List_fromArray(
-													[
-														$mdgriffith$elm_ui$Element$height(
-														$mdgriffith$elm_ui$Element$px(30)),
-														$mdgriffith$elm_ui$Element$Background$color(
-														A2($author$project$Utils$Darken$darken, $author$project$Styling$Colors$lighterGreyColor, -0.2)),
-														$mdgriffith$elm_ui$Element$width(
-														$mdgriffith$elm_ui$Element$px(50)),
-														$mdgriffith$elm_ui$Element$Border$rounded(15),
-														$mdgriffith$elm_ui$Element$centerY
-													]),
-												A2(
-													$mdgriffith$elm_ui$Element$el,
-													_List_fromArray(
-														[$mdgriffith$elm_ui$Element$centerX, $mdgriffith$elm_ui$Element$centerY]),
-													$mdgriffith$elm_ui$Element$text(
-														$elm$core$String$fromInt(
-															A2($author$project$Pages$Dashboard$otherOutstandingAssignments, model.today, courses))))),
-												$mdgriffith$elm_ui$Element$text('More')
-											]))),
-									A2(
-									$mdgriffith$elm_ui$Element$el,
-									_List_fromArray(
-										[$mdgriffith$elm_ui$Element$centerX, $mdgriffith$elm_ui$Element$centerY]),
-									$mdgriffith$elm_ui$Element$html(
-										A2($icidasset$elm_material_icons$Material$Icons$arrow_forward, 50, $icidasset$elm_material_icons$Material$Icons$Types$Inherit)))
-								]))) : $mdgriffith$elm_ui$Element$none;
+					return ($elm$core$List$length(
+						A2($author$project$Pages$Dashboard$otherOutstandingAssignments, model.today, courses)) > 0) ? A2($author$project$Pages$Dashboard$viewOtherAssignments, model.courseData, model.today) : $mdgriffith$elm_ui$Element$none;
 				} else {
 					return $mdgriffith$elm_ui$Element$none;
 				}
@@ -21896,7 +21820,6 @@ var $author$project$Components$Sidebar$viewSidebar = function (model) {
 	var links = _List_fromArray(
 		[
 			_Utils_Tuple2('dashboard', $author$project$Spa$Generated$Route$Dashboard),
-			_Utils_Tuple2('courses', $author$project$Spa$Generated$Route$Dashboard__Courses),
 			_Utils_Tuple2('moodle integration', $author$project$Spa$Generated$Route$Dashboard__Moodle)
 		]);
 	return A2(
@@ -23631,6 +23554,76 @@ var $author$project$Utils$OnEnter$onEnter = function (msg) {
 				},
 				A2($elm$json$Json$Decode$field, 'key', $elm$json$Json$Decode$string))));
 };
+var $icidasset$elm_material_icons$Material$Icons$Types$Inherit = {$: 'Inherit'};
+var $elm$svg$Svg$Attributes$d = _VirtualDom_attribute('d');
+var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
+var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
+var $elm$svg$Svg$g = $elm$svg$Svg$trustedNode('g');
+var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
+var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
+var $avh4$elm_color$Color$toCssString = function (_v0) {
+	var r = _v0.a;
+	var g = _v0.b;
+	var b = _v0.c;
+	var a = _v0.d;
+	var roundTo = function (x) {
+		return $elm$core$Basics$round(x * 1000) / 1000;
+	};
+	var pct = function (x) {
+		return $elm$core$Basics$round(x * 10000) / 100;
+	};
+	return $elm$core$String$concat(
+		_List_fromArray(
+			[
+				'rgba(',
+				$elm$core$String$fromFloat(
+				pct(r)),
+				'%,',
+				$elm$core$String$fromFloat(
+				pct(g)),
+				'%,',
+				$elm$core$String$fromFloat(
+				pct(b)),
+				'%,',
+				$elm$core$String$fromFloat(
+				roundTo(a)),
+				')'
+			]));
+};
+var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
+var $icidasset$elm_material_icons$Material$Icons$Internal$icon = F4(
+	function (attributes, nodes, size, coloring) {
+		var sizeAsString = $elm$core$String$fromInt(size);
+		return A2(
+			$elm$svg$Svg$svg,
+			_Utils_ap(
+				attributes,
+				_List_fromArray(
+					[
+						$elm$svg$Svg$Attributes$height(sizeAsString),
+						$elm$svg$Svg$Attributes$width(sizeAsString)
+					])),
+			_List_fromArray(
+				[
+					A2(
+					$elm$svg$Svg$g,
+					_List_fromArray(
+						[
+							function () {
+							if (coloring.$ === 'Color') {
+								var color = coloring.a;
+								return $elm$svg$Svg$Attributes$fill(
+									$avh4$elm_color$Color$toCssString(color));
+							} else {
+								return $elm$svg$Svg$Attributes$fill('currentColor');
+							}
+						}()
+						]),
+					nodes)
+				]));
+	});
+var $elm$svg$Svg$path = $elm$svg$Svg$trustedNode('path');
+var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
 var $icidasset$elm_material_icons$Material$Icons$check = A2(
 	$icidasset$elm_material_icons$Material$Icons$Internal$icon,
 	_List_fromArray(
@@ -23719,6 +23712,7 @@ var $icidasset$elm_material_icons$Material$Icons$hourglass_bottom = A2(
 					_List_Nil)
 				]))
 		]));
+var $mdgriffith$elm_ui$Element$html = $mdgriffith$elm_ui$Internal$Model$unstyled;
 var $author$project$Pages$Login$viewLoginButton = function (model) {
 	var size = 42;
 	return A2(

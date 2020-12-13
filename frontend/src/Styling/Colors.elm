@@ -32,3 +32,8 @@ lighterGreyColor =
 darkGreyColor : Color
 darkGreyColor =
     rgb255 26 28 33
+
+
+greyGreyColor : Color
+greyGreyColor =
+    rgb255 127 140 141
