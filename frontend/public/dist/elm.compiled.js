@@ -24596,7 +24596,6 @@ var $author$project$Pages$Register$view = function (model) {
 };
 var $author$project$Pages$Register$page = $author$project$Spa$Page$application(
 	{init: $author$project$Pages$Register$init, load: $author$project$Pages$Register$load, save: $author$project$Pages$Register$save, subscriptions: $author$project$Pages$Register$subscriptions, update: $author$project$Pages$Register$update, view: $author$project$Pages$Register$view});
-var $author$project$Pages$Top$darkGrey = A3($mdgriffith$elm_ui$Element$rgb255, 61, 61, 61);
 var $author$project$Pages$Top$view = function (_v0) {
 	var params = _v0.params;
 	return {
@@ -24606,7 +24605,8 @@ var $author$project$Pages$Top$view = function (_v0) {
 				$mdgriffith$elm_ui$Element$column,
 				_List_fromArray(
 					[
-						$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill)
+						$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
+						$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill)
 					]),
 				_List_fromArray(
 					[
@@ -24621,7 +24621,7 @@ var $author$project$Pages$Top$view = function (_v0) {
 										$mdgriffith$elm_ui$Element$Font$serif
 									])),
 								$mdgriffith$elm_ui$Element$height(
-								$mdgriffith$elm_ui$Element$px(800)),
+								A2($mdgriffith$elm_ui$Element$minimum, 1000, $mdgriffith$elm_ui$Element$fill)),
 								$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill)
 							]),
 						A2(
@@ -24654,13 +24654,13 @@ var $author$project$Pages$Top$view = function (_v0) {
 													$mdgriffith$elm_ui$Element$Font$typeface('Source Sans Pro')
 												])),
 											$mdgriffith$elm_ui$Element$Font$bold,
-											$mdgriffith$elm_ui$Element$Background$color($author$project$Styling$Colors$redColor),
+											$mdgriffith$elm_ui$Element$Background$color($author$project$Styling$Colors$blueColor),
 											$mdgriffith$elm_ui$Element$Font$color(
 											A3($mdgriffith$elm_ui$Element$rgb, 1, 1, 1)),
 											$mdgriffith$elm_ui$Element$padding(5),
 											$mdgriffith$elm_ui$Element$Border$rounded(5)
 										]),
-									$mdgriffith$elm_ui$Element$text('Beta v0.3'))
+									$mdgriffith$elm_ui$Element$text('Beta v0.5'))
 								]))),
 						A2(
 						$mdgriffith$elm_ui$Element$el,
@@ -24673,9 +24673,10 @@ var $author$project$Pages$Top$view = function (_v0) {
 										$mdgriffith$elm_ui$Element$Font$serif
 									])),
 								$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
-								$mdgriffith$elm_ui$Element$Background$color($author$project$Pages$Top$darkGrey),
+								$mdgriffith$elm_ui$Element$Background$color($author$project$Styling$Colors$darkGreyColor),
 								$mdgriffith$elm_ui$Element$Font$color(
-								A3($mdgriffith$elm_ui$Element$rgb, 1, 1, 1))
+								A3($mdgriffith$elm_ui$Element$rgb, 1, 1, 1)),
+								$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill)
 							]),
 						A2(
 							$mdgriffith$elm_ui$Element$column,
@@ -24706,16 +24707,6 @@ var $author$project$Pages$Top$view = function (_v0) {
 											[
 												$mdgriffith$elm_ui$Element$text('This is a tool created to help you organize homework assignments collaboratively with your classmates.')
 											])))
-								]))),
-						A2(
-						$mdgriffith$elm_ui$Element$el,
-						_List_Nil,
-						A2(
-							$mdgriffith$elm_ui$Element$column,
-							_List_Nil,
-							_List_fromArray(
-								[
-									$mdgriffith$elm_ui$Element$text('')
 								])))
 					]))
 			]),
@@ -25652,12 +25643,12 @@ var $author$project$Shared$viewHomeButton = A2(
 			_List_fromArray(
 				[
 					$mdgriffith$elm_ui$Element$padding(3),
-					$mdgriffith$elm_ui$Element$Background$color($author$project$Styling$Colors$redColor),
+					$mdgriffith$elm_ui$Element$Background$color($author$project$Styling$Colors$blueColor),
 					$mdgriffith$elm_ui$Element$Font$color(
 					A3($mdgriffith$elm_ui$Element$rgb, 1, 1, 1)),
 					$mdgriffith$elm_ui$Element$Border$rounded(5)
 				]),
-			$mdgriffith$elm_ui$Element$text('v0.3'))
+			$mdgriffith$elm_ui$Element$text('v0.5'))
 		]));
 var $author$project$Shared$navBarView = F3(
 	function (device, maybeUser, options) {

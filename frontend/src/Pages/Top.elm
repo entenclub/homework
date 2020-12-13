@@ -7,7 +7,8 @@ import Element.Font as Font
 import Spa.Document exposing (Document)
 import Spa.Page as Page exposing (Page)
 import Spa.Url exposing (Url)
-import Styling.Colors exposing (redColor)
+import Styling.Colors exposing (blueColor, redColor)
+import Styling.Colors exposing (darkGreyColor)
 
 
 type alias Params =
@@ -47,14 +48,14 @@ view : Url Params -> Document Msg
 view { params } =
     { title = "dwb?"
     , body =
-        [ column [ width fill ]
+        [ column [ width fill, height fill ]
             [ -- heading
               el
                 [ Font.family
                     [ Font.typeface "Noto Serif"
                     , Font.serif
                     ]
-                , height (px 800)
+                , height (fill |> minimum 1000)
                 , width fill
                 ]
                 (column [ centerX, centerY, spacing 10 ]
@@ -64,12 +65,12 @@ view { params } =
                         , Font.size 30
                         , Font.family [ Font.typeface "Source Sans Pro" ]
                         , Font.bold
-                        , Background.color redColor
+                        , Background.color blueColor
                         , Font.color (rgb 1 1 1)
                         , padding 5
                         , Border.rounded 5
                         ]
-                        (text "Beta v0.3")
+                        (text "Beta v0.5")
                     ]
                 )
 
@@ -80,8 +81,9 @@ view { params } =
                     , Font.serif
                     ]
                 , width fill
-                , Background.color darkGrey
+                , Background.color darkGreyColor    
                 , Font.color (rgb 1 1 1)
+                , height fill
                 ]
                 (column [ padding 100, spacing 10 ]
                     [ el [ Font.size 60 ]
@@ -92,13 +94,6 @@ view { params } =
                             [ text "This is a tool created to help you organize homework assignments collaboratively with your classmates."
                             ]
                         )
-                    ]
-                )
-
-            -- call to action?
-            , el []
-                (column []
-                    [ text ""
                     ]
                 )
             ]

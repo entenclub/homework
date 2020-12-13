@@ -26,6 +26,8 @@ import Spa.Generated.Route as Route
 import Styling.Colors exposing (redColor)
 import Time
 import Url exposing (Url)
+import Styling.Colors exposing (greenColor)
+import Styling.Colors exposing (blueColor)
 
 
 
@@ -147,12 +149,12 @@ viewHomeButton =
         [ text "beta.hausis.3nt3.de"
         , el
             [ padding 3
-            , Background.color redColor
+            , Background.color blueColor
             , Font.color
                 (rgb 1 1 1)
             , Border.rounded 5
             ]
-            (text "v0.3")
+            (text "v0.5")
         ]
 
 
