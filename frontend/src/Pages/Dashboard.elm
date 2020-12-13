@@ -472,9 +472,6 @@ otherOutstandingAssignments today courses =
 
         validCourseIds =
             List.map (\assignment -> assignment.courseId) validAssignments
-
-        debugThing =
-            Debug.log "otherOutstandingAssignments()" (Debug.toString courses)
     in
     List.map
         (\course ->
@@ -595,9 +592,6 @@ viewOtherAssignments apiData date =
                 let
                     courses =
                         otherOutstandingAssignments date data
-
-                    debugThing =
-                        Debug.log "viewOtherAssignments()" (Debug.toString courses)
                 in
                 if List.isEmpty courses then
                     none
