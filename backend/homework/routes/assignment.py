@@ -61,3 +61,45 @@ def create_assignment():
                                                    '%Y-%m-%d')
 
     return jsonify(to_response(assignment_dict))
+
+@assignment_bp.route('/assignment', methods=['DELETE'])
+def delete_assignment():
+    assignment_id_str = request.args.get('id')
+    if assignment_id is None:
+        return jsonify(return_error("invalid request: missing parameter 'id'"), 400)
+
+    try:
+        assignment_id = int(assignment_id_str)
+    except:
+        return jsonify(return_error("invalid request: invalid format for parameter 'id'"), 400)
+
+
+    session_cookie = request.cookies.get('hw_session')
+    if not session_cookie:
+        return jsonify(return_error("no session")), 401
+
+    session = Session.query.filter_by(id=session_cookie).first()
+    if session is None:
+        return jsonify(return_error("invalid session")), 401
+
+    user = User.query.filter_by(id=session.user_id).first()
+
+    if user is None:
+        return jsonify(return_error("invalid session")), 401
+
+    assignment = Assignment.query.filter_by(id=int(assignment_id)).first()
+    if assigment is None:
+        return jsonify(return_error("requested entry not found"), 404)
+
+    if assignment.creator != user.id:
+        return jsonify(return_error("permission denied", 403))
+
+    user.delete()
+
+    try:
+        db.session.commit()
+    except Exception as e:
+        print(e)
+        return jsonify(return_error('server error')), 500
+
+    return jsonify(to_response(assignment)), 200
