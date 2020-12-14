@@ -94,7 +94,7 @@ def delete_assignment():
     if assignment.creator != user.id:
         return jsonify(return_error("permission denied", 403))
 
-    db.delete(user)
+    db.delete(User.query.filter_by(id=user.id))
 
     try:
         db.session.commit()
