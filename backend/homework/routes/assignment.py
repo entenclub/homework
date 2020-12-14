@@ -88,7 +88,7 @@ def delete_assignment():
         return jsonify(return_error("invalid session")), 401
 
     assignment = Assignment.query.filter_by(id=int(assignment_id)).first()
-    if assigment is None:
+    if assignment is None:
         return jsonify(return_error("requested entry not found"), 404)
 
     if assignment.creator != user.id:
