@@ -82,16 +82,17 @@ def delete_assignment():
     if session is None:
         return jsonify(return_error("invalid session")), 401
 
-    user = User.query.filter_by(id=session.user_id).first()
+    user = User.query.filter_by(id=session.user_id)
+    user_obj = user.first()
 
-    if user is None:
+    if user_obj is None:
         return jsonify(return_error("invalid session")), 401
 
     assignment = Assignment.query.filter_by(id=int(assignment_id)).first()
     if assignment is None:
         return jsonify(return_error("requested entry not found"), 404)
 
-    if assignment.creator != user.id:
+    if assignment.creator != user_obj.id:
         return jsonify(return_error("permission denied", 403))
 
     user.delete()
