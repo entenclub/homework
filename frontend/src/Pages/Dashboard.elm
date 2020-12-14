@@ -490,9 +490,6 @@ otherOutstandingAssignments today courses =
 
         validCourseIds =
             List.map (\assignment -> assignment.courseId) validAssignments
-
-        debug =
-            Debug.log "filterCourses Other afsdafsd" (Debug.toString validAssignments)
     in
     List.map
         (\course ->

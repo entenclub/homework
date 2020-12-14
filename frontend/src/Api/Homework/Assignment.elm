@@ -41,7 +41,7 @@ removeAssignment : Int -> { onResponse : Api.Data Assignment -> msg } -> Cmd msg
 removeAssignment id options =
     Http.riskyRequest
         { method = "DELETE"
-        , url = apiAddress ++ "/assignment/" ++ String.fromInt id
+        , url = apiAddress ++ "/assignment?id=" ++ String.fromInt id
         , headers = []
         , body = Http.emptyBody
         , expect = Api.expectJson options.onResponse (Json.at [ "conetent" ] assignmentDecoder)
