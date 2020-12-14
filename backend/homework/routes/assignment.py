@@ -102,4 +102,4 @@ def delete_assignment():
         print(e)
         return jsonify(return_error('server error')), 500
 
-    return jsonify(to_response(assignment)), 200
+    return jsonify(to_response(assignment.to_dict())), 200
