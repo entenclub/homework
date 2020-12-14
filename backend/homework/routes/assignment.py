@@ -65,7 +65,7 @@ def create_assignment():
 @assignment_bp.route('/assignment', methods=['DELETE'])
 def delete_assignment():
     assignment_id_str = request.args.get('id')
-    if assignment_id is None:
+    if assignment_id_str is None:
         return jsonify(return_error("invalid request: missing parameter 'id'"), 400)
 
     try:
