@@ -1,4 +1,4 @@
-module Api.Homework.Assignment exposing (createAssignment)
+module Api.Homework.Assignment exposing (createAssignment, removeAssignment)
 
 import Api
 import Api.Api exposing (apiAddress)
@@ -32,6 +32,19 @@ createAssignment assignment options =
         , headers = []
         , body = Http.jsonBody (assignmentEncoder assignment)
         , expect = Api.expectJson options.onResponse (Json.at [ "content" ] assignmentDecoder)
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
+
+removeAssignment : Int -> { onResponse : Api.Data Assignment -> msg } -> Cmd msg
+removeAssignment id options =
+    Http.riskyRequest
+        { method = "DELETE"
+        , url = apiAddress ++ "/assignment/" ++ String.fromInt id
+        , headers = []
+        , body = Http.emptyBody
+        , expect = Api.expectJson options.onResponse (Json.at [ "conetent" ] assignmentDecoder)
         , timeout = Nothing
         , tracker = Nothing
         }
