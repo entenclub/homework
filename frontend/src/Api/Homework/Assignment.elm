@@ -44,7 +44,7 @@ removeAssignment id options =
         , url = apiAddress ++ "/assignment?id=" ++ String.fromInt id
         , headers = []
         , body = Http.emptyBody
-        , expect = Api.expectJson options.onResponse (Json.at [ "conetent" ] assignmentDecoder)
+        , expect = Api.expectJson options.onResponse (Json.at [ "content" ] assignmentDecoder)
         , timeout = Nothing
         , tracker = Nothing
         }

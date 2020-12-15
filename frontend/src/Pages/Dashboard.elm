@@ -333,7 +333,36 @@ update msg model =
             ( model, removeAssignment id { onResponse = GotRemoveAssignmentData } )
 
         GotRemoveAssignmentData data ->
-            ( model, Cmd.none )
+            case data of
+                Success assignment ->
+                    case model.courseData of
+                        Success courseData ->
+                            ( { model
+                                | courseData =
+                                    Success
+                                        (List.filter
+                                            (\c ->
+                                                List.isEmpty
+                                                    (List.filter (\a -> a.id == assignment.id) c.assignments)
+                                            )
+                                            courseData
+                                        )
+                              }
+                            , Cmd.none
+                            )
+
+                        _ ->
+                            ( model, Cmd.none )
+
+                Failure e ->
+                    let
+                        debug =
+                            Debug.log "GotRemoveAssignmentData" (Debug.toString e)
+                    in
+                    ( model, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
 
         HoverAssignment id ->
             ( { model | maybeAssignmentHovered = Just id }, Cmd.none )

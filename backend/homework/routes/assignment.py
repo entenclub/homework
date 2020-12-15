@@ -94,7 +94,7 @@ def delete_assignment():
     if assignment.creator != user.id:
         return jsonify(return_error("permission denied", 403))
 
-    db.session.delete(User.query.filter_by(id=user.id))
+    db.session.delete(assignment)
 
     try:
         db.session.commit()
@@ -102,4 +102,9 @@ def delete_assignment():
         print(e)
         return jsonify(return_error('server error')), 500
 
-    return jsonify(to_response(assignment.to_dict())), 200
+    assignment_dict = assignment.to_dict()
+    assignment_dict['creator'] = user.to_safe_dict()
+    assignment_dict['dueDate'] = datetime.strftime(assignment_dict['dueDate'],
+                                                   '%Y-%m-%d')
+
+    return jsonify(to_response(assignment_dict)), 200
