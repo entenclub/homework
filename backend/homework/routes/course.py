@@ -1,4 +1,5 @@
 import requests
+import eventlet
 from flask import Blueprint, jsonify, request, make_response
 from ..database.user import User
 from ..database.session import Session
@@ -46,8 +47,18 @@ def search_courses(searchterm):
         return to_response(filtered_courses)
 
     else:
-        courses_reqest = requests.get(
-            base_url + '/webservice/rest/server.php' + '?wstoken=' + token + '&wsfunction=' + 'core_enrol_get_users_courses' + '&moodlewsrestformat=json' + '&userid=412')
+        print("[ * ] getting something from moodle...")
+        eventlet.monkey_patch()
+
+        done = False
+        with eventlet.Timeout(5):
+            courses_reqest = requests.get(
+                base_url + '/webservice/rest/server.php' + '?wstoken=' + token + '&wsfunction=' + 'core_enrol_get_users_courses' + '&moodlewsrestformat=json' + '&userid=412')
+            done = True
+
+        if not done:
+            print(f"[ - ] error connecting to {base_url}: timeout")
+
         if not courses_reqest.ok or type(courses_reqest.json()) != list:
             return jsonify(to_response(filtered_courses, {'error': 'error accessing moodle'}))
 
@@ -112,7 +123,14 @@ def active_courses():
     if user.moodle_token is None:
         return jsonify(to_response(has_outstanding_assignments))
 
-    moodle_courses = moodle.get_user_courses(user)
+    print(f"[ * ] accessing moodle at {user.moodle_url} ...")
+    eventlet.monkey_patch()
+    try:
+        moodle_courses = moodle.get_user_courses(user)
+    except eventlet.Timeout as t:
+        print(f"[ - ] error accessing moodle: timeout after {t}")
+        return jsonify(return_error("error accessing moodle: timeout"))
+
     if moodle_courses is None:
         return jsonify(to_response(has_outstanding_assignments))
 

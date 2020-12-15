@@ -6,4 +6,5 @@ def return_error(error):
 
 
 def to_response(content, meta=None):
+    print({"content": content, "meta": meta})
     return {"content": content, "meta": meta}
