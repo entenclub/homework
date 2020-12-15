@@ -340,10 +340,9 @@ update msg model =
                             ( { model
                                 | courseData =
                                     Success
-                                        (List.filter
+                                        (List.map
                                             (\c ->
-                                                List.isEmpty
-                                                    (List.filter (\a -> a.id == assignment.id) c.assignments)
+                                                { c | assignments = List.filter (\a -> not (a.id == assignment.id)) c.assignments }
                                             )
                                             courseData
                                         )

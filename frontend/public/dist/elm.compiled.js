@@ -8816,13 +8816,6 @@ var $justinmimbs$date$Date$fromPosix = F2(
 			A2($elm$time$Time$toMonth, zone, posix),
 			A2($elm$time$Time$toDay, zone, posix));
 	});
-var $elm$core$List$isEmpty = function (xs) {
-	if (!xs.b) {
-		return true;
-	} else {
-		return false;
-	}
-};
 var $elm$core$List$any = F2(
 	function (isOkay, list) {
 		any:
@@ -9263,15 +9256,18 @@ var $author$project$Pages$Dashboard$update = F2(
 								{
 									hb: $author$project$Api$Success(
 										A2(
-											$elm$core$List$filter,
+											$elm$core$List$map,
 											function (c) {
-												return $elm$core$List$isEmpty(
-													A2(
-														$elm$core$List$filter,
-														function (a) {
-															return _Utils_eq(a.hJ, assignment.hJ);
-														},
-														c.gM));
+												return _Utils_update(
+													c,
+													{
+														gM: A2(
+															$elm$core$List$filter,
+															function (a) {
+																return !_Utils_eq(a.hJ, assignment.hJ);
+															},
+															c.gM)
+													});
 											},
 											courseData))
 								}),
@@ -13050,6 +13046,13 @@ var $mdgriffith$elm_ui$Internal$Model$finalizeNode = F6(
 				return html;
 		}
 	});
+var $elm$core$List$isEmpty = function (xs) {
+	if (!xs.b) {
+		return true;
+	} else {
+		return false;
+	}
+};
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $mdgriffith$elm_ui$Internal$Model$textElementClasses = $mdgriffith$elm_ui$Internal$Style$classes.gK + (' ' + ($mdgriffith$elm_ui$Internal$Style$classes.es + (' ' + ($mdgriffith$elm_ui$Internal$Style$classes.eB + (' ' + $mdgriffith$elm_ui$Internal$Style$classes.du)))));
 var $mdgriffith$elm_ui$Internal$Model$textElement = function (str) {
