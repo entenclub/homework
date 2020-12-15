@@ -354,13 +354,6 @@ update msg model =
                         _ ->
                             ( model, Cmd.none )
 
-                Failure e ->
-                    let
-                        debug =
-                            Debug.log "GotRemoveAssignmentData" (Debug.toString e)
-                    in
-                    ( model, Cmd.none )
-
                 _ ->
                     ( model, Cmd.none )
 
