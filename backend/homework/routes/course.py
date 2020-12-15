@@ -48,7 +48,6 @@ def search_courses(searchterm):
 
     else:
         print("[ * ] getting something from moodle...")
-        eventlet.monkey_patch()
 
         done = False
         try:
@@ -125,7 +124,6 @@ def active_courses():
         return jsonify(to_response(has_outstanding_assignments))
 
     print(f"[ * ] accessing moodle at {user.moodle_url} ...")
-    eventlet.monkey_patch()
     try:
         moodle_courses = moodle.get_user_courses(user)
     except eventlet.Timeout as t:
