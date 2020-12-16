@@ -540,15 +540,25 @@ viewOustandingAssignments model =
             , height (fill |> minimum 200)
             , spacing 30
             ]
-            [ --today
-              viewAssignmentsDayColumn model.courseData "today" redColor model.today model.maybeAssignmentHovered
-            , viewAssignmentsDayColumn model.courseData "tomorrow" yellowColor (Date.add Date.Days 1 model.today) model.maybeAssignmentHovered
-            , viewAssignmentsDayColumn model.courseData "the day after tomorrow" greenColor (Date.add Date.Days 2 model.today) model.maybeAssignmentHovered
-            ]
+            (case model.user of
+                Just user ->
+                    [ viewAssignmentsDayColumn model.courseData "today" redColor model.today model.maybeAssignmentHovered user
+                    , viewAssignmentsDayColumn model.courseData "tomorrow" yellowColor (Date.add Date.Days 1 model.today) model.maybeAssignmentHovered user
+                    , viewAssignmentsDayColumn model.courseData "the day after tomorrow" greenColor (Date.add Date.Days 2 model.today) model.maybeAssignmentHovered user
+                    ]
+
+                Nothing ->
+                    [ none ]
+            )
         , case model.courseData of
             Success courses ->
                 if List.length (otherOutstandingAssignments model.today courses) > 0 then
-                    viewOtherAssignments model.courseData model.today model.maybeAssignmentHovered
+                    case model.user of
+                        Just user ->
+                            viewOtherAssignments model.courseData model.today model.maybeAssignmentHovered user
+
+                        Nothing ->
+                            none
 
                 else
                     none
@@ -582,8 +592,8 @@ filterCoursesByWhetherAssignmentsAreDueOnDate courses date =
     List.filter (\course -> List.member course.id validCourses) courses
 
 
-viewAssignmentsDayColumn : Api.Data (List Course) -> String -> Color -> Date.Date -> Maybe Int -> Element Msg
-viewAssignmentsDayColumn courseData title color date assignmentHovered =
+viewAssignmentsDayColumn : Api.Data (List Course) -> String -> Color -> Date.Date -> Maybe Int -> User -> Element Msg
+viewAssignmentsDayColumn courseData title color date assignmentHovered user =
     column
         [ Background.color color
         , height (fill |> minimum 200)
@@ -603,7 +613,7 @@ viewAssignmentsDayColumn courseData title color date assignmentHovered =
                     el [ centerX, centerY, Font.size 30, Font.bold ] (text "*nothing 🎉*")
 
                 else
-                    Keyed.column [ width fill, spacing 5 ] (List.map (courseGroupToKeyValue color (Just date) assignmentHovered False) courses)
+                    Keyed.column [ width fill, spacing 5 ] (List.map (courseGroupToKeyValue color (Just date) assignmentHovered False user) courses)
 
             Failure e ->
                 text (errorToString e)
@@ -616,14 +626,14 @@ viewAssignmentsDayColumn courseData title color date assignmentHovered =
         ]
 
 
-viewOtherAssignments : Api.Data (List Course) -> Date.Date -> Maybe Int -> Element Msg
-viewOtherAssignments apiData date assignmentHovered =
+viewOtherAssignments : Api.Data (List Course) -> Date.Date -> Maybe Int -> User -> Element Msg
+viewOtherAssignments apiData date assignmentHovered user =
     column
         [ width fill
         , Border.rounded borderRadius
         , spacing 10
         , padding 20
-        , Background.color greenColor
+        , Background.color blueColor
         ]
         [ el [ Font.bold ] (text "other")
         , case apiData of
@@ -636,7 +646,7 @@ viewOtherAssignments apiData date assignmentHovered =
                     none
 
                 else
-                    Keyed.column [ width fill, spacing 5 ] (List.map (courseGroupToKeyValue greenColor Nothing assignmentHovered True) courses)
+                    Keyed.column [ width fill, spacing 5 ] (List.map (courseGroupToKeyValue blueColor Nothing assignmentHovered True user) courses)
 
             Loading ->
                 el [ centerX, centerY, Font.size 30, Font.bold ] (text "Loading...")
@@ -646,13 +656,13 @@ viewOtherAssignments apiData date assignmentHovered =
         ]
 
 
-courseGroupToKeyValue : Color -> Maybe Date.Date -> Maybe Int -> Bool -> Course -> ( String, Element Msg )
-courseGroupToKeyValue color date assignmentHovered displayDate course =
-    ( String.fromInt course.id, viewAssignmentCourseGroup course color date assignmentHovered displayDate )
+courseGroupToKeyValue : Color -> Maybe Date.Date -> Maybe Int -> Bool -> User -> Course -> ( String, Element Msg )
+courseGroupToKeyValue color date assignmentHovered displayDate user course =
+    ( String.fromInt course.id, viewAssignmentCourseGroup course color date assignmentHovered displayDate user )
 
 
-viewAssignmentCourseGroup : Course -> Color -> Maybe Date.Date -> Maybe Int -> Bool -> Element Msg
-viewAssignmentCourseGroup course color maybeDate assignmentHovered displayDate =
+viewAssignmentCourseGroup : Course -> Color -> Maybe Date.Date -> Maybe Int -> Bool -> User -> Element Msg
+viewAssignmentCourseGroup course color maybeDate assignmentHovered displayDate user =
     let
         assignments =
             case maybeDate of
@@ -681,43 +691,51 @@ viewAssignmentCourseGroup course color maybeDate assignmentHovered displayDate =
                         )
                     ]
                 )
-            , Keyed.column [ spacing 5, width fill ] (List.map (assignmentToKeyValue color assignmentHovered displayDate) assignments)
+            , Keyed.column [ spacing 5, width fill ] (List.map (\a -> assignmentToKeyValue color assignmentHovered (user.id == a.creator.id) displayDate a) assignments)
             ]
 
     else
         none
 
 
-assignmentToKeyValue : Color -> Maybe Int -> Bool -> Assignment -> ( String, Element Msg )
-assignmentToKeyValue color maybeHoveredId displayDate assignment =
+assignmentToKeyValue : Color -> Maybe Int -> Bool -> Bool -> Assignment -> ( String, Element Msg )
+assignmentToKeyValue color maybeHoveredId removable displayDate assignment =
     case maybeHoveredId of
         Just hoveredId ->
-            ( String.fromInt assignment.id, viewAssignment assignment color (hoveredId == assignment.id) displayDate )
+            if removable then
+                ( String.fromInt assignment.id, viewAssignment assignment color (Just (hoveredId == assignment.id)) displayDate )
+
+            else
+                ( String.fromInt assignment.id, viewAssignment assignment color Nothing displayDate )
 
         Nothing ->
-            ( String.fromInt assignment.id, viewAssignment assignment color False displayDate )
+            ( String.fromInt assignment.id, viewAssignment assignment color (Just False) displayDate )
 
 
-viewAssignment : Assignment -> Color -> Bool -> Bool -> Element Msg
-viewAssignment assignment color hovered displayDate =
+viewAssignment : Assignment -> Color -> Maybe Bool -> Bool -> Element Msg
+viewAssignment assignment color maybeHovered displayDate =
     column
         [ Background.color (darken color 0.1)
         , padding 10
         , Border.rounded 10
         , width fill
         ]
-        -- TODO: implement remove assignment stuff
         [ el
-            ([ Events.onClick (RemoveAssignment assignment.id) ]
-                ++ (Events.onMouseEnter (HoverAssignment assignment.id)
-                        :: Events.onMouseLeave (DeHoverAssignment assignment.id)
-                        :: (if hovered then
-                                [ Font.strike, Font.bold ]
+            (case maybeHovered of
+                Just hovered ->
+                    [ Events.onClick (RemoveAssignment assignment.id) ]
+                        ++ (Events.onMouseEnter (HoverAssignment assignment.id)
+                                :: Events.onMouseLeave (DeHoverAssignment assignment.id)
+                                :: (if hovered then
+                                        [ Font.strike ]
 
-                            else
-                                []
+                                    else
+                                        []
+                                   )
                            )
-                   )
+
+                Nothing ->
+                    []
             )
             (paragraph []
                 [ text
@@ -728,11 +746,16 @@ viewAssignment assignment color hovered displayDate =
                         ""
                      )
                         ++ assignment.title
-                        ++ (if hovered then
-                                " (click to remove)"
+                        ++ (case maybeHovered of
+                                Just hovered ->
+                                    if hovered then
+                                        " (click to remove)"
 
-                            else
-                                ""
+                                    else
+                                        ""
+
+                                Nothing ->
+                                    ""
                            )
                     )
                 ]
