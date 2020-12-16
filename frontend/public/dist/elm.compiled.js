@@ -17021,7 +17021,7 @@ var $elm$html$Html$Events$onMouseLeave = function (msg) {
 var $mdgriffith$elm_ui$Element$Events$onMouseLeave = A2($elm$core$Basics$composeL, $mdgriffith$elm_ui$Internal$Model$Attr, $elm$html$Html$Events$onMouseLeave);
 var $mdgriffith$elm_ui$Element$Font$strike = $mdgriffith$elm_ui$Internal$Model$htmlClass($mdgriffith$elm_ui$Internal$Style$classes.i1);
 var $author$project$Pages$Dashboard$viewAssignment = F4(
-	function (assignment, color, hovered, displayDate) {
+	function (assignment, color, maybeHovered, displayDate) {
 		return A2(
 			$mdgriffith$elm_ui$Element$column,
 			_List_fromArray(
@@ -17036,22 +17036,29 @@ var $author$project$Pages$Dashboard$viewAssignment = F4(
 				[
 					A2(
 					$mdgriffith$elm_ui$Element$el,
-					_Utils_ap(
-						_List_fromArray(
-							[
-								$mdgriffith$elm_ui$Element$Events$onClick(
-								$author$project$Pages$Dashboard$RemoveAssignment(assignment.hJ))
-							]),
-						A2(
-							$elm$core$List$cons,
-							$mdgriffith$elm_ui$Element$Events$onMouseEnter(
-								$author$project$Pages$Dashboard$HoverAssignment(assignment.hJ)),
-							A2(
-								$elm$core$List$cons,
-								$mdgriffith$elm_ui$Element$Events$onMouseLeave(
-									$author$project$Pages$Dashboard$DeHoverAssignment(assignment.hJ)),
-								hovered ? _List_fromArray(
-									[$mdgriffith$elm_ui$Element$Font$strike, $mdgriffith$elm_ui$Element$Font$bold]) : _List_Nil))),
+					function () {
+						if (!maybeHovered.$) {
+							var hovered = maybeHovered.a;
+							return _Utils_ap(
+								_List_fromArray(
+									[
+										$mdgriffith$elm_ui$Element$Events$onClick(
+										$author$project$Pages$Dashboard$RemoveAssignment(assignment.hJ))
+									]),
+								A2(
+									$elm$core$List$cons,
+									$mdgriffith$elm_ui$Element$Events$onMouseEnter(
+										$author$project$Pages$Dashboard$HoverAssignment(assignment.hJ)),
+									A2(
+										$elm$core$List$cons,
+										$mdgriffith$elm_ui$Element$Events$onMouseLeave(
+											$author$project$Pages$Dashboard$DeHoverAssignment(assignment.hJ)),
+										hovered ? _List_fromArray(
+											[$mdgriffith$elm_ui$Element$Font$strike]) : _List_Nil)));
+						} else {
+							return _List_Nil;
+						}
+					}(),
 					A2(
 						$mdgriffith$elm_ui$Element$paragraph,
 						_List_Nil,
@@ -17062,7 +17069,14 @@ var $author$project$Pages$Dashboard$viewAssignment = F4(
 									displayDate ? ($author$project$Pages$Dashboard$toGermanDateString(assignment.hn) + ': ') : '',
 									_Utils_ap(
 										assignment.jn,
-										hovered ? ' (click to remove)' : '')))
+										function () {
+											if (!maybeHovered.$) {
+												var hovered = maybeHovered.a;
+												return hovered ? ' (click to remove)' : '';
+											} else {
+												return '';
+											}
+										}())))
 							]))),
 					A2(
 					$mdgriffith$elm_ui$Element$el,
@@ -17071,26 +17085,34 @@ var $author$project$Pages$Dashboard$viewAssignment = F4(
 					$mdgriffith$elm_ui$Element$text(assignment.eU.ez))
 				]));
 	});
-var $author$project$Pages$Dashboard$assignmentToKeyValue = F4(
-	function (color, maybeHoveredId, displayDate, assignment) {
+var $author$project$Pages$Dashboard$assignmentToKeyValue = F5(
+	function (color, maybeHoveredId, removable, displayDate, assignment) {
 		if (!maybeHoveredId.$) {
 			var hoveredId = maybeHoveredId.a;
+			return removable ? _Utils_Tuple2(
+				$elm$core$String$fromInt(assignment.hJ),
+				A4(
+					$author$project$Pages$Dashboard$viewAssignment,
+					assignment,
+					color,
+					$elm$core$Maybe$Just(
+						_Utils_eq(hoveredId, assignment.hJ)),
+					displayDate)) : _Utils_Tuple2(
+				$elm$core$String$fromInt(assignment.hJ),
+				A4($author$project$Pages$Dashboard$viewAssignment, assignment, color, $elm$core$Maybe$Nothing, displayDate));
+		} else {
 			return _Utils_Tuple2(
 				$elm$core$String$fromInt(assignment.hJ),
 				A4(
 					$author$project$Pages$Dashboard$viewAssignment,
 					assignment,
 					color,
-					_Utils_eq(hoveredId, assignment.hJ),
+					$elm$core$Maybe$Just(false),
 					displayDate));
-		} else {
-			return _Utils_Tuple2(
-				$elm$core$String$fromInt(assignment.hJ),
-				A4($author$project$Pages$Dashboard$viewAssignment, assignment, color, false, displayDate));
 		}
 	});
-var $author$project$Pages$Dashboard$viewAssignmentCourseGroup = F5(
-	function (course, color, maybeDate, assignmentHovered, displayDate) {
+var $author$project$Pages$Dashboard$viewAssignmentCourseGroup = F6(
+	function (course, color, maybeDate, assignmentHovered, displayDate, user) {
 		var assignments = function () {
 			if (!maybeDate.$) {
 				var date = maybeDate.a;
@@ -17138,15 +17160,23 @@ var $author$project$Pages$Dashboard$viewAssignmentCourseGroup = F5(
 						]),
 					A2(
 						$elm$core$List$map,
-						A3($author$project$Pages$Dashboard$assignmentToKeyValue, color, assignmentHovered, displayDate),
+						function (a) {
+							return A5(
+								$author$project$Pages$Dashboard$assignmentToKeyValue,
+								color,
+								assignmentHovered,
+								_Utils_eq(user.hJ, a.eU.hJ),
+								displayDate,
+								a);
+						},
 						assignments))
 				])) : $mdgriffith$elm_ui$Element$none;
 	});
-var $author$project$Pages$Dashboard$courseGroupToKeyValue = F5(
-	function (color, date, assignmentHovered, displayDate, course) {
+var $author$project$Pages$Dashboard$courseGroupToKeyValue = F6(
+	function (color, date, assignmentHovered, displayDate, user, course) {
 		return _Utils_Tuple2(
 			$elm$core$String$fromInt(course.hJ),
-			A5($author$project$Pages$Dashboard$viewAssignmentCourseGroup, course, color, date, assignmentHovered, displayDate));
+			A6($author$project$Pages$Dashboard$viewAssignmentCourseGroup, course, color, date, assignmentHovered, displayDate, user));
 	});
 var $author$project$Pages$Dashboard$filterCoursesByWhetherAssignmentsAreDueOnDate = F2(
 	function (courses, date) {
@@ -17185,8 +17215,8 @@ var $author$project$Pages$Dashboard$filterCoursesByWhetherAssignmentsAreDueOnDat
 			},
 			courses);
 	});
-var $author$project$Pages$Dashboard$viewAssignmentsDayColumn = F5(
-	function (courseData, title, color, date, assignmentHovered) {
+var $author$project$Pages$Dashboard$viewAssignmentsDayColumn = F6(
+	function (courseData, title, color, date, assignmentHovered, user) {
 		return A2(
 			$mdgriffith$elm_ui$Element$column,
 			_List_fromArray(
@@ -17230,12 +17260,13 @@ var $author$project$Pages$Dashboard$viewAssignmentsDayColumn = F5(
 									]),
 								A2(
 									$elm$core$List$map,
-									A4(
+									A5(
 										$author$project$Pages$Dashboard$courseGroupToKeyValue,
 										color,
 										$elm$core$Maybe$Just(date),
 										assignmentHovered,
-										false),
+										false,
+										user),
 									courses));
 						case 2:
 							var e = courseData.a;
@@ -17267,8 +17298,8 @@ var $author$project$Pages$Dashboard$viewAssignmentsDayColumn = F5(
 				}()
 				]));
 	});
-var $author$project$Pages$Dashboard$viewOtherAssignments = F3(
-	function (apiData, date, assignmentHovered) {
+var $author$project$Pages$Dashboard$viewOtherAssignments = F4(
+	function (apiData, date, assignmentHovered, user) {
 		return A2(
 			$mdgriffith$elm_ui$Element$column,
 			_List_fromArray(
@@ -17277,7 +17308,7 @@ var $author$project$Pages$Dashboard$viewOtherAssignments = F3(
 					$mdgriffith$elm_ui$Element$Border$rounded($author$project$Pages$Dashboard$borderRadius),
 					$mdgriffith$elm_ui$Element$spacing(10),
 					$mdgriffith$elm_ui$Element$padding(20),
-					$mdgriffith$elm_ui$Element$Background$color($author$project$Styling$Colors$greenColor)
+					$mdgriffith$elm_ui$Element$Background$color($author$project$Styling$Colors$blueColor)
 				]),
 			_List_fromArray(
 				[
@@ -17300,7 +17331,7 @@ var $author$project$Pages$Dashboard$viewOtherAssignments = F3(
 									]),
 								A2(
 									$elm$core$List$map,
-									A4($author$project$Pages$Dashboard$courseGroupToKeyValue, $author$project$Styling$Colors$greenColor, $elm$core$Maybe$Nothing, assignmentHovered, true),
+									A5($author$project$Pages$Dashboard$courseGroupToKeyValue, $author$project$Styling$Colors$blueColor, $elm$core$Maybe$Nothing, assignmentHovered, true, user),
 									courses));
 						case 1:
 							return A2(
@@ -17350,30 +17381,51 @@ var $author$project$Pages$Dashboard$viewOustandingAssignments = function (model)
 						A2($mdgriffith$elm_ui$Element$minimum, 200, $mdgriffith$elm_ui$Element$fill)),
 						$mdgriffith$elm_ui$Element$spacing(30)
 					]),
-				_List_fromArray(
-					[
-						A5($author$project$Pages$Dashboard$viewAssignmentsDayColumn, model.hb, 'today', $author$project$Styling$Colors$redColor, model.D, model.aP),
-						A5(
-						$author$project$Pages$Dashboard$viewAssignmentsDayColumn,
-						model.hb,
-						'tomorrow',
-						$author$project$Styling$Colors$yellowColor,
-						A3($justinmimbs$date$Date$add, 3, 1, model.D),
-						model.aP),
-						A5(
-						$author$project$Pages$Dashboard$viewAssignmentsDayColumn,
-						model.hb,
-						'the day after tomorrow',
-						$author$project$Styling$Colors$greenColor,
-						A3($justinmimbs$date$Date$add, 3, 2, model.D),
-						model.aP)
-					])),
 				function () {
-				var _v1 = model.hb;
-				if (_v1.$ === 3) {
-					var courses = _v1.a;
-					return ($elm$core$List$length(
-						A2($author$project$Pages$Dashboard$otherOutstandingAssignments, model.D, courses)) > 0) ? A3($author$project$Pages$Dashboard$viewOtherAssignments, model.hb, model.D, model.aP) : $mdgriffith$elm_ui$Element$none;
+					var _v1 = model.jy;
+					if (!_v1.$) {
+						var user = _v1.a;
+						return _List_fromArray(
+							[
+								A6($author$project$Pages$Dashboard$viewAssignmentsDayColumn, model.hb, 'today', $author$project$Styling$Colors$redColor, model.D, model.aP, user),
+								A6(
+								$author$project$Pages$Dashboard$viewAssignmentsDayColumn,
+								model.hb,
+								'tomorrow',
+								$author$project$Styling$Colors$yellowColor,
+								A3($justinmimbs$date$Date$add, 3, 1, model.D),
+								model.aP,
+								user),
+								A6(
+								$author$project$Pages$Dashboard$viewAssignmentsDayColumn,
+								model.hb,
+								'the day after tomorrow',
+								$author$project$Styling$Colors$greenColor,
+								A3($justinmimbs$date$Date$add, 3, 2, model.D),
+								model.aP,
+								user)
+							]);
+					} else {
+						return _List_fromArray(
+							[$mdgriffith$elm_ui$Element$none]);
+					}
+				}()),
+				function () {
+				var _v2 = model.hb;
+				if (_v2.$ === 3) {
+					var courses = _v2.a;
+					if ($elm$core$List$length(
+						A2($author$project$Pages$Dashboard$otherOutstandingAssignments, model.D, courses)) > 0) {
+						var _v3 = model.jy;
+						if (!_v3.$) {
+							var user = _v3.a;
+							return A4($author$project$Pages$Dashboard$viewOtherAssignments, model.hb, model.D, model.aP, user);
+						} else {
+							return $mdgriffith$elm_ui$Element$none;
+						}
+					} else {
+						return $mdgriffith$elm_ui$Element$none;
+					}
 				} else {
 					return $mdgriffith$elm_ui$Element$none;
 				}
