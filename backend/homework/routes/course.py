@@ -17,7 +17,7 @@ CORS(course_bp, supports_credentials=True)
 
 
 def filter_course(course, searchterm):
-    return searchterm in course.teacher or searchterm in course.subject
+    return searchterm.lower() in course.teacher.lower() or searchterm.lower() in course.subject.lower()
 
 
 @course_bp.route('/courses/search/<searchterm>', methods=['GET'])
@@ -40,7 +40,8 @@ def search_courses(searchterm):
 
     courses = Course.query.all()
 
-    filtered_courses = filter(lambda course: filter_course(course, searchterm), courses)
+    filtered_courses = filter(
+        lambda course: filter_course(course, searchterm), courses)
     filtered_courses = [course.to_dict() for course in filtered_courses]
 
     if token is None or base_url is None:
@@ -49,28 +50,28 @@ def search_courses(searchterm):
     else:
         print("[ * ] getting something from moodle...")
 
-        done = False
-        try:
-            with eventlet.Timeout(5):
-                courses_reqest = requests.get(
-                    base_url + '/webservice/rest/server.php' + '?wstoken=' + token + '&wsfunction=' + 'core_enrol_get_users_courses' + '&moodlewsrestformat=json' + '&userid=412')
-                done = True
-        except eventlet.Timeout as t:
-            print(f"[ - ] error connecting to {base_url}: timeout after {t}")
-            return jsonify(return_error("error accessing moodle: timeout")), 408
+        # done = False
+        # try:
+        #     with eventlet.Timeout(5):
+        #         courses_reqest = requests.get(
+        #             base_url + '/webservice/rest/server.php' + '?wstoken=' + token + '&wsfunction=' + 'core_enrol_get_users_courses' + '&moodlewsrestformat=json' + '&userid=412')
+        #         done = True
+        # except eventlet.Timeout as t:
+        #     print(f"[ - ] error connecting to {base_url}: timeout after {t}")
+        #     return jsonify(return_error("error accessing moodle: timeout")), 408
 
-        if not courses_reqest.ok or type(courses_reqest.json()) != list:
-            return jsonify(to_response(filtered_courses, {'error': 'error accessing moodle'}))
+        # if not courses_reqest.ok or type(courses_reqest.json()) != list:
+        #     return jsonify(to_response(filtered_courses, {'error': 'error accessing moodle'}))
 
-        moodle_courses = courses_reqest.json()
+        moodle_courses = moodle.get_user_courses(user)
 
-        filtered_moodle_courses = filter(lambda course: (searchterm in course['fullname']),
+        filtered_moodle_courses = filter(lambda course: (searchterm.lower() in course['name'].lower()),
                                          moodle_courses)
 
         filtered_moodle_courses = [{
             'id': course.get('id'),
             'fromMoodle': True,
-            'name': course.get('displayname'),
+            'name': course.get('name'),
             'subject': '',
             'teacher': '',
             'creator': user.id
@@ -124,11 +125,8 @@ def active_courses():
         return jsonify(to_response(has_outstanding_assignments))
 
     print(f"[ * ] accessing moodle at {user.moodle_url} ...")
-    try:
-        moodle_courses = moodle.get_user_courses(user)
-    except eventlet.Timeout as t:
-        print(f"[ - ] error accessing moodle: timeout after {t}")
-        return jsonify(return_error("error accessing moodle: timeout")), 408
+    moodle_courses = moodle.get_user_courses(user)
+    print(moodle_courses)
 
     if moodle_courses is None:
         return jsonify(to_response(has_outstanding_assignments))
@@ -140,18 +138,20 @@ def active_courses():
                        if
                        assignment.due_date >= now]
         if not assignments:
+            print("course does not have assignments", assignments)
             continue
 
         # convert dates to iso
         for i in range(len(assignments)):
             assignments[i]['dueDate'] = datetime.datetime.strftime(assignments[i]['dueDate'],
                                                                    '%Y-%m-%d')
-            assignment_creator = User.query.filter_by(id=assignments[i]['creator']).first()
+            assignment_creator = User.query.filter_by(
+                id=assignments[i]['creator']).first()
             assignments[i]['creator'] = assignment_creator.to_safe_dict()
 
         course = {
             "id": m_course['id'],
-            'name': m_course['displayname'],
+            'name': m_course['name'],
             'creator': user.id,
             'assignments': assignments,
             'fromMoodle': True,
@@ -194,7 +194,8 @@ def my_courses():
         for i in range(len(assignments)):
             assignments[i]['dueDate'] = datetime.datetime.strftime(assignments[i]['dueDate'],
                                                                    '%Y-%m-%d')
-            creator = User.query.filter_by(id=assignments[i]['creator']).first()
+            creator = User.query.filter_by(
+                id=assignments[i]['creator']).first()
             if creator is None:
                 assignments.remove(assignments[i])
                 i -= 1

@@ -10,7 +10,8 @@ class Assignment(db.Model):
     description = db.Column('description', db.Text, nullable=True)
     due_date = db.Column('due_date', db.Date, nullable=False)
     creator = db.Column('creator', db.Integer, nullable=False)
-    created_at = db.Column('created_at', db.DateTime, nullable=False, default=datetime.utcnow)
+    created_at = db.Column('created_at', db.DateTime,
+                           nullable=False, default=datetime.utcnow)
     from_moodle = db.Column('from_moodle', db.Boolean, default=False)
 
     def to_dict(self):

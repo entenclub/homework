@@ -31,6 +31,8 @@ def create_assignment():
     if not data:
         return jsonify(return_error('invalid request')), 400
 
+    print("(routes/assignment.py):", data)
+
     title, raw_date, course, from_moodle = data.get('title'), data.get('dueDate'), data.get(
         'course'), data.get('fromMoodle')
 
@@ -62,6 +64,7 @@ def create_assignment():
 
     return jsonify(to_response(assignment_dict))
 
+
 @assignment_bp.route('/assignment', methods=['DELETE'])
 def delete_assignment():
     assignment_id_str = request.args.get('id')
@@ -72,7 +75,6 @@ def delete_assignment():
         assignment_id = int(assignment_id_str)
     except:
         return jsonify(return_error("invalid request: invalid format for parameter 'id'"), 400)
-
 
     session_cookie = request.cookies.get('hw_session')
     if not session_cookie:
