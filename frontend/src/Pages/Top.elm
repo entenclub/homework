@@ -7,8 +7,7 @@ import Element.Font as Font
 import Spa.Document exposing (Document)
 import Spa.Page as Page exposing (Page)
 import Spa.Url exposing (Url)
-import Styling.Colors exposing (blueColor, redColor)
-import Styling.Colors exposing (darkGreyColor)
+import Styling.Colors exposing (blueColor, darkGreyColor, redColor)
 
 
 type alias Params =
@@ -70,7 +69,7 @@ view { params } =
                         , padding 5
                         , Border.rounded 5
                         ]
-                        (text "Beta v0.5.1")
+                        (text "Beta v0.6")
                     ]
                 )
 
@@ -81,7 +80,7 @@ view { params } =
                     , Font.serif
                     ]
                 , width fill
-                , Background.color darkGreyColor    
+                , Background.color darkGreyColor
                 , Font.color (rgb 1 1 1)
                 , height fill
                 ]

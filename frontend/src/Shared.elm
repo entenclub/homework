@@ -23,11 +23,9 @@ import Http
 import Models exposing (User)
 import Spa.Document exposing (Document)
 import Spa.Generated.Route as Route
-import Styling.Colors exposing (redColor)
+import Styling.Colors exposing (blueColor, greenColor, redColor)
 import Time
 import Url exposing (Url)
-import Styling.Colors exposing (greenColor)
-import Styling.Colors exposing (blueColor)
 
 
 
@@ -154,7 +152,7 @@ viewHomeButton =
                 (rgb 1 1 1)
             , Border.rounded 5
             ]
-            (text "v0.5.1")
+            (text "v0.6")
         ]
 
 
