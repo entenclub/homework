@@ -15,16 +15,17 @@ dateEncoder date =
     Date.format "d-M-y" date
 
 
-assignmentEncoder : { title : String, courseId : Int, dueDate : Date.Date } -> Encode.Value
+assignmentEncoder : { title : String, courseId : Int, dueDate : Date.Date, fromMoodle : Bool } -> Encode.Value
 assignmentEncoder assignment =
     Encode.object
         [ ( "title", Encode.string assignment.title )
         , ( "course", Encode.int assignment.courseId )
         , ( "dueDate", Encode.string (dateEncoder assignment.dueDate) )
+        , ( "fromMoodle", Encode.bool assignment.fromMoodle )
         ]
 
 
-createAssignment : { title : String, courseId : Int, dueDate : Date.Date } -> { onResponse : Api.Data Assignment -> msg } -> Cmd msg
+createAssignment : { title : String, courseId : Int, dueDate : Date.Date, fromMoodle : Bool } -> { onResponse : Api.Data Assignment -> msg } -> Cmd msg
 createAssignment assignment options =
     Http.riskyRequest
         { method = "POST"

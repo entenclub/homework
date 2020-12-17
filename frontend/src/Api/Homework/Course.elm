@@ -36,13 +36,14 @@ dateDecoder =
 
 assignmentDecoder : Json.Decoder Assignment
 assignmentDecoder =
-    Json.map6 Assignment
+    Json.map7 Assignment
         (Json.field "id" Json.int)
         (Json.field "course" Json.int)
         (Json.field "creator" userDecoder)
         (Json.field "title" Json.string)
         (Json.field "description" (Json.nullable Json.string))
         (Json.field "dueDate" dateDecoder)
+        (Json.field "fromMoodle" Json.bool)
 
 
 courseDecoder : Json.Decoder Course

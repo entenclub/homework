@@ -28,6 +28,7 @@ type alias Assignment =
     , title : String
     , description : Maybe String
     , dueDate : Date.Date
+    , fromMoodle : Bool
     }
 
 

@@ -47,7 +47,7 @@ type alias Model =
     , createAssignmentData : Api.Data Assignment
     , searchCoursesText : String
     , searchCoursesData : Api.Data (List MinimalCourse)
-    , selectedCourse : Maybe Int
+    , selectedCourse : Maybe MinimalCourse
     , titleTfText : String
     , dateTfText : String
     , selectedDate : Maybe Date.Date
@@ -193,7 +193,7 @@ update msg model =
                     else
                         course.teacher ++ ": " ++ course.subject
                 , searchCoursesData = NotAsked
-                , selectedCourse = Just course.id
+                , selectedCourse = Just course
                 , errors = List.filter (\error -> error /= "no course selected") model.errors
               }
             , Cmd.none
@@ -289,7 +289,15 @@ update msg model =
                 Just course ->
                     case model.selectedDate of
                         Just dueDate ->
-                            ( { model | dateTfText = "", searchCoursesText = "", searchCoursesData = NotAsked, selectedCourse = Nothing, errors = [] }, createAssignment { courseId = course, title = model.titleTfText, dueDate = dueDate } { onResponse = GotCreateAssignmentData } )
+                            ( { model
+                                | dateTfText = ""
+                                , searchCoursesText = ""
+                                , searchCoursesData = NotAsked
+                                , selectedCourse = Nothing
+                                , errors = []
+                              }
+                            , createAssignment { courseId = course.id, title = model.titleTfText, dueDate = dueDate, fromMoodle = course.fromMoodle } { onResponse = GotCreateAssignmentData }
+                            )
 
                         _ ->
                             ( model, Cmd.none )
@@ -537,7 +545,7 @@ viewOustandingAssignments model =
                 column
           )
             [ width fill
-            , height (fill |> minimum 200)
+            , height (shrink |> minimum 400)
             , spacing 30
             ]
             (case model.user of
