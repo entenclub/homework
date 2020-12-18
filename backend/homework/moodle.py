@@ -29,19 +29,29 @@ def get_user_courses(user: User):
             expired = True
             break
 
-    if expired:
-        print("[ * ] cache expired")
-        db.session.remove(cache_objs)
+    new_enough = False
+    user_courses = []
 
-        try:
-            db.session.commit()
-        except Exception as e:
-            print("[ - ] error deleting objects: {}".format(e))
+    if cache_objs:
+        if expired:
+            print("[ * ] cache expired")
+            db.session.remove(cache_objs)
 
-        # what the fuck even is this code lol
+            try:
+                db.session.commit()
+            except Exception as e:
+                print("[ - ] error deleting objects: {}".format(e))
+
+            # what the fuck even is this code lol
+            user_courses_data = get_user_courses_req(base_url, token)
+
+        for cache_obj in cache_objs:
+            if (datetime.datetime.utcnow() - cache_obj.cached_at).seconds > 60:
+                new_enough = False
+                break
+
+    else:
         user_courses_data = get_user_courses_req(base_url, token)
-
-    user_courses = None
 
     if user_courses_data is not None:
         for ud in user_courses_data:
@@ -51,13 +61,7 @@ def get_user_courses(user: User):
                                  # i guess there will be more stuff added?
                                  })
 
-    new_enough = True
-    for cache_obj in cache_objs:
-        if (datetime.datetime.utcnow() - cache_obj.cached_at).seconds > 60:
-            new_enough = False
-            break
-
-    if not new_enough:
+    if not new_enough or not cache_objs:
         # start a new thread caching stuff in the background
         t = threading.Thread(
             target=cache_courses, name='cache courses', args=(user_courses, base_url, token, user.id,))
@@ -65,6 +69,8 @@ def get_user_courses(user: User):
 
     # return the cached stuff
     # print('[ * ] (moodle.get_user_courses()): returning cached stuff')
+    if not cache_objs:
+        return user_courses
 
     return [x.to_dict() for x in cache_objs]
 
@@ -81,7 +87,8 @@ def get_user_courses_req(base_url: str, token: str):
 
 
 def cache_courses(courses, base_url: str, token: str, user_id: int):
-    if courses is None:
+    if courses is None or len(courses) == 0:
+        print("courses are not there, fetching..")
         try:
             user_courses_data = get_user_courses_req(base_url, token)
             courses = []
@@ -116,7 +123,7 @@ def cache_courses(courses, base_url: str, token: str, user_id: int):
         new_c.user_id = user_id
 
         db.session.add(new_c)
-        # print(c)
+        print(c)
 
     db.session.commit()
 
