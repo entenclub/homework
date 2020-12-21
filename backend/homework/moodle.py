@@ -78,7 +78,7 @@ def get_user_courses(user: User):
 def get_user_courses_req(base_url: str, token: str):
     with eventlet.Timeout(20):
         courses_request = requests.get(
-            base_url + '/webservice/rest/server.php' + '?wstoken=' + token + '&wsfunction=' + 'core_enrol_get_users_courses' + '&moodlewsrestformat=json' + '&userid=412')
+            base_url + '/webservice/rest/server.php' + '?wstoken=' + token + '&wsfunction=' + 'core_enrol_get_users_courses' + '&moodlewsrestformat=json' + f'&userid={user.moodle_user_id}')
 
         if not courses_request.ok:
             raise Exception("error accessing moodle")
@@ -87,6 +87,7 @@ def get_user_courses_req(base_url: str, token: str):
 
 
 def cache_courses(courses, base_url: str, token: str, user_id: int):
+    print("caching initiated...")
     if courses is None or len(courses) == 0:
         print("courses are not there, fetching..")
         try:
