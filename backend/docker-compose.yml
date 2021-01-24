@@ -1,4 +1,4 @@
-version: '3.7'
+version: "3.7"
 
 services:
   web:
@@ -9,12 +9,16 @@ services:
     ports:
       - 8004:8000
     env_file:
-      - ./.env.dev
+      - ./.env
     restart: always
   db:
     image: postgres:11
     volumes:
       - /home/ente/docker/volumes/homework_db:/var/lib/postgresql/data
     restart: always
+    env_file:
+      - ./.env
     environment:
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=homework
+      - POSTGRES_DB=homework
+      - "POSTGRES_PASSWORD=${DBPASSWORD}"

@@ -15,5 +15,5 @@ class MoodleCache(db.Model):
                           nullable=False, default=datetime.utcnow)
 
     def to_dict(self):
-        return {"id": self.id, "subject": "", "teacher": self.teacher,
+        return {"id": self.id, "courseId": self.course_id, "subject": "", "teacher": self.teacher,
                 "fromMoodle": True, "name": self.name, "creator": self.user_id}

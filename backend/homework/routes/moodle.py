@@ -9,6 +9,7 @@ from flask_cors import CORS
 from homework.database.assignment import Assignment
 from homework.database.session import Session
 from homework.database.user import User
+from homework.database.course import Course
 from homework.routes import return_error, to_response
 from homework import db, moodle
 
@@ -34,16 +35,18 @@ def get_courses():
     courses = []
     for course in courses_raw:
         assignments = [assignment.to_dict() for assignment in
-                       Assignment.query.filter_by(course=course['id'])]
+                       Assignment.query.filter(Assignment.course == course['id'] and Assignment.from_moodle).all()]
 
         # convert dates to iso
         for i in range(len(assignments)):
             assignments[i]['dueDate'] = datetime.datetime.strftime(assignments[i]['dueDate'],
                                                                    '%Y-%m-%d')
 
+        print(course)
+
         course = {
             "id": course['id'],
-            'name': course['displayname'],
+            'name': course['name'],
             'creator': user.id,
             'assignments': assignments,
             'fromMoodle': True

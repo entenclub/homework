@@ -27,7 +27,12 @@ def username_taken(username):
 @user_bp.route('/user/login', methods=["POST"])
 def login():
     data = request.json
-    username, password = data['username'], data['password']
+    if not data:
+        return jsonify(return_error("missing credentials")), 400
+
+    username, password = data.get('username'), data.get('password')
+    if username is None or password is None:
+        return jsonify(return_error("missing credentials")), 400
 
     user = User.query.filter_by(username=username).first()
     if user is None:
@@ -44,7 +49,8 @@ def login():
     db.session.commit()
 
     resp = make_response(jsonify(user.to_safe_dict()))
-    resp.set_cookie('hw_session', str(new_session.id), max_age=60 * 60 * 24 * 183)
+    resp.set_cookie('hw_session', str(new_session.id),
+                    max_age=60 * 60 * 24 * 183)
 
     return resp, 200
 
@@ -85,7 +91,11 @@ def user_by_session():
 @user_bp.route('/user/register', methods=['POST'])
 def register():
     data = request.json
-    username, password, email = data['username'], data['password'], data['email']
+
+    username, password, email = data.get(
+        'username'), data.get('password'), data.get('email')
+    if not username or not password or not email:
+        return jsonify(return_error("missing credentials")), 400
 
     new_user = User()
     new_user.username = username
@@ -106,7 +116,8 @@ def register():
     print(type(new_session.id))
 
     resp = make_response(jsonify(new_user.to_safe_dict()))
-    resp.set_cookie('hw_session', str(new_session.id), max_age=60 * 60 * 24 * 183)
+    resp.set_cookie('hw_session', str(new_session.id),
+                    max_age=60 * 60 * 24 * 183)
 
     return resp, 200
 
