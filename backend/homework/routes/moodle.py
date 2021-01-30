@@ -118,6 +118,7 @@ def get_school_info():
     if re.match(regex, school_url) is None:
         return jsonify(return_error('invalid url')), 400
 
+    # magic
     url = school_url + "/lib/ajax/service-nologin.php?args=%5B%7B%22index%22%3A0,%22methodname%22%3A%22tool_mobile_get_public_config%22,%22args%22%3A%5B%5D%7D%5D"
 
     try:

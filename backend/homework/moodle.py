@@ -1,3 +1,4 @@
+import json
 import requests
 import eventlet
 import datetime
@@ -5,9 +6,10 @@ import threading
 from homework import db
 from homework.database.moodle import MoodleCache
 from homework.database.user import User
+import time
 
 
-def get_user_courses(user: User):
+def get_user_courses(user: User, get_assignments=False):
     base_url = user.moodle_url
     token = user.moodle_token
 
@@ -24,6 +26,7 @@ def get_user_courses(user: User):
 
     expired = False
     user_courses_data = None
+    course_assignment_data = []
 
     for cache_obj in cache_objs:
         if (datetime.datetime.now() - cache_obj.cached_at).days > 7:
@@ -48,19 +51,37 @@ def get_user_courses(user: User):
             user_courses_data = get_user_courses_req(base_url, token)
 
         for cache_obj in cache_objs:
-            if (datetime.datetime.utcnow() - cache_obj.cached_at).seconds > 60:
+            if (datetime.datetime.utcnow() - cache_obj.cached_at).seconds > 120:
                 new_enough = False
                 break
 
     else:
         # since there is no usable cache, get stuff
-        user_courses_data = get_user_courses_req(base_url, token, user.moodle_user_id)
+        user_courses_data = get_user_courses_req(
+            base_url, token, user.moodle_user_id)
+        course_assignment_data = get_moodle_assignments_req(
+            base_url, token) or []
 
     # if there has been a fresh new request, execute this lol
+
     if user_courses_data is not None:
         for ud in user_courses_data:
+
+            # get the course with the correct id, and return assignments
+            filtered_assignments_data = course_assignment_data.filter(
+                lambda x: (x['id'] == ud['id']))[0]['assignments']
+            filtered_assignments = []
+
+            for ad in filtered_assignments_data:
+                filtered_assignments.append({
+                    "id": ad["id"],
+                    "name": ad["name"],
+                    "duedate": datetime.datetime.fromtimestamp(ad["duedate"])
+                })
+
             user_courses.append({"id": ud['id'],
-                                 "name": ud['displayname']
+                                 "name": ud['displayname'],
+                                 "assignments": json.dumps(filtered_assignments)
                                  # other stuff is irrelevant for current application.
                                  # i guess there will be more stuff added?
                                  })
@@ -72,7 +93,7 @@ def get_user_courses(user: User):
             target=cache_courses, name='cache courses', args=(user_courses, base_url, token, user.id, user.moodle_user_id,))
         t.start()
 
-    # this returns moodle data
+    # this returns fresh hot moodle data
     if not cache_objs:
         return user_courses
 
@@ -95,6 +116,17 @@ def get_user_courses_req(base_url: str, token: str, moodle_user_id: int):
             raise Exception("error accessing moodle")
 
     return courses_request.json()
+
+
+def get_moodle_assignments_req(base_url: str, token: str):
+    with eventlet.Timeout(20):
+        assignments_request = requests.get(base_url + '/webservice/rest/server.php' + 'wstoken=' +
+                                           token + '&wsfunction=mod_assign_get_assignments&moodlewsrestformat=json')
+
+        if not assignments_request.ok:
+            raise Exception('error accessing moodle')
+
+    return assignments_request.json()['courses']
 
 
 def cache_courses(courses, base_url: str, token: str, user_id: int, moodle_user_id: int):
@@ -139,4 +171,4 @@ def cache_courses(courses, base_url: str, token: str, user_id: int, moodle_user_
 
     db.session.commit()
 
-    #print("[ + ] successfully cached courses?")
+    # print("[ + ] successfully cached courses?")
