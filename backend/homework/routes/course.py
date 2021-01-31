@@ -126,7 +126,7 @@ def active_courses():
 
     print(f"[ * ] accessing moodle at {user.moodle_url} ...")
     moodle_courses = moodle.get_user_courses(user)
-    print(moodle_courses)
+    #print(moodle_courses)
 
     if moodle_courses is None:
         return jsonify(to_response(has_outstanding_assignments))
@@ -138,7 +138,7 @@ def active_courses():
                        if
                        assignment.due_date >= now]
         if not assignments:
-            print("course does not have assignments", assignments)
+            #print("course does not have assignments", assignments)
             continue
 
         # convert dates to iso

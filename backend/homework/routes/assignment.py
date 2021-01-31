@@ -150,8 +150,11 @@ def autocomplete():
 
     all_assignments = []
     for c in courses_with_assignments:
-        assignments = filter(lambda a: (
-            a['name'].lower() in searchterm or searchterm in a['name'].lower()), c['assignments'])
+        for a in c['assignments']:
+            print(a)
+            print(a['name'])
+        assignments = list(filter(lambda a: (
+            a['name'].lower() in searchterm or searchterm in a['name'].lower()), c['assignments']))
 
         if assignments:
             c['assignments'] = assignments
