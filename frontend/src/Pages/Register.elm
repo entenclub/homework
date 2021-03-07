@@ -1,6 +1,6 @@
 module Pages.Register exposing (Model, Msg, Params, page)
 
-import Api
+import Api exposing(HttpError(..))
 import Api.Homework.User
 import Api.Homework.UsernameTaken
 import Element exposing (..)
@@ -19,6 +19,7 @@ import Spa.Page as Page exposing (Page)
 import Spa.Url exposing (Url)
 import Utils.OnEnter exposing (onEnter)
 import Utils.Route
+import Debug
 
 
 page : Page Params Model Msg
@@ -436,7 +437,10 @@ viewUsernameTaken model =
                 else
                     el [ centerX, centerY, Font.color darkGreenColor ] (html (Icons.check size Inherit))
 
-            Api.Failure _ ->
+            Api.Failure err ->
+                let
+                    debug = Debug.log "reee" (Api.errorToString err)
+                in
                 el [ centerX, centerY ] (html (Icons.error (round (size * 0.8)) Inherit))
 
             Api.Loading ->
@@ -447,23 +451,6 @@ viewUsernameTaken model =
         )
 
 
-errorToString : Http.Error -> String
-errorToString error =
-    case error of
-        Http.BadStatus status ->
-            "bad status: " ++ String.fromInt status
-
-        Http.BadBody err ->
-            "bad body: " ++ err
-
-        Http.BadUrl err ->
-            "bad url: " ++ err
-
-        Http.NetworkError ->
-            "network error"
-
-        Http.Timeout ->
-            "timeout"
 
 
 viewRegistrationButton : Model -> Element Msg
@@ -481,8 +468,8 @@ viewRegistrationButton model =
                 el [ centerX, centerY ] (html (Icons.hourglass_bottom size Inherit))
 
             Api.Failure err ->
-                text
-                    (errorToString err)
+                text (Api.errorToString err)
+            
 
             --el [ centerX, centerY, Font.color errorColor ]
             --   (html (Icons.close size Inherit))

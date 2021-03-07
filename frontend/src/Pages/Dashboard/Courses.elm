@@ -2,7 +2,6 @@ module Pages.Dashboard.Courses exposing (Model, Msg, Params, page)
 
 import Api
 import Api.Homework.Course exposing (createCourse, enrollInCourse, getMyCourses)
-import Array
 import Components.Sidebar
 import Element exposing (..)
 import Element.Background as Background
@@ -10,7 +9,6 @@ import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
 import Element.Input as Input
-import Http
 import List
 import Material.Icons as Icons
 import Material.Icons.Types exposing (Coloring(..))
@@ -22,7 +20,6 @@ import Spa.Page as Page exposing (Page)
 import Spa.Url exposing (Url)
 import Styling.Colors exposing (..)
 import Utils.Darken exposing (darken)
-import Utils.Route
 
 
 type alias Model =
@@ -248,25 +245,6 @@ inputStyle =
     ]
 
 
-errorToString : Http.Error -> String
-errorToString error =
-    case error of
-        Http.BadStatus status ->
-            "bad status: " ++ String.fromInt status
-
-        Http.BadBody err ->
-            "bad body: " ++ err
-
-        Http.BadUrl err ->
-            "bad url: " ++ err
-
-        Http.NetworkError ->
-            "network error"
-
-        Http.Timeout ->
-            "timeout"
-
-
 view : Model -> Document Msg
 view model =
     { title = "dashboard/courses"
@@ -383,7 +361,7 @@ viewMyCourses courseData =
                 text "Loading..."
 
             Api.Failure e ->
-                text (errorToString e)
+                text (Api.errorToString e)
 
             Api.NotAsked ->
                 none

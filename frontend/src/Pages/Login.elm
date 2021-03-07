@@ -1,6 +1,6 @@
 module Pages.Login exposing (Model, Msg, Params, page)
 
-import Api
+import Api exposing (HttpError(..), errorToString)
 import Api.Homework.User
 import Element exposing (..)
 import Element.Background as Background

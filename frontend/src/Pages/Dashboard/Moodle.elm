@@ -19,6 +19,7 @@ import Spa.Url exposing (Url)
 import String
 import Styling.Colors exposing (blueColor, darkGreyColor, greenColor, lighterGreyColor, redColor)
 import Utils.Darken exposing (darken)
+import Api exposing (errorToString)
 
 
 type alias Params =
@@ -103,7 +104,7 @@ update msg model =
                     case data of
                         Api.Failure e ->
                             case e of
-                                Http.BadStatus status ->
+                                Api.BadStatus status _ ->
                                     if status == 401 then
                                         model.moodleSiteName
 
@@ -299,7 +300,7 @@ viewCredentialsForm model =
                         }
                     ]
             )
-        , paragraph [ alignBottom, Font.color (rgb 0.8 0.8 0.8) ] [ text "We don't save your username or password. We just use them to get a token from your moodle site. This token is also kept safe of course." ]
+        , paragraph [ alignBottom, Font.color (rgb 0.8 0.8 0.8) ] [ text "We don't keep your username or password. We just use them to get a token from your moodle site. This token is also kept safe of course." ]
         ]
 
 
@@ -320,16 +321,7 @@ viewStatusIndicatorThingy userData =
         message =
             case userData of
                 Api.Failure e ->
-                    case e of
-                        Http.BadStatus status ->
-                            if status == 401 then
-                                "invalid credentials"
-
-                            else
-                                "unknown error"
-
-                        _ ->
-                            "unknown error"
+                    Api.errorToString e
 
                 Api.Success _ ->
                     "Success 🎉"

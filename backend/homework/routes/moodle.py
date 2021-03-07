@@ -42,7 +42,6 @@ def get_courses():
             assignments[i]['dueDate'] = datetime.datetime.strftime(assignments[i]['dueDate'],
                                                                    '%Y-%m-%d')
 
-        print(course)
 
         course = {
             "id": course['id'],
@@ -79,7 +78,6 @@ def authenticate():
 
     body = {'username': username, 'password': password}
     auth_request = requests.post(base_url + '/login/token.php?service=moodle_mobile_app', body)
-    print(auth_request.json())
 
     if not auth_request.ok or auth_request.json().get('errorcode') is not None:
         return jsonify(return_error('invalid moodle credentials')), 401
@@ -89,7 +87,6 @@ def authenticate():
     # get user id
     user_request = requests.post(base_url + '/webservice/rest/server.php?wstoken={}&wsfunction=core_user_get_users_by_field&field=username&values[0]={}&moodlewsrestformat=json'.format(creds['token'], username))
 
-    print(user_request.text)
 
     user.moodle_url = base_url
     user.moodle_token = creds['token']
@@ -118,6 +115,7 @@ def get_school_info():
     if re.match(regex, school_url) is None:
         return jsonify(return_error('invalid url')), 400
 
+    # magic
     url = school_url + "/lib/ajax/service-nologin.php?args=%5B%7B%22index%22%3A0,%22methodname%22%3A%22tool_mobile_get_public_config%22,%22args%22%3A%5B%5D%7D%5D"
 
     try:

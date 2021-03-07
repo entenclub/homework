@@ -1,6 +1,7 @@
 from flask_api import FlaskAPI
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from dotenv import load_dotenv
 import os
 from os.path import join, dirname
@@ -15,6 +16,7 @@ app = FlaskAPI(__name__)
 app.config.from_object('config')
 CORS(app, supports_credentials=True)
 
+
 # FIXME: remove in production
 app.config['DEBUG'] = True
 
@@ -26,6 +28,8 @@ db_string = f'postgresql://homework:{os.getenv("DBPASSWORD")}@db:5432/homework'
 app.config['SQLALCHEMY_DATABASE_URI'] = db_string
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+
+migrate = Migrate(app, db)
 
 # blueprints
 from .routes.user import user_bp

@@ -1,23 +1,87 @@
-module Api exposing (Data(..), expectJson)
+module Api exposing (Data(..), expectJson, HttpError(..), errorToString, expectPlainJson)
 
 import Html.Attributes exposing (value)
 import Http
 import Json.Decode as Json
+import Http
 
-
-type Data value
+type Data value 
     = NotAsked
     | Loading
-    | Failure Http.Error
+    | Failure HttpError
     | Success value
 
+type HttpError
+    = BadUrl String
+    | Timeout
+    | NetworkError
+    | BadStatus Int (List String)
+    | BadBody String
 
 expectJson : (Data value -> msg) -> Json.Decoder value -> Http.Expect msg
 expectJson toMsg =
-    Http.expectJson (fromResult >> toMsg)
+    expectStringButItsJson (fromResult >> toMsg)
 
+expectPlainJson : (Data value -> msg) -> Json.Decoder value -> Http.Expect msg
+expectPlainJson toMsg =
+    plainExpectStringButItsJson (fromResult >> toMsg)
 
-fromResult : Result Http.Error value -> Data value
+expectStringButItsJson : (Result HttpError a -> msg) -> Json.Decoder a -> Http.Expect msg
+expectStringButItsJson toMsg decoder =
+    Http.expectStringResponse toMsg <|
+        \response ->
+            case response of
+                Http.BadUrl_ url ->
+                    Err (BadUrl url)
+
+                Http.Timeout_ ->
+                    Err Timeout
+                
+                Http.NetworkError_ ->
+                    Err NetworkError
+
+                Http.BadStatus_ metadata body ->
+                    case Json.decodeString (Json.at ["errors"] (Json.list Json.string)) body of
+                        Ok value ->
+                            Err (BadStatus metadata.statusCode value)
+
+                        Err err ->
+                            Err (BadStatus metadata.statusCode ["an error occured."])
+
+                Http.GoodStatus_ metadata body ->
+                    case Json.decodeString (Json.at ["content"] decoder) body of
+                        Ok value ->
+                            Ok value
+
+                        Err err ->
+                            Err (BadBody (Json.errorToString err))
+
+plainExpectStringButItsJson : (Result HttpError a -> msg) -> Json.Decoder a -> Http.Expect msg
+plainExpectStringButItsJson toMsg decoder =
+    Http.expectStringResponse toMsg <|
+        \response ->
+            case response of
+                Http.BadUrl_ url ->
+                    Err (BadUrl url)
+
+                Http.Timeout_ ->
+                    Err Timeout
+                
+                Http.NetworkError_ ->
+                    Err NetworkError
+
+                Http.BadStatus_ metadata _ ->
+                    Err (BadStatus metadata.statusCode ["an error occured."])
+
+                Http.GoodStatus_ metadata body ->
+                    case Json.decodeString decoder body of
+                        Ok value ->
+                            Ok value
+
+                        Err err ->
+                            Err (BadBody (Json.errorToString err))
+
+fromResult : Result HttpError value -> Data value
 fromResult result =
     case result of
         Ok value ->
@@ -25,3 +89,22 @@ fromResult result =
 
         Err reason ->
             Failure reason
+
+
+errorToString : HttpError -> String
+errorToString error =
+    case error of
+        BadStatus status errors ->
+            "an error occured: " ++  String.join "; " errors
+
+        BadBody err ->
+            "an error occured"
+
+        BadUrl err ->
+            "an error occured"
+
+        NetworkError ->
+            "unable to reach server"
+
+        Timeout ->
+            "request timed out"

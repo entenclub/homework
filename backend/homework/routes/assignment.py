@@ -1,3 +1,5 @@
+import json
+from re import search
 from flask import Blueprint, jsonify, request, make_response
 
 from ..database.assignment import Assignment
@@ -7,6 +9,7 @@ from . import to_response, return_error
 from .. import db
 from flask_cors import CORS
 from datetime import datetime
+from homework.moodle import get_user_courses as m_get_user_courses
 
 assignment_bp = Blueprint('assignment', __name__)
 CORS(assignment_bp, supports_credentials=True)
@@ -31,8 +34,6 @@ def create_assignment():
     if not data:
         return jsonify(return_error('invalid request')), 400
 
-    print("(routes/assignment.py):", data)
-
     title, raw_date, course, from_moodle = data.get('title'), data.get('dueDate'), data.get(
         'course'), data.get('fromMoodle')
 
@@ -54,7 +55,6 @@ def create_assignment():
     try:
         db.session.commit()
     except Exception as e:
-        print(e)
         return jsonify(return_error('server error')), 500
 
     assignment_dict = new_assignment.to_dict()
@@ -110,3 +110,49 @@ def delete_assignment():
                                                    '%Y-%m-%d')
 
     return jsonify(to_response(assignment_dict)), 200
+
+
+@assignment_bp.route('/assignment/auto-complete', methods=['GET'])
+def autocomplete():
+    searchterm = request.args.get('searchterm')
+    if not searchterm:
+        return jsonify(return_error("no searchterm")), 400
+
+    searchterm = searchterm.lower()
+
+    session_cookie = request.cookies.get('hw_session')
+    if not session_cookie:
+        return jsonify(return_error("no session")), 401
+
+    session = Session.query.filter_by(id=session_cookie).first()
+    if session is None:
+        return jsonify(return_error("invalid sesssion")), 401
+
+    user = User.query.filter_by(id=session.user_id).first()
+    if user is None:
+        return jsonify(return_error("invalid session")), 401
+
+    m_course_id = request.args.get('course')
+
+    courses_with_assignments = m_get_user_courses(user, get_assignments=True)
+
+    if m_course_id:
+        course = filter(lambda course: (
+            course['id'] == m_course_id), courses_with_assignments)[0]
+
+        assignments = filter(lambda a: (
+            a['name'].lower() in searchterm or searchterm in a['name'].lower()), course['assignments'])
+
+        return jsonify(to_response(assignments))
+
+    all_assignments = []
+    for c in courses_with_assignments:
+        for a in c['assignments']:
+            assignments = list(filter(lambda a: (
+                a['name'].lower() in searchterm or searchterm in a['name'].lower()), c['assignments']))
+
+        if assignments:
+            c['assignments'] = assignments
+            all_assignments.append(c)
+
+    return jsonify(to_response(all_assignments))
