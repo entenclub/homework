@@ -48,7 +48,6 @@ def search_courses(searchterm):
         return to_response(filtered_courses)
 
     else:
-        print("[ * ] getting something from moodle...")
 
         # done = False
         # try:
@@ -124,7 +123,6 @@ def active_courses():
     if user.moodle_token is None:
         return jsonify(to_response(has_outstanding_assignments))
 
-    print(f"[ * ] accessing moodle at {user.moodle_url} ...")
     moodle_courses = moodle.get_user_courses(user)
     #print(moodle_courses)
 
@@ -147,7 +145,9 @@ def active_courses():
                                                                    '%Y-%m-%d')
             assignment_creator = User.query.filter_by(
                 id=assignments[i]['creator']).first()
-            assignments[i]['creator'] = assignment_creator.to_safe_dict()
+
+            if assignment_creator is not None: 
+                assignments[i]['creator'] = assignment_creator.to_safe_dict()
 
         course = {
             "id": m_course['id'],

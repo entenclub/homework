@@ -39,17 +39,15 @@ def get_user_courses(user: User, get_assignments=False):
 
     if cache_objs:
         if expired:
-            print("[ * ] cache expired")
             cache_objs_query.delete()
             cache_objs = []
 
             try:
                 db.session.commit()
             except Exception as e:
-                print("[ - ] error deleting objects: {}".format(e))
 
-            # what the fuck even is this code lol
-            user_courses_data = get_user_courses_req(base_url, token)
+                # what the fuck even is this code lol
+                user_courses_data = get_user_courses_req(base_url, token)
 
         for cache_obj in cache_objs:
             if (datetime.datetime.utcnow() - cache_obj.cached_at).seconds > 120:
@@ -63,7 +61,6 @@ def get_user_courses(user: User, get_assignments=False):
         course_assignment_data = get_moodle_assignments_req(
             base_url, token) or None
 
-        print(course_assignment_data)
 
     # if there has been a fresh new request, execute this lol
 
@@ -136,9 +133,7 @@ def get_moodle_assignments_req(base_url: str, token: str):
 
 
 def cache_courses(courses, base_url: str, token: str, user_id: int, moodle_user_id: int):
-    print("caching initiated...")
     if courses is None or len(courses) == 0:
-        print("courses are not there, fetching..")
         try:
             user_courses_data = get_user_courses_req(
                 base_url, token, moodle_user_id)
@@ -193,4 +188,3 @@ def cache_courses(courses, base_url: str, token: str, user_id: int, moodle_user_
 
     db.session.commit()
 
-    # print("[ + ] successfully cached courses?")

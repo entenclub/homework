@@ -48,7 +48,7 @@ def login():
     db.session.add(new_session)
     db.session.commit()
 
-    resp = make_response(jsonify(user.to_safe_dict()))
+    resp = make_response(jsonify(to_response(user.to_safe_dict())))
     resp.set_cookie('hw_session', str(new_session.id),
                     max_age=60 * 60 * 24 * 183)
 
@@ -84,7 +84,6 @@ def user_by_session():
         print(e)
         return jsonify(return_error("invalid session")), 401
 
-    print(user.to_dict())
     return jsonify(to_response(user.to_safe_dict())), 200
 
 
@@ -113,9 +112,8 @@ def register():
     db.session.add(new_session)
     db.session.commit()
 
-    print(type(new_session.id))
 
-    resp = make_response(jsonify(new_user.to_safe_dict()))
+    resp = make_response(jsonify(to_response(new_user.to_safe_dict())))
     resp.set_cookie('hw_session', str(new_session.id),
                     max_age=60 * 60 * 24 * 183)
 

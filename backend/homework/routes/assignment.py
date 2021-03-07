@@ -34,8 +34,6 @@ def create_assignment():
     if not data:
         return jsonify(return_error('invalid request')), 400
 
-    print("(routes/assignment.py):", data)
-
     title, raw_date, course, from_moodle = data.get('title'), data.get('dueDate'), data.get(
         'course'), data.get('fromMoodle')
 
@@ -57,7 +55,6 @@ def create_assignment():
     try:
         db.session.commit()
     except Exception as e:
-        print(e)
         return jsonify(return_error('server error')), 500
 
     assignment_dict = new_assignment.to_dict()
@@ -151,10 +148,8 @@ def autocomplete():
     all_assignments = []
     for c in courses_with_assignments:
         for a in c['assignments']:
-            print(a)
-            print(a['name'])
-        assignments = list(filter(lambda a: (
-            a['name'].lower() in searchterm or searchterm in a['name'].lower()), c['assignments']))
+            assignments = list(filter(lambda a: (
+                a['name'].lower() in searchterm or searchterm in a['name'].lower()), c['assignments']))
 
         if assignments:
             c['assignments'] = assignments

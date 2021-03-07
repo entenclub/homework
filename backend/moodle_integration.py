@@ -15,11 +15,9 @@ auth_request = requests.post(base_url + '/login/token.php?service=moodle_mobile_
 # print(r.status_code, r.text)
 
 if not auth_request.ok:
-    print(f"error. status code {auth_request.status_code} d exiting...")
     exit()
 
 creds = auth_request.json()
-print(creds)
 
 """
 $ curl "https://your.site.com/moodle/webservice/rest/server.php?wstoken=...&wsfunction=...&moodlewsrestformat=json"
@@ -30,5 +28,4 @@ courses_reqest = requests.get(base_url + '/webservice/rest/server.php' + '?wstok
 
 courses = courses_reqest.json()
 
-print(courses_reqest.text)
 
