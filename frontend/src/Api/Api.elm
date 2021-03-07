@@ -8,8 +8,8 @@ localApiAddress =
     "http://localhost:8004"
 
 apiAddress =
-    -- let
-    --     debug =
-    --         Debug.log "apiAddress" "fix api address back to actual endpoint"
-    -- in
-    productionApiAddress
+    let
+        debug =
+            Debug.log "apiAddress" "fix api address back to actual endpoint"
+    in
+    localApiAddress
