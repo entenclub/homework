@@ -19,7 +19,6 @@ import Spa.Page as Page exposing (Page)
 import Spa.Url exposing (Url)
 import Utils.OnEnter exposing (onEnter)
 import Utils.Route
-import Debug
 
 
 page : Page Params Model Msg
@@ -438,9 +437,6 @@ viewUsernameTaken model =
                     el [ centerX, centerY, Font.color darkGreenColor ] (html (Icons.check size Inherit))
 
             Api.Failure err ->
-                let
-                    debug = Debug.log "reee" (Api.errorToString err)
-                in
                 el [ centerX, centerY ] (html (Icons.error (round (size * 0.8)) Inherit))
 
             Api.Loading ->
