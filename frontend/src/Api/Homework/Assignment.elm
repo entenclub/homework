@@ -32,7 +32,7 @@ createAssignment assignment options =
         , url = apiAddress ++ "/assignment"
         , headers = []
         , body = Http.jsonBody (assignmentEncoder assignment)
-        , expect = Api.expectJson options.onResponse (Json.at [ "content" ] assignmentDecoder)
+        , expect = Api.expectJson options.onResponse assignmentDecoder
         , timeout = Nothing
         , tracker = Nothing
         }
@@ -45,7 +45,7 @@ removeAssignment id options =
         , url = apiAddress ++ "/assignment?id=" ++ String.fromInt id
         , headers = []
         , body = Http.emptyBody
-        , expect = Api.expectJson options.onResponse (Json.at [ "content" ] assignmentDecoder)
+        , expect = Api.expectJson options.onResponse assignmentDecoder
         , timeout = Nothing
         , tracker = Nothing
         }

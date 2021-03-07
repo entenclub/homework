@@ -21,25 +21,6 @@ borderRadius =
     20
 
 
-errorToString : Http.Error -> String
-errorToString error =
-    case error of
-        Http.BadStatus status ->
-            "bad status: " ++ String.fromInt status
-
-        Http.BadBody err ->
-            "bad body: " ++ err
-
-        Http.BadUrl err ->
-            "bad url: " ++ err
-
-        Http.NetworkError ->
-            "network error"
-
-        Http.Timeout ->
-            "timeout"
-
-
 viewUser : Maybe User -> Api.Data (List Course) -> Element msg
 viewUser maybeUser courseData =
     case maybeUser of

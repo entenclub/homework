@@ -1,6 +1,6 @@
 module Pages.Dashboard exposing (Model, Msg, Params, page)
 
-import Api exposing (Data(..))
+import Api exposing (Data(..), HttpError(..))
 import Api.Homework.Assignment exposing (createAssignment, removeAssignment)
 import Api.Homework.Course exposing (MinimalCourse, getActiveCourses, searchCourses)
 import Api.Homework.User exposing (getUserFromSession)
@@ -127,7 +127,7 @@ update msg model =
             case data of
                 Failure e ->
                     case e of
-                        Http.BadStatus s ->
+                        Api.BadStatus s _ ->
                             if s == 401 || s == 403 then
                                 ( model, Utils.Route.navigate model.url.key Route.Login )
 
@@ -457,26 +457,6 @@ view model =
     }
 
 
-errorToString : Http.Error -> String
-errorToString error =
-    case error of
-        Http.BadStatus status ->
-            "bad status: " ++ String.fromInt status
-
-        Http.BadBody err ->
-            "bad body: " ++ err
-
-        Http.BadUrl err ->
-            "bad url: " ++ err
-
-        Http.NetworkError ->
-            "network error"
-
-        Http.Timeout ->
-            "timeout"
-
-
-
 -- outstanding? assignments
 
 
@@ -624,7 +604,7 @@ viewAssignmentsDayColumn courseData title color date assignmentHovered user =
                     Keyed.column [ width fill, spacing 5 ] (List.map (courseGroupToKeyValue color (Just date) assignmentHovered False user) courses)
 
             Failure e ->
-                text (errorToString e)
+                text (Api.errorToString e)
 
             Loading ->
                 el [ centerX, centerY, Font.size 30, Font.bold ] (text "Loading...")
@@ -1007,7 +987,7 @@ viewSearchDropdown data =
             text "Loading..."
 
         Failure e ->
-            text (errorToString e)
+            text (Api.errorToString e)
 
         _ ->
             none

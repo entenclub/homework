@@ -15,7 +15,7 @@ import Models exposing (User)
 
 decoder : Json.Decoder String
 decoder =
-    Json.at [ "content", "sitename" ] Json.string
+    Json.at [ "sitename" ] Json.string
 
 
 encoder : String -> Encode.Value
@@ -51,5 +51,5 @@ authenticateUser url username password options =
         , tracker = Nothing
         , url = apiAddress ++ "/moodle/authenticate"
         , timeout = Nothing
-        , expect = Api.expectJson options.onResponse (Json.at [ "content" ] userDecoder)
+        , expect = Api.expectJson options.onResponse userDecoder
         }
