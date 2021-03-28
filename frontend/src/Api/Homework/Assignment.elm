@@ -20,8 +20,8 @@ assignmentEncoder assignment =
     Encode.object
         [ ( "title", Encode.string assignment.title )
         , ( "course", Encode.int assignment.courseId )
-        , ( "dueDate", Encode.string (dateEncoder assignment.dueDate) )
-        , ( "fromMoodle", Encode.bool assignment.fromMoodle )
+        , ( "due_date", Encode.string (dateEncoder assignment.dueDate) )
+        , ( "from_moodle", Encode.bool assignment.fromMoodle )
         ]
 
 
@@ -38,11 +38,11 @@ createAssignment assignment options =
         }
 
 
-removeAssignment : Int -> { onResponse : Api.Data Assignment -> msg } -> Cmd msg
+removeAssignment : String -> { onResponse : Api.Data Assignment -> msg } -> Cmd msg
 removeAssignment id options =
     Http.riskyRequest
         { method = "DELETE"
-        , url = apiAddress ++ "/assignment?id=" ++ String.fromInt id
+        , url = apiAddress ++ "/assignment?id=" ++ id
         , headers = []
         , body = Http.emptyBody
         , expect = Api.expectJson options.onResponse assignmentDecoder

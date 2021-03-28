@@ -14,8 +14,6 @@ import Time
 type alias MinimalCourse =
     { id : Int
     , name : String
-    , subject : String
-    , teacher : String
     , fromMoodle : Bool
     }
 
@@ -37,35 +35,31 @@ dateDecoder =
 assignmentDecoder : Json.Decoder Assignment
 assignmentDecoder =
     Json.map7 Assignment
-        (Json.field "id" Json.int)
+        (Json.field "id" Json.string)
         (Json.field "course" Json.int)
-        (Json.field "creator" userDecoder)
+        (Json.field "user" userDecoder)
         (Json.field "title" Json.string)
         (Json.field "description" (Json.nullable Json.string))
-        (Json.field "dueDate" dateDecoder)
-        (Json.field "fromMoodle" Json.bool)
+        (Json.field "due_date" dateDecoder)
+        (Json.field "from_moodle" Json.bool)
 
 
 courseDecoder : Json.Decoder Course
 courseDecoder =
-    Json.map7 Course
+    Json.map5 Course
         (Json.field "id" Json.int)
         (Json.field "name" Json.string)
-        (Json.field "subject" Json.string)
-        (Json.field "teacher" Json.string)
         (Json.field "assignments" (Json.list assignmentDecoder))
-        (Json.field "fromMoodle" Json.bool)
-        (Json.field "creator" Json.int)
+        (Json.field "from_moodle" Json.bool)
+        (Json.field "user" Json.string)
 
 
 minimalCourseDecoder : Json.Decoder MinimalCourse
 minimalCourseDecoder =
-    Json.map5 MinimalCourse
+    Json.map3 MinimalCourse
         (Json.field "id" Json.int)
         (Json.field "name" Json.string)
-        (Json.field "subject" Json.string)
-        (Json.field "teacher" Json.string)
-        (Json.field "fromMoodle" (Json.nullable Json.bool)
+        (Json.field "from_moodle" (Json.nullable Json.bool)
             |> Json.andThen
                 (\maybeBool ->
                     case maybeBool of
