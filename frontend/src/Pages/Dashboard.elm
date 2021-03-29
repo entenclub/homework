@@ -5,6 +5,7 @@ import Api.Homework.Assignment exposing (createAssignment, removeAssignment)
 import Api.Homework.Course exposing (MinimalCourse, getActiveCourses, searchCourses)
 import Api.Homework.User exposing (getUserFromSession)
 import Array
+import Components.LineChart
 import Components.Sidebar
 import Date
 import Element exposing (..)
@@ -183,8 +184,7 @@ update msg model =
         CAFSelectCourse course ->
             ( { model
                 | searchCoursesText =
-                        course.name
-
+                    course.name
                 , searchCoursesData = NotAsked
                 , selectedCourse = Just course
                 , errors = List.filter (\error -> error /= "no course selected") model.errors
@@ -428,20 +428,22 @@ view model =
                     , spacing 30
                     ]
                     [ viewOustandingAssignments model
-                    , row [ width fill, height fill, spacing 30 ]
-                        [ viewCreateAssignmentForm model
-                        , case model.device.class of
-                            Shared.Desktop ->
-                                el
-                                    [ width (fillPortion 1)
-                                    , Background.color lighterGreyColor
-                                    , height fill
-                                    , Border.rounded borderRadius
-                                    ]
-                                    (el [ centerX, centerY, Font.italic ] (text "coming soon..."))
+                    , (case model.device.class of
+                        Shared.Desktop ->
+                            row
 
-                            _ ->
-                                none
+                        _ ->
+                            column
+                      )
+                        [ width fill, height fill, spacing 30 ]
+                        [ viewCreateAssignmentForm model
+                        , el
+                            [ width (fillPortion 1)
+                            , Background.color lighterGreyColor
+                            , height fill
+                            , Border.rounded borderRadius
+                            ]
+                            (viewWeekAssignmentVisualization model)
                         ]
                     ]
                 ]
@@ -826,7 +828,7 @@ viewCreateAssignmentForm : Model -> Element Msg
 viewCreateAssignmentForm model =
     column
         [ Background.color lighterGreyColor
-        , height (fill |> minimum 400)
+        , height fill
         , width (fillPortion 1)
         , Border.rounded borderRadius
         , padding 20
@@ -1106,3 +1108,9 @@ dayMonthYearToDate day month year =
 toGermanDateString : Date.Date -> String
 toGermanDateString date =
     Date.format "d.M.y" date
+
+
+viewWeekAssignmentVisualization : Model -> Element msg
+viewWeekAssignmentVisualization model =
+    html
+        Components.LineChart.main
