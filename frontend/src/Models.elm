@@ -26,7 +26,6 @@ type alias Assignment =
     , courseId : Int
     , user : User
     , title : String
-    , description : Maybe String
     , dueDate : Date.Date
     , fromMoodle : Bool
     }

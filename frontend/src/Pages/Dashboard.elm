@@ -1,7 +1,7 @@
 module Pages.Dashboard exposing (Model, Msg, Params, page)
 
 import Api exposing (Data(..), HttpError(..))
-import Api.Homework.Assignment exposing (createAssignment, removeAssignment)
+import Api.Homework.Assignment exposing (createAssignment, getAssignments, removeAssignment)
 import Api.Homework.Course exposing (MinimalCourse, getActiveCourses, searchCourses)
 import Api.Homework.User exposing (getUserFromSession)
 import Array
@@ -57,6 +57,7 @@ type alias Model =
     , addDaysDifference : Int
     , errors : List String
     , maybeAssignmentHovered : Maybe String
+    , assignmentData : Api.Data (List Assignment)
     }
 
 
@@ -76,6 +77,7 @@ type Msg
     | GotRemoveAssignmentData (Api.Data Assignment)
     | HoverAssignment String
     | DeHoverAssignment String
+    | GotAssignmentData (Api.Data (List Assignment))
 
 
 page : Page Params Model Msg
@@ -94,6 +96,7 @@ initCommands : List (Cmd Msg)
 initCommands =
     [ getActiveCourses { onResponse = GotCourseData }
     , Time.now |> Task.perform ReceiveTime
+    , getAssignments 7 { onResponse = GotAssignmentData }
     ]
 
 
@@ -115,6 +118,7 @@ init shared url =
       , addDaysDifference = 0
       , errors = []
       , maybeAssignmentHovered = Nothing
+      , assignmentData = NotAsked
       }
     , Cmd.batch initCommands
     )
@@ -299,7 +303,12 @@ update msg model =
                     ( model, Cmd.none )
 
         GotCreateAssignmentData data ->
-            ( { model | createAssignmentData = data }, getActiveCourses { onResponse = GotCourseData } )
+            ( { model | createAssignmentData = data }
+            , Cmd.batch
+                [ getActiveCourses { onResponse = GotCourseData }
+                , getAssignments 7 { onResponse = GotAssignmentData }
+                ]
+            )
 
         Add1Day ->
             let
@@ -362,6 +371,9 @@ update msg model =
 
         DeHoverAssignment id ->
             ( { model | maybeAssignmentHovered = Nothing }, Cmd.none )
+
+        GotAssignmentData data ->
+            ( { model | assignmentData = data }, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
@@ -466,21 +478,24 @@ dateToPosixTime date =
     Time.millisToPosix (Date.toRataDie date - 719162 * (1000 * 60 * 60 * 24))
 
 
-inNDays : Int -> Date.Date -> Date.Date
-inNDays days today =
-    Date.fromPosix Time.utc
-        (Time.millisToPosix
-            (floor
-                (toFloat
-                    (Time.posixToMillis
-                        (dateToPosixTime today)
-                        + ((1000 * 60 * 60 * 24)
-                            * days
-                          )
-                    )
-                )
-            )
-        )
+
+{-
+   inNDays : Int -> Date.Date -> Date.Date
+   inNDays days today =
+       Date.fromPosix Time.utc
+           (Time.millisToPosix
+               (floor
+                   (toFloat
+                       (Time.posixToMillis
+                           (dateToPosixTime today)
+                           + ((1000 * 60 * 60 * 24)
+                               * days
+                             )
+                       )
+                   )
+               )
+           )
+-}
 
 
 otherOutstandingAssignments : Date.Date -> List Course -> List Course
@@ -1112,5 +1127,13 @@ toGermanDateString date =
 
 viewWeekAssignmentVisualization : Model -> Element msg
 viewWeekAssignmentVisualization model =
-    html
-        Components.LineChart.main
+    case model.assignmentData of
+        Success assignments ->
+            html
+                (Components.LineChart.mainn assignments model.today)
+
+        Failure error ->
+            el [] (text (Api.errorToString error))
+
+        _ ->
+            el [] (text "Loading...")
