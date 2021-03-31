@@ -34,12 +34,11 @@ dateDecoder =
 
 assignmentDecoder : Json.Decoder Assignment
 assignmentDecoder =
-    Json.map7 Assignment
+    Json.map6 Assignment
         (Json.field "id" Json.string)
         (Json.field "course" Json.int)
         (Json.field "user" userDecoder)
         (Json.field "title" Json.string)
-        (Json.field "description" (Json.nullable Json.string))
         (Json.field "due_date" dateDecoder)
         (Json.field "from_moodle" Json.bool)
 
