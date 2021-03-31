@@ -1,0 +1,13 @@
+---
+- name: Install stuff
+  hosts: webserver
+  become: true
+  
+  tasks:
+    - name: Install nginx
+        apt:
+          name: nginx
+          state: latest
+
+    - name: 
+      

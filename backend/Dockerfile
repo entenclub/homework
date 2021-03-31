@@ -1,14 +1,11 @@
-FROM python:3.8.3
+FROM golang:1.16.2
 
-WORKDIR /usr/src/app
+COPY . /go/src/github.com/3nt3/homework
 
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+WORKDIR /go/src/github.com/3nt3/homework
 
-RUN pip install --upgrade pip
-COPY ./requirements.txt .
-RUN pip install -r requirements.txt
+RUN go build .
 
-COPY . .
+CMD ["/go/src/github.com/3nt3/homework/homework"]
 
-EXPOSE 8000
+EXPOSE 8005

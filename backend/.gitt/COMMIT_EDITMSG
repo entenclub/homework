@@ -1,0 +1,20 @@
+I don't even know lol
+
+The last thing I did was date formatting?
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# On branch development
+# Your branch is up to date with 'origin/development'.
+#
+# Changes to be committed:
+#	modified:   Dockerfile
+#	modified:   db/assignment.go
+#	modified:   docker-compose.yml
+#	modified:   docs.md
+#	modified:   go.sum
+#	modified:   main.go
+#	modified:   routes/assignment.go
+#	new file:   structs/assignment.go
+#	modified:   structs/structs.go
+#

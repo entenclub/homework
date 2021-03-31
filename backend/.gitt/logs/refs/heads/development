@@ -1,0 +1,35 @@
+0000000000000000000000000000000000000000 4c6805f1f24c1e5d8331045e9ab08e7dc542b3c3 3nt3 <gott@3nt3.de> 1615138669 +0100	branch: Created from HEAD
+4c6805f1f24c1e5d8331045e9ab08e7dc542b3c3 a7887121d36d8bd2413728ef0c2ae3903e494a0d 3nt3 <gott@3nt3.de> 1615159268 +0100	commit: uhmmmmm
+a7887121d36d8bd2413728ef0c2ae3903e494a0d 223dcbc6ec49c6ad63133a7930932388f0d1e626 3nt3 <gott@3nt3.de> 1615206606 +0100	commit: implement stuff basically
+223dcbc6ec49c6ad63133a7930932388f0d1e626 9cec2907fcfb1a751bbee497fb1183dfe7530f86 3nt3 <gott@3nt3.de> 1615479841 +0100	commit: github actions
+9cec2907fcfb1a751bbee497fb1183dfe7530f86 a67570e89da589d92fc170e08072fab15c63ff53 3nt3 <gott@3nt3.de> 1615480709 +0100	commit: fix things to be better
+a67570e89da589d92fc170e08072fab15c63ff53 df6f1f7f92ffc5677c85f4214da820a635757da8 3nt3 <gott@3nt3.de> 1615769299 +0100	commit: docs
+df6f1f7f92ffc5677c85f4214da820a635757da8 6779bebd2a399241f78e428850a79a56fc972c7e 3nt3 <gott@3nt3.de> 1615770958 +0100	commit: assignment routes
+6779bebd2a399241f78e428850a79a56fc972c7e fa883a0e4015a23eb562124edd0a6ccbd3601869 3nt3 <gott@3nt3.de> 1615773410 +0100	commit: tests
+fa883a0e4015a23eb562124edd0a6ccbd3601869 bb4dfc34dc0667f3abadcbec705fdba8bfd47a80 3nt3 <gott@3nt3.de> 1615774376 +0100	commit: test delete assignment
+bb4dfc34dc0667f3abadcbec705fdba8bfd47a80 773c5e3e56d80d579758982ca58e0cf9cc3ae2f8 3nt3 <gott@3nt3.de> 1615774445 +0100	commit: update gitignore
+773c5e3e56d80d579758982ca58e0cf9cc3ae2f8 985e0754f68f38239053282e6e77fded9168c16e 3nt3 <gott@3nt3.de> 1615774533 +0100	commit: update gitignore again
+985e0754f68f38239053282e6e77fded9168c16e f6330858d9fa96f98debe35fb2fb3e756c41d904 3nt3 <gott@3nt3.de> 1616765777 +0100	commit: add table moodle_cache
+f6330858d9fa96f98debe35fb2fb3e756c41d904 985e0754f68f38239053282e6e77fded9168c16e 3nt3 <gott@3nt3.de> 1616765882 +0100	reset: moving to HEAD^
+985e0754f68f38239053282e6e77fded9168c16e 75c11036411b58a9660f704ffe30445b9daa3fff 3nt3 <gott@3nt3.de> 1616765940 +0100	commit: add structs and db table
+75c11036411b58a9660f704ffe30445b9daa3fff e70c365474f9e2be7b317abf46b60ab35705c91d 3nt3 <gott@3nt3.de> 1616766659 +0100	commit: implement GetUserCachedCourses()
+e70c365474f9e2be7b317abf46b60ab35705c91d 3cf6722f8aedc4f17c4c571e714b3f12db70cd06 3nt3 <gott@3nt3.de> 1616800835 +0100	commit: implement caching
+3cf6722f8aedc4f17c4c571e714b3f12db70cd06 16b05f05a6d371e42c45019ac1211fa531fa1529 3nt3 <gott@3nt3.de> 1616801349 +0100	commit: get rid of warnings and add golangci-lint action
+16b05f05a6d371e42c45019ac1211fa531fa1529 ec962c763de28c001827b399d77c91f04159abae 3nt3 <gott@3nt3.de> 1616801533 +0100	commit: get rid of more warnings
+ec962c763de28c001827b399d77c91f04159abae f552eac6911dc99f135817d64a7118b069d1d7ba 3nt3 <gott@3nt3.de> 1616801760 +0100	commit: fix all the warnings
+f552eac6911dc99f135817d64a7118b069d1d7ba 9c31a68b67c2c1813925630ec46d2e20b4a85fa0 3nt3 <gott@3nt3.de> 1616856103 +0100	commit: make calls to some enpoints NOT return password hashes and other
+9c31a68b67c2c1813925630ec46d2e20b4a85fa0 f07744c0938bf301d2e2bef8828247048b6e7626 3nt3 <gott@3nt3.de> 1616856209 +0100	commit: add version field to all api responses
+f07744c0938bf301d2e2bef8828247048b6e7626 20a310f304b81e6a0e3e0151488b2ed45cea0362 3nt3 <gott@3nt3.de> 1616857818 +0100	commit: "fix" CORS
+20a310f304b81e6a0e3e0151488b2ed45cea0362 f9ac6ed89a3005b42f30b1fe5930c67a8537e7ca 3nt3 <gott@3nt3.de> 1616860732 +0100	commit: add message when username or email is taken
+f9ac6ed89a3005b42f30b1fe5930c67a8537e7ca 1ac30a9431345f8a241da349a4cde80aaddf0084 3nt3 <gott@3nt3.de> 1616860828 +0100	commit: change routes to be backwards compatible
+1ac30a9431345f8a241da349a4cde80aaddf0084 a2bb29d08c343141860a0c87548ea7e7b0ef1d07 3nt3 <gott@3nt3.de> 1616861815 +0100	commit: username-taken and email-taken routes
+a2bb29d08c343141860a0c87548ea7e7b0ef1d07 04eaa50a30c965d03abe8a9b620ab99a904f434a 3nt3 <gott@3nt3.de> 1616861830 +0100	commit: update docs.md
+04eaa50a30c965d03abe8a9b620ab99a904f434a 595e592bfb48b611342ec71fb02146d95fab9cd1 3nt3 <gott@3nt3.de> 1616949420 +0200	commit: make stuff compatible with the frontend mostly
+595e592bfb48b611342ec71fb02146d95fab9cd1 2958d4b6a6cbbb6ff4c11d0cef5997903ea4ddd7 3nt3 <gott@3nt3.de> 1616956101 +0200	commit: uhm... implement course search?
+2958d4b6a6cbbb6ff4c11d0cef5997903ea4ddd7 da6063a2469e2bf729b3d1fc17602b68a17194a5 3nt3 <gott@3nt3.de> 1616956109 +0200	commit: Update assignment.go, db.go, and 6 more files...
+da6063a2469e2bf729b3d1fc17602b68a17194a5 583c766ec8f77cdbf2b413fb97b8b68c87a65d21 3nt3 <gott@3nt3.de> 1617056642 +0200	commit: I don't even know lol
+583c766ec8f77cdbf2b413fb97b8b68c87a65d21 c34dba57d7516a069881f1f2bfb7387ea1ecdce9 3nt3 <gott@3nt3.de> 1617159581 +0200	commit: reduce redundant and irrelevant returns + make the program not stop working after a few minutes because connections aren't closed
+c34dba57d7516a069881f1f2bfb7387ea1ecdce9 605c7eada06d15dc8d69bc387a9d96d625eaa9c0 3nt3 <gott@3nt3.de> 1617159584 +0200	commit: Update db.go
+605c7eada06d15dc8d69bc387a9d96d625eaa9c0 72db2bf6adafbe225499c0a8a3ad20151d82602b 3nt3 <gott@3nt3.de> 1617159610 +0200	commit: Revert "Update db.go"
+72db2bf6adafbe225499c0a8a3ad20151d82602b c34dba57d7516a069881f1f2bfb7387ea1ecdce9 3nt3 <gott@3nt3.de> 1617159678 +0200	reset: moving to c34dba57d7516a069881f1f2bfb7387ea1ecdce9
+c34dba57d7516a069881f1f2bfb7387ea1ecdce9 b44e616c4da6559f245a6f9bb4b6289ba132de0f 3nt3 <gott@3nt3.de> 1617159727 +0200	commit: read password from environment variable instead of hard coding lol
