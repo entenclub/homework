@@ -11188,12 +11188,8 @@ var $author$project$Shared$Tablet = {$: 'Tablet'};
 var $author$project$Shared$classifyDevice = function (options) {
 	return (options.width < 900) ? A4($author$project$Shared$Device, $author$project$Shared$Phone, $author$project$Shared$Portrait, options.width, options.height) : ((options.width < 1400) ? A4($author$project$Shared$Device, $author$project$Shared$Tablet, $author$project$Shared$Portrait, options.width, options.height) : A4($author$project$Shared$Device, $author$project$Shared$Desktop, $author$project$Shared$Landscape, options.width, options.height));
 };
-var $author$project$Api$Api$localApiAddress = 'http://localhost:8005';
-var $elm$core$Debug$log = _Debug_log;
-var $author$project$Api$Api$apiAddress = function () {
-	var debug = A2($elm$core$Debug$log, 'apiAddress', 'fix api address back to actual endpoint');
-	return $author$project$Api$Api$localApiAddress;
-}();
+var $author$project$Api$Api$productionApiAddress = 'https://api.hausis.3nt3.de';
+var $author$project$Api$Api$apiAddress = $author$project$Api$Api$productionApiAddress;
 var $elm$http$Http$BadStatus_ = F2(
 	function (a, b) {
 		return {$: 'BadStatus_', a: a, b: b};
@@ -26978,6 +26974,7 @@ var $icidasset$elm_material_icons$Material$Icons$error = A2(
 				]),
 			_List_Nil)
 		]));
+var $elm$core$Debug$log = _Debug_log;
 var $author$project$Pages$Register$viewUsernameTaken = function (model) {
 	return A2(
 		$mdgriffith$elm_ui$Element$el,
