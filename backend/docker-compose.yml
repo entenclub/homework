@@ -1,0 +1,25 @@
+version: "3.7"
+
+services:
+  web:
+    build: .
+    ports:
+      - 8005:8005
+    restart: always
+    env_file:
+      - ./.env
+    depends_on:
+      - db
+  db:
+    image: postgres:11
+    volumes:
+      - /home/ente/docker/volumes/homework-go/db_data:/var/lib/postgresql/data
+    restart: always
+    env_file:
+      - ./.env
+    environment:
+      - POSTGRES_USER=homework
+      - POSTGRES_DB=homework
+      - "POSTGRES_PASSWORD=${DBPASSWORD}"
+    ports:
+      - 5432:5432
