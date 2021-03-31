@@ -13,7 +13,7 @@ type Privilege
 
 
 type alias User =
-    { id : Int
+    { id : String
     , username : String
     , email : String
     , privilege : Privilege
@@ -22,11 +22,10 @@ type alias User =
 
 
 type alias Assignment =
-    { id : Int
+    { id : String
     , courseId : Int
-    , creator : User
+    , user : User
     , title : String
-    , description : Maybe String
     , dueDate : Date.Date
     , fromMoodle : Bool
     }
@@ -35,9 +34,7 @@ type alias Assignment =
 type alias Course =
     { id : Int
     , name : String
-    , subject : String
-    , teacher : String
     , assignments : List Assignment
     , fromMoodle : Bool
-    , creator : Int
+    , user : String
     }

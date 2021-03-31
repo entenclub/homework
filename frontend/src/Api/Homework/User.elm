@@ -27,11 +27,11 @@ intToPrivilege privilege =
 userDecoder : Json.Decoder User
 userDecoder =
     Json.map5 User
-        (Json.field "id" Json.int)
+        (Json.field "id" Json.string)
         (Json.field "username" Json.string)
         (Json.field "email" Json.string)
         (Json.field "privilege" (Json.andThen (\priv -> intToPrivilege priv) Json.int))
-        (Json.field "moodleUrl" Json.string)
+        (Json.field "moodle_url" Json.string)
 
 
 credentialsEncoder : Credentials -> Encode.Value

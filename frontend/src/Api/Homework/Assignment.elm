@@ -1,4 +1,4 @@
-module Api.Homework.Assignment exposing (createAssignment, removeAssignment)
+module Api.Homework.Assignment exposing (createAssignment, removeAssignment, getAssignments)
 
 import Api
 import Api.Api exposing (apiAddress)
@@ -20,8 +20,8 @@ assignmentEncoder assignment =
     Encode.object
         [ ( "title", Encode.string assignment.title )
         , ( "course", Encode.int assignment.courseId )
-        , ( "dueDate", Encode.string (dateEncoder assignment.dueDate) )
-        , ( "fromMoodle", Encode.bool assignment.fromMoodle )
+        , ( "due_date", Encode.string (dateEncoder assignment.dueDate) )
+        , ( "from_moodle", Encode.bool assignment.fromMoodle )
         ]
 
 
@@ -38,14 +38,27 @@ createAssignment assignment options =
         }
 
 
-removeAssignment : Int -> { onResponse : Api.Data Assignment -> msg } -> Cmd msg
+removeAssignment : String -> { onResponse : Api.Data Assignment -> msg } -> Cmd msg
 removeAssignment id options =
     Http.riskyRequest
         { method = "DELETE"
-        , url = apiAddress ++ "/assignment?id=" ++ String.fromInt id
+        , url = apiAddress ++ "/assignment?id=" ++ id
         , headers = []
         , body = Http.emptyBody
         , expect = Api.expectJson options.onResponse assignmentDecoder
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
+
+getAssignments : Int -> { onResponse : Api.Data (List Assignment) -> msg } -> Cmd msg
+getAssignments maxDays options =
+    Http.riskyRequest
+        { method = "GET"
+        , url = apiAddress ++ "/assignments?days=" ++ String.fromInt maxDays
+        , headers = []
+        , body = Http.emptyBody
+        , expect = Api.expectJson options.onResponse (Json.list assignmentDecoder)
         , timeout = Nothing
         , tracker = Nothing
         }

@@ -1,10 +1,11 @@
 module Pages.Dashboard exposing (Model, Msg, Params, page)
 
 import Api exposing (Data(..), HttpError(..))
-import Api.Homework.Assignment exposing (createAssignment, removeAssignment)
+import Api.Homework.Assignment exposing (createAssignment, getAssignments, removeAssignment)
 import Api.Homework.Course exposing (MinimalCourse, getActiveCourses, searchCourses)
 import Api.Homework.User exposing (getUserFromSession)
 import Array
+import Components.LineChart
 import Components.Sidebar
 import Date
 import Element exposing (..)
@@ -55,13 +56,13 @@ type alias Model =
     , selectedDateTime : Time.Posix
     , addDaysDifference : Int
     , errors : List String
-    , maybeAssignmentHovered : Maybe Int
+    , maybeAssignmentHovered : Maybe String
+    , assignmentData : Api.Data (List Assignment)
     }
 
 
 type Msg
     = GotCourseData (Api.Data (List Course))
-    | ViewMoreAssignments
       -- create assignment form
     | SearchCourses String
     | GotSearchCoursesData (Api.Data (List MinimalCourse))
@@ -72,10 +73,11 @@ type Msg
     | GotCreateAssignmentData (Api.Data Assignment)
     | ReceiveTime Time.Posix
     | Add1Day
-    | RemoveAssignment Int
+    | RemoveAssignment String
     | GotRemoveAssignmentData (Api.Data Assignment)
-    | HoverAssignment Int
-    | DeHoverAssignment Int
+    | HoverAssignment String
+    | DeHoverAssignment String
+    | GotAssignmentData (Api.Data (List Assignment))
 
 
 page : Page Params Model Msg
@@ -94,6 +96,7 @@ initCommands : List (Cmd Msg)
 initCommands =
     [ getActiveCourses { onResponse = GotCourseData }
     , Time.now |> Task.perform ReceiveTime
+    , getAssignments 7 { onResponse = GotAssignmentData }
     ]
 
 
@@ -115,6 +118,7 @@ init shared url =
       , addDaysDifference = 0
       , errors = []
       , maybeAssignmentHovered = Nothing
+      , assignmentData = NotAsked
       }
     , Cmd.batch initCommands
     )
@@ -142,9 +146,6 @@ update msg model =
 
         GotSearchCoursesData data ->
             ( { model | searchCoursesData = data }, Cmd.none )
-
-        ViewMoreAssignments ->
-            ( model, navigate model.url.key Route.Dashboard__Courses )
 
         -- create assignment form
         SearchCourses text ->
@@ -187,11 +188,7 @@ update msg model =
         CAFSelectCourse course ->
             ( { model
                 | searchCoursesText =
-                    if course.fromMoodle then
-                        course.name
-
-                    else
-                        course.teacher ++ ": " ++ course.subject
+                    course.name
                 , searchCoursesData = NotAsked
                 , selectedCourse = Just course
                 , errors = List.filter (\error -> error /= "no course selected") model.errors
@@ -306,7 +303,12 @@ update msg model =
                     ( model, Cmd.none )
 
         GotCreateAssignmentData data ->
-            ( { model | createAssignmentData = data }, getActiveCourses { onResponse = GotCourseData } )
+            ( { model | createAssignmentData = data }
+            , Cmd.batch
+                [ getActiveCourses { onResponse = GotCourseData }
+                , getAssignments 7 { onResponse = GotAssignmentData }
+                ]
+            )
 
         Add1Day ->
             let
@@ -369,6 +371,9 @@ update msg model =
 
         DeHoverAssignment id ->
             ( { model | maybeAssignmentHovered = Nothing }, Cmd.none )
+
+        GotAssignmentData data ->
+            ( { model | assignmentData = data }, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
@@ -435,26 +440,29 @@ view model =
                     , spacing 30
                     ]
                     [ viewOustandingAssignments model
-                    , row [ width fill, height fill, spacing 30 ]
-                        [ viewCreateAssignmentForm model
-                        , case model.device.class of
-                            Shared.Desktop ->
-                                el
-                                    [ width (fillPortion 1)
-                                    , Background.color lighterGreyColor
-                                    , height fill
-                                    , Border.rounded borderRadius
-                                    ]
-                                    (el [ centerX, centerY, Font.italic ] (text "coming soon..."))
+                    , (case model.device.class of
+                        Shared.Desktop ->
+                            row
 
-                            _ ->
-                                none
+                        _ ->
+                            column
+                      )
+                        [ width fill, height fill, spacing 30 ]
+                        [ viewCreateAssignmentForm model
+                        , el
+                            [ width (fillPortion 1)
+                            , Background.color lighterGreyColor
+                            , height fill
+                            , Border.rounded borderRadius
+                            ]
+                            (viewWeekAssignmentVisualization model)
                         ]
                     ]
                 ]
             )
         ]
     }
+
 
 
 -- outstanding? assignments
@@ -470,21 +478,24 @@ dateToPosixTime date =
     Time.millisToPosix (Date.toRataDie date - 719162 * (1000 * 60 * 60 * 24))
 
 
-inNDays : Int -> Date.Date -> Date.Date
-inNDays days today =
-    Date.fromPosix Time.utc
-        (Time.millisToPosix
-            (floor
-                (toFloat
-                    (Time.posixToMillis
-                        (dateToPosixTime today)
-                        + ((1000 * 60 * 60 * 24)
-                            * days
-                          )
-                    )
-                )
-            )
-        )
+
+{-
+   inNDays : Int -> Date.Date -> Date.Date
+   inNDays days today =
+       Date.fromPosix Time.utc
+           (Time.millisToPosix
+               (floor
+                   (toFloat
+                       (Time.posixToMillis
+                           (dateToPosixTime today)
+                           + ((1000 * 60 * 60 * 24)
+                               * days
+                             )
+                       )
+                   )
+               )
+           )
+-}
 
 
 otherOutstandingAssignments : Date.Date -> List Course -> List Course
@@ -580,7 +591,7 @@ filterCoursesByWhetherAssignmentsAreDueOnDate courses date =
     List.filter (\course -> List.member course.id validCourses) courses
 
 
-viewAssignmentsDayColumn : Api.Data (List Course) -> String -> Color -> Date.Date -> Maybe Int -> User -> Element Msg
+viewAssignmentsDayColumn : Api.Data (List Course) -> String -> Color -> Date.Date -> Maybe String -> User -> Element Msg
 viewAssignmentsDayColumn courseData title color date assignmentHovered user =
     column
         [ Background.color color
@@ -614,7 +625,7 @@ viewAssignmentsDayColumn courseData title color date assignmentHovered user =
         ]
 
 
-viewOtherAssignments : Api.Data (List Course) -> Date.Date -> Maybe Int -> User -> Element Msg
+viewOtherAssignments : Api.Data (List Course) -> Date.Date -> Maybe String -> User -> Element Msg
 viewOtherAssignments apiData date assignmentHovered user =
     column
         [ width fill
@@ -644,12 +655,12 @@ viewOtherAssignments apiData date assignmentHovered user =
         ]
 
 
-courseGroupToKeyValue : Color -> Maybe Date.Date -> Maybe Int -> Bool -> User -> Course -> ( String, Element Msg )
+courseGroupToKeyValue : Color -> Maybe Date.Date -> Maybe String -> Bool -> User -> Course -> ( String, Element Msg )
 courseGroupToKeyValue color date assignmentHovered displayDate user course =
     ( String.fromInt course.id, viewAssignmentCourseGroup course color date assignmentHovered displayDate user )
 
 
-viewAssignmentCourseGroup : Course -> Color -> Maybe Date.Date -> Maybe Int -> Bool -> User -> Element Msg
+viewAssignmentCourseGroup : Course -> Color -> Maybe Date.Date -> Maybe String -> Bool -> User -> Element Msg
 viewAssignmentCourseGroup course color maybeDate assignmentHovered displayDate user =
     let
         assignments =
@@ -671,33 +682,28 @@ viewAssignmentCourseGroup course color maybeDate assignmentHovered displayDate u
             [ el [ Font.bold ]
                 (paragraph []
                     [ text
-                        (if course.fromMoodle then
-                            course.name
-
-                         else
-                            course.teacher ++ ": " ++ course.subject
-                        )
+                        course.name
                     ]
                 )
-            , Keyed.column [ spacing 5, width fill ] (List.map (\a -> assignmentToKeyValue color assignmentHovered (user.id == a.creator.id) displayDate a) assignments)
+            , Keyed.column [ spacing 5, width fill ] (List.map (\a -> assignmentToKeyValue color assignmentHovered (user.id == a.user.id) displayDate a) assignments)
             ]
 
     else
         none
 
 
-assignmentToKeyValue : Color -> Maybe Int -> Bool -> Bool -> Assignment -> ( String, Element Msg )
+assignmentToKeyValue : Color -> Maybe String -> Bool -> Bool -> Assignment -> ( String, Element Msg )
 assignmentToKeyValue color maybeHoveredId removable displayDate assignment =
     case maybeHoveredId of
         Just hoveredId ->
             if removable then
-                ( String.fromInt assignment.id, viewAssignment assignment color (Just (hoveredId == assignment.id)) displayDate )
+                ( assignment.id, viewAssignment assignment color (Just (hoveredId == assignment.id)) displayDate )
 
             else
-                ( String.fromInt assignment.id, viewAssignment assignment color Nothing displayDate )
+                ( assignment.id, viewAssignment assignment color Nothing displayDate )
 
         Nothing ->
-            ( String.fromInt assignment.id, viewAssignment assignment color (Just False) displayDate )
+            ( assignment.id, viewAssignment assignment color (Just False) displayDate )
 
 
 viewAssignment : Assignment -> Color -> Maybe Bool -> Bool -> Element Msg
@@ -750,7 +756,7 @@ viewAssignment assignment color maybeHovered displayDate =
             )
         , el
             [ alignRight, Font.italic ]
-            (text assignment.creator.username)
+            (text assignment.user.username)
         ]
 
 
@@ -837,7 +843,7 @@ viewCreateAssignmentForm : Model -> Element Msg
 viewCreateAssignmentForm model =
     column
         [ Background.color lighterGreyColor
-        , height (fill |> minimum 400)
+        , height fill
         , width (fillPortion 1)
         , Border.rounded borderRadius
         , padding 20
@@ -1026,12 +1032,7 @@ viewSearchDropdownElement course isLast =
             [ Font.bold, Font.color inputTextColor, width fill ]
             (paragraph [ width fill ]
                 [ text
-                    (if course.fromMoodle then
-                        course.name
-
-                     else
-                        course.teacher ++ ": " ++ course.subject
-                    )
+                    course.name
                 ]
             )
         ]
@@ -1122,3 +1123,17 @@ dayMonthYearToDate day month year =
 toGermanDateString : Date.Date -> String
 toGermanDateString date =
     Date.format "d.M.y" date
+
+
+viewWeekAssignmentVisualization : Model -> Element msg
+viewWeekAssignmentVisualization model =
+    case model.assignmentData of
+        Success assignments ->
+            html
+                (Components.LineChart.mainn assignments model.today)
+
+        Failure error ->
+            el [] (text (Api.errorToString error))
+
+        _ ->
+            el [] (text "Loading...")
