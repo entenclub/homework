@@ -52,7 +52,7 @@ func main() {
 
 	// /moodle routes
 	r.HandleFunc("/moodle/authenticate", routes.MoodleAuthenticate).Methods("POST")
-	// TODO: /moodle/get-school-info
+	r.HandleFunc("/moodle/get-school-info", routes.MoodleGetSchoolInfo).Methods("POST")
 	// TODO: /moodle/get-courses
 
 

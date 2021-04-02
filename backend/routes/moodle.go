@@ -127,3 +127,66 @@ func MoodleAuthenticate(w http.ResponseWriter, r *http.Request) {
 	}
 	_ = returnApiResponse(w, apiResponse{Content: updatedUser.GetClean()}, 200)
 }
+
+func MoodleGetSchoolInfo(w http.ResponseWriter, r *http.Request) {
+	type requestStruct struct {
+		Url string `json:"url"`
+	}
+
+	var requestData requestStruct
+	if err := json.NewDecoder(r.Body).Decode(&requestData); err != nil {
+		logging.WarningLogger.Printf("invalid json: %v\n", err)
+		_ = returnApiResponse(w, apiResponse{
+			Content: nil,
+			Errors:  []string{"bad body"},
+		}, http.StatusBadRequest)
+		return
+	}
+	if _, err := url.Parse(requestData.Url); err != nil {
+		_ = returnApiResponse(w, apiResponse{
+			Content: nil,
+			Errors:  []string{"invalid url"},
+		}, http.StatusBadRequest)
+		return
+	}
+
+	requestURL := requestData.Url + "/lib/ajax/service-nologin.php?args=[{\"index\":0,\"methodname\":\"tool_mobile_get_public_config\",\"args\":[]}]"
+
+	resp, err := http.Get(requestURL)
+	if err != nil {
+		logging.WarningLogger.Printf("error accessing moodle: %v\n", err)
+		_ = returnApiResponse(w, apiResponse{
+			Content: nil,
+			Errors:  []string{"invalid url"},
+		}, http.StatusBadRequest)
+		return
+	}
+
+	if resp.StatusCode != 200 {
+		_ = returnApiResponse(w, apiResponse{
+			Content: nil,
+			Errors:  []string{"invalid url"},
+		}, http.StatusBadRequest)
+		return
+	}
+
+	var moodleSiteData []map[string]interface{}
+	if err := json.NewDecoder(resp.Body).Decode(&moodleSiteData); err != nil || len(moodleSiteData) == 0 {
+		_ = returnApiResponse(w, apiResponse{
+			Content: nil,
+			Errors:  []string{"invalid url", "moodle returned bad data"},
+		}, http.StatusBadRequest)
+		return
+	}
+
+	relevantData, ok := moodleSiteData[0]["data"]
+	if !ok {
+		_ = returnApiResponse(w, apiResponse{
+			Content: nil,
+			Errors:  []string{"invalid url", "moodle returned bad data"},
+		}, http.StatusBadRequest)
+		return
+	}
+
+	_ = returnApiResponse(w, apiResponse{Content: relevantData}, 200)
+}
