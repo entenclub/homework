@@ -129,6 +129,7 @@ func MoodleAuthenticate(w http.ResponseWriter, r *http.Request) {
 }
 
 func MoodleGetSchoolInfo(w http.ResponseWriter, r *http.Request) {
+	HandleCORSPreflight(w, r)
 	type requestStruct struct {
 		Url string `json:"url"`
 	}
