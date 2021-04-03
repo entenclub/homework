@@ -11042,6 +11042,7 @@ var $elm$url$Url$Parser$parse = F2(
 					$elm$core$Basics$identity)));
 	});
 var $author$project$Spa$Generated$Route$Dashboard = {$: 'Dashboard'};
+var $author$project$Spa$Generated$Route$Dashboard__Admin = {$: 'Dashboard__Admin'};
 var $author$project$Spa$Generated$Route$Dashboard__Moodle = {$: 'Dashboard__Moodle'};
 var $author$project$Spa$Generated$Route$Login = {$: 'Login'};
 var $author$project$Spa$Generated$Route$Register = {$: 'Register'};
@@ -11156,6 +11157,13 @@ var $author$project$Spa$Generated$Route$routes = $elm$url$Url$Parser$oneOf(
 			$elm$url$Url$Parser$map,
 			$author$project$Spa$Generated$Route$Register,
 			$elm$url$Url$Parser$s('register')),
+			A2(
+			$elm$url$Url$Parser$map,
+			$author$project$Spa$Generated$Route$Dashboard__Admin,
+			A2(
+				$elm$url$Url$Parser$slash,
+				$elm$url$Url$Parser$s('dashboard'),
+				$elm$url$Url$Parser$s('admin'))),
 			A2(
 			$elm$url$Url$Parser$map,
 			$author$project$Spa$Generated$Route$Dashboard__Moodle,
@@ -11527,6 +11535,12 @@ var $author$project$Shared$init = F3(
 			$author$project$Api$Homework$User$getUserFromSession(
 				{onResponse: $author$project$Shared$GotUser}));
 	});
+var $author$project$Spa$Generated$Pages$Dashboard__Admin__Model = function (a) {
+	return {$: 'Dashboard__Admin__Model', a: a};
+};
+var $author$project$Spa$Generated$Pages$Dashboard__Admin__Msg = function (a) {
+	return {$: 'Dashboard__Admin__Msg', a: a};
+};
 var $author$project$Spa$Generated$Pages$Dashboard__Model = function (a) {
 	return {$: 'Dashboard__Model', a: a};
 };
@@ -13607,6 +13621,9 @@ var $author$project$Spa$Generated$Route$toString = function (route) {
 			case 'Register':
 				return _List_fromArray(
 					['register']);
+			case 'Dashboard__Admin':
+				return _List_fromArray(
+					['dashboard', 'admin']);
 			default:
 				return _List_fromArray(
 					['dashboard', 'moodle']);
@@ -25581,6 +25598,45 @@ var $author$project$Pages$Dashboard$view = function (model) {
 };
 var $author$project$Pages$Dashboard$page = $author$project$Spa$Page$application(
 	{init: $author$project$Pages$Dashboard$init, load: $author$project$Pages$Dashboard$load, save: $author$project$Pages$Dashboard$save, subscriptions: $author$project$Pages$Dashboard$subscriptions, update: $author$project$Pages$Dashboard$update, view: $author$project$Pages$Dashboard$view});
+var $author$project$Pages$Dashboard$Admin$init = F2(
+	function (shared, url) {
+		return _Utils_Tuple2(
+			{device: shared.device, url: url, user: shared.user},
+			$elm$core$Platform$Cmd$none);
+	});
+var $author$project$Pages$Dashboard$Admin$load = F2(
+	function (shared, model) {
+		return _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{device: shared.device, user: shared.user}),
+			$elm$core$Platform$Cmd$none);
+	});
+var $author$project$Pages$Dashboard$Admin$save = F2(
+	function (model, shared) {
+		return shared;
+	});
+var $author$project$Pages$Dashboard$Admin$subscriptions = function (model) {
+	return $elm$core$Platform$Sub$none;
+};
+var $author$project$Pages$Dashboard$Admin$update = F2(
+	function (msg, model) {
+		return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+	});
+var $author$project$Pages$Dashboard$Admin$view = function (model) {
+	return {
+		body: _List_fromArray(
+			[
+				A2(
+				$mdgriffith$elm_ui$Element$el,
+				_List_Nil,
+				$mdgriffith$elm_ui$Element$text('hello'))
+			]),
+		title: 'admin dashboard'
+	};
+};
+var $author$project$Pages$Dashboard$Admin$page = $author$project$Spa$Page$application(
+	{init: $author$project$Pages$Dashboard$Admin$init, load: $author$project$Pages$Dashboard$Admin$load, save: $author$project$Pages$Dashboard$Admin$save, subscriptions: $author$project$Pages$Dashboard$Admin$subscriptions, update: $author$project$Pages$Dashboard$Admin$update, view: $author$project$Pages$Dashboard$Admin$view});
 var $author$project$Pages$Dashboard$Moodle$init = F2(
 	function (shared, url) {
 		return _Utils_Tuple2(
@@ -27481,6 +27537,7 @@ var $author$project$Spa$Generated$Pages$upgrade = F3(
 	});
 var $author$project$Spa$Generated$Pages$pages = {
 	dashboard: A3($author$project$Spa$Generated$Pages$upgrade, $author$project$Spa$Generated$Pages$Dashboard__Model, $author$project$Spa$Generated$Pages$Dashboard__Msg, $author$project$Pages$Dashboard$page),
+	dashboard__admin: A3($author$project$Spa$Generated$Pages$upgrade, $author$project$Spa$Generated$Pages$Dashboard__Admin__Model, $author$project$Spa$Generated$Pages$Dashboard__Admin__Msg, $author$project$Pages$Dashboard$Admin$page),
 	dashboard__moodle: A3($author$project$Spa$Generated$Pages$upgrade, $author$project$Spa$Generated$Pages$Dashboard__Moodle__Model, $author$project$Spa$Generated$Pages$Dashboard__Moodle__Msg, $author$project$Pages$Dashboard$Moodle$page),
 	login: A3($author$project$Spa$Generated$Pages$upgrade, $author$project$Spa$Generated$Pages$Login__Model, $author$project$Spa$Generated$Pages$Login__Msg, $author$project$Pages$Login$page),
 	notFound: A3($author$project$Spa$Generated$Pages$upgrade, $author$project$Spa$Generated$Pages$NotFound__Model, $author$project$Spa$Generated$Pages$NotFound__Msg, $author$project$Pages$NotFound$page),
@@ -27499,6 +27556,8 @@ var $author$project$Spa$Generated$Pages$init = function (route) {
 			return $author$project$Spa$Generated$Pages$pages.notFound.init(_Utils_Tuple0);
 		case 'Register':
 			return $author$project$Spa$Generated$Pages$pages.register.init(_Utils_Tuple0);
+		case 'Dashboard__Admin':
+			return $author$project$Spa$Generated$Pages$pages.dashboard__admin.init(_Utils_Tuple0);
 		default:
 			return $author$project$Spa$Generated$Pages$pages.dashboard__moodle.init(_Utils_Tuple0);
 	}
@@ -27736,6 +27795,9 @@ var $author$project$Spa$Generated$Pages$bundle = function (bigModel) {
 		case 'Register__Model':
 			var model = bigModel.a;
 			return $author$project$Spa$Generated$Pages$pages.register.bundle(model);
+		case 'Dashboard__Admin__Model':
+			var model = bigModel.a;
+			return $author$project$Spa$Generated$Pages$pages.dashboard__admin.bundle(model);
 		default:
 			var model = bigModel.a;
 			return $author$project$Spa$Generated$Pages$pages.dashboard__moodle.bundle(model);
@@ -28156,7 +28218,7 @@ var $author$project$Shared$update = F2(
 var $author$project$Spa$Generated$Pages$update = F2(
 	function (bigMsg, bigModel) {
 		var _v0 = _Utils_Tuple2(bigMsg, bigModel);
-		_v0$6:
+		_v0$7:
 		while (true) {
 			switch (_v0.a.$) {
 				case 'Top__Msg':
@@ -28165,7 +28227,7 @@ var $author$project$Spa$Generated$Pages$update = F2(
 						var model = _v0.b.a;
 						return A2($author$project$Spa$Generated$Pages$pages.top.update, msg, model);
 					} else {
-						break _v0$6;
+						break _v0$7;
 					}
 				case 'Dashboard__Msg':
 					if (_v0.b.$ === 'Dashboard__Model') {
@@ -28173,7 +28235,7 @@ var $author$project$Spa$Generated$Pages$update = F2(
 						var model = _v0.b.a;
 						return A2($author$project$Spa$Generated$Pages$pages.dashboard.update, msg, model);
 					} else {
-						break _v0$6;
+						break _v0$7;
 					}
 				case 'Login__Msg':
 					if (_v0.b.$ === 'Login__Model') {
@@ -28181,7 +28243,7 @@ var $author$project$Spa$Generated$Pages$update = F2(
 						var model = _v0.b.a;
 						return A2($author$project$Spa$Generated$Pages$pages.login.update, msg, model);
 					} else {
-						break _v0$6;
+						break _v0$7;
 					}
 				case 'NotFound__Msg':
 					if (_v0.b.$ === 'NotFound__Model') {
@@ -28189,7 +28251,7 @@ var $author$project$Spa$Generated$Pages$update = F2(
 						var model = _v0.b.a;
 						return A2($author$project$Spa$Generated$Pages$pages.notFound.update, msg, model);
 					} else {
-						break _v0$6;
+						break _v0$7;
 					}
 				case 'Register__Msg':
 					if (_v0.b.$ === 'Register__Model') {
@@ -28197,7 +28259,15 @@ var $author$project$Spa$Generated$Pages$update = F2(
 						var model = _v0.b.a;
 						return A2($author$project$Spa$Generated$Pages$pages.register.update, msg, model);
 					} else {
-						break _v0$6;
+						break _v0$7;
+					}
+				case 'Dashboard__Admin__Msg':
+					if (_v0.b.$ === 'Dashboard__Admin__Model') {
+						var msg = _v0.a.a;
+						var model = _v0.b.a;
+						return A2($author$project$Spa$Generated$Pages$pages.dashboard__admin.update, msg, model);
+					} else {
+						break _v0$7;
 					}
 				default:
 					if (_v0.b.$ === 'Dashboard__Moodle__Model') {
@@ -28205,7 +28275,7 @@ var $author$project$Spa$Generated$Pages$update = F2(
 						var model = _v0.b.a;
 						return A2($author$project$Spa$Generated$Pages$pages.dashboard__moodle.update, msg, model);
 					} else {
-						break _v0$6;
+						break _v0$7;
 					}
 			}
 		}
@@ -28524,4 +28594,4 @@ _Platform_export({'Main':{'init':$author$project$Main$main(
 				},
 				A2($elm$json$Json$Decode$field, 'height', $elm$json$Json$Decode$int));
 		},
-		A2($elm$json$Json$Decode$field, 'width', $elm$json$Json$Decode$int)))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Url.Url":{"args":[],"type":"{ protocol : Url.Protocol, host : String.String, port_ : Maybe.Maybe Basics.Int, path : String.String, query : Maybe.Maybe String.String, fragment : Maybe.Maybe String.String }"},"Pages.NotFound.Msg":{"args":[],"type":"Basics.Never"},"Pages.Top.Msg":{"args":[],"type":"Basics.Never"},"Models.User":{"args":[],"type":"{ id : String.String, username : String.String, email : String.String, privilege : Models.Privilege, moodleUrl : String.String }"},"Models.Assignment":{"args":[],"type":"{ id : String.String, courseId : Basics.Int, user : Models.User, title : String.String, dueDate : Date.Date, fromMoodle : Basics.Bool }"},"Models.Course":{"args":[],"type":"{ id : Basics.Int, name : String.String, assignments : List.List Models.Assignment, fromMoodle : Basics.Bool, user : String.String }"},"Api.Homework.Course.MinimalCourse":{"args":[],"type":"{ id : Basics.Int, name : String.String, fromMoodle : Basics.Bool }"},"Date.RataDie":{"args":[],"type":"Basics.Int"}},"unions":{"Main.Msg":{"args":[],"tags":{"LinkClicked":["Browser.UrlRequest"],"UrlChanged":["Url.Url"],"Shared":["Shared.Msg"],"Pages":["Spa.Generated.Pages.Msg"]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}},"Shared.Msg":{"args":[],"tags":{"GotUser":["Api.Data Models.User"],"Logout":[],"Resize":["Basics.Int","Basics.Int"],"GotLogoutData":["Result.Result Http.Error ()"]}},"Spa.Generated.Pages.Msg":{"args":[],"tags":{"Top__Msg":["Pages.Top.Msg"],"Dashboard__Msg":["Pages.Dashboard.Msg"],"Login__Msg":["Pages.Login.Msg"],"NotFound__Msg":["Pages.NotFound.Msg"],"Register__Msg":["Pages.Register.Msg"],"Dashboard__Moodle__Msg":["Pages.Dashboard.Moodle.Msg"]}},"Url.Protocol":{"args":[],"tags":{"Http":[],"Https":[]}},"String.String":{"args":[],"tags":{"String":[]}},"Browser.UrlRequest":{"args":[],"tags":{"Internal":["Url.Url"],"External":["String.String"]}},"Api.Data":{"args":["value"],"tags":{"NotAsked":[],"Loading":[],"Failure":["Api.HttpError"],"Success":["value"]}},"Http.Error":{"args":[],"tags":{"BadUrl":["String.String"],"Timeout":[],"NetworkError":[],"BadStatus":["Basics.Int"],"BadBody":["String.String"]}},"Pages.Dashboard.Msg":{"args":[],"tags":{"GotCourseData":["Api.Data (List.List Models.Course)"],"SearchCourses":["String.String"],"GotSearchCoursesData":["Api.Data (List.List Api.Homework.Course.MinimalCourse)"],"CAFSelectCourse":["Api.Homework.Course.MinimalCourse"],"CAFChangeTitle":["String.String"],"CAFChangeDate":["String.String"],"CreateAssignment":[],"GotCreateAssignmentData":["Api.Data Models.Assignment"],"ReceiveTime":["Time.Posix"],"Add1Day":[],"RemoveAssignment":["String.String"],"GotRemoveAssignmentData":["Api.Data Models.Assignment"],"HoverAssignment":["String.String"],"DeHoverAssignment":["String.String"],"GotAssignmentData":["Api.Data (List.List Models.Assignment)"]}},"Pages.Dashboard.Moodle.Msg":{"args":[],"tags":{"ChangeMoodleUrlInput":["String.String"],"GotSiteData":["Api.Data String.String"],"ChangeMoodleUsernameInput":["String.String"],"ChangeMoodlePasswordInput":["String.String"],"Authenticate":[],"GotAuthenticationData":["Api.Data Models.User"]}},"Pages.Login.Msg":{"args":[],"tags":{"UsernameInput":["String.String"],"PasswordInput":["String.String"],"GotLoginData":["Api.Data Models.User"],"Login":[]}},"Pages.Register.Msg":{"args":[],"tags":{"UsernameInput":["String.String"],"PasswordInput":["String.String"],"ValidatePasswordInput":["String.String"],"EmailInput":["String.String"],"GotUsernameTaken":["Api.Data Basics.Bool"],"GotRegistrationData":["Api.Data Models.User"],"Register":[]}},"Basics.Never":{"args":[],"tags":{"JustOneMore":["Basics.Never"]}},"Models.Privilege":{"args":[],"tags":{"Normal":[],"Admin":[]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"Basics.Bool":{"args":[],"tags":{"True":[],"False":[]}},"Date.Date":{"args":[],"tags":{"RD":["Date.RataDie"]}},"Api.HttpError":{"args":[],"tags":{"BadUrl":["String.String"],"Timeout":[],"NetworkError":[],"BadStatus":["Basics.Int","List.List String.String"],"BadBody":["String.String"]}},"List.List":{"args":["a"],"tags":{}},"Time.Posix":{"args":[],"tags":{"Posix":["Basics.Int"]}}}}})}});}(this));
+		A2($elm$json$Json$Decode$field, 'width', $elm$json$Json$Decode$int)))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Url.Url":{"args":[],"type":"{ protocol : Url.Protocol, host : String.String, port_ : Maybe.Maybe Basics.Int, path : String.String, query : Maybe.Maybe String.String, fragment : Maybe.Maybe String.String }"},"Pages.NotFound.Msg":{"args":[],"type":"Basics.Never"},"Pages.Top.Msg":{"args":[],"type":"Basics.Never"},"Models.User":{"args":[],"type":"{ id : String.String, username : String.String, email : String.String, privilege : Models.Privilege, moodleUrl : String.String }"},"Models.Assignment":{"args":[],"type":"{ id : String.String, courseId : Basics.Int, user : Models.User, title : String.String, dueDate : Date.Date, fromMoodle : Basics.Bool }"},"Models.Course":{"args":[],"type":"{ id : Basics.Int, name : String.String, assignments : List.List Models.Assignment, fromMoodle : Basics.Bool, user : String.String }"},"Api.Homework.Course.MinimalCourse":{"args":[],"type":"{ id : Basics.Int, name : String.String, fromMoodle : Basics.Bool }"},"Date.RataDie":{"args":[],"type":"Basics.Int"}},"unions":{"Main.Msg":{"args":[],"tags":{"LinkClicked":["Browser.UrlRequest"],"UrlChanged":["Url.Url"],"Shared":["Shared.Msg"],"Pages":["Spa.Generated.Pages.Msg"]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}},"Shared.Msg":{"args":[],"tags":{"GotUser":["Api.Data Models.User"],"Logout":[],"Resize":["Basics.Int","Basics.Int"],"GotLogoutData":["Result.Result Http.Error ()"]}},"Spa.Generated.Pages.Msg":{"args":[],"tags":{"Top__Msg":["Pages.Top.Msg"],"Dashboard__Msg":["Pages.Dashboard.Msg"],"Login__Msg":["Pages.Login.Msg"],"NotFound__Msg":["Pages.NotFound.Msg"],"Register__Msg":["Pages.Register.Msg"],"Dashboard__Admin__Msg":["Pages.Dashboard.Admin.Msg"],"Dashboard__Moodle__Msg":["Pages.Dashboard.Moodle.Msg"]}},"Url.Protocol":{"args":[],"tags":{"Http":[],"Https":[]}},"String.String":{"args":[],"tags":{"String":[]}},"Browser.UrlRequest":{"args":[],"tags":{"Internal":["Url.Url"],"External":["String.String"]}},"Api.Data":{"args":["value"],"tags":{"NotAsked":[],"Loading":[],"Failure":["Api.HttpError"],"Success":["value"]}},"Http.Error":{"args":[],"tags":{"BadUrl":["String.String"],"Timeout":[],"NetworkError":[],"BadStatus":["Basics.Int"],"BadBody":["String.String"]}},"Pages.Dashboard.Msg":{"args":[],"tags":{"GotCourseData":["Api.Data (List.List Models.Course)"],"SearchCourses":["String.String"],"GotSearchCoursesData":["Api.Data (List.List Api.Homework.Course.MinimalCourse)"],"CAFSelectCourse":["Api.Homework.Course.MinimalCourse"],"CAFChangeTitle":["String.String"],"CAFChangeDate":["String.String"],"CreateAssignment":[],"GotCreateAssignmentData":["Api.Data Models.Assignment"],"ReceiveTime":["Time.Posix"],"Add1Day":[],"RemoveAssignment":["String.String"],"GotRemoveAssignmentData":["Api.Data Models.Assignment"],"HoverAssignment":["String.String"],"DeHoverAssignment":["String.String"],"GotAssignmentData":["Api.Data (List.List Models.Assignment)"]}},"Pages.Dashboard.Admin.Msg":{"args":[],"tags":{"NoOp":[]}},"Pages.Dashboard.Moodle.Msg":{"args":[],"tags":{"ChangeMoodleUrlInput":["String.String"],"GotSiteData":["Api.Data String.String"],"ChangeMoodleUsernameInput":["String.String"],"ChangeMoodlePasswordInput":["String.String"],"Authenticate":[],"GotAuthenticationData":["Api.Data Models.User"]}},"Pages.Login.Msg":{"args":[],"tags":{"UsernameInput":["String.String"],"PasswordInput":["String.String"],"GotLoginData":["Api.Data Models.User"],"Login":[]}},"Pages.Register.Msg":{"args":[],"tags":{"UsernameInput":["String.String"],"PasswordInput":["String.String"],"ValidatePasswordInput":["String.String"],"EmailInput":["String.String"],"GotUsernameTaken":["Api.Data Basics.Bool"],"GotRegistrationData":["Api.Data Models.User"],"Register":[]}},"Basics.Never":{"args":[],"tags":{"JustOneMore":["Basics.Never"]}},"Models.Privilege":{"args":[],"tags":{"Normal":[],"Admin":[]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"Basics.Bool":{"args":[],"tags":{"True":[],"False":[]}},"Date.Date":{"args":[],"tags":{"RD":["Date.RataDie"]}},"Api.HttpError":{"args":[],"tags":{"BadUrl":["String.String"],"Timeout":[],"NetworkError":[],"BadStatus":["Basics.Int","List.List String.String"],"BadBody":["String.String"]}},"List.List":{"args":["a"],"tags":{}},"Time.Posix":{"args":[],"tags":{"Posix":["Basics.Int"]}}}}})}});}(this));

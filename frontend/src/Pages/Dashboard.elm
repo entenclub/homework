@@ -425,7 +425,7 @@ view model =
                 , width fill
                 ]
                 [ -- sidebar
-                  Components.Sidebar.viewSidebar { user = model.user, courseData = model.courseData, device = model.device, active = Just "dashboard" }
+                  Components.Sidebar.viewSidebar { user = model.user, device = model.device, active = Just "dashboard" }
 
                 -- content
                 , column

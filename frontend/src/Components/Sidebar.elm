@@ -9,7 +9,7 @@ import Element.Font as Font
 import Http
 import Material.Icons as Icons
 import Material.Icons.Types exposing (Coloring(..))
-import Models exposing (Course, User)
+import Models exposing (Course, Privilege, User)
 import Shared
 import Spa.Generated.Route as Route exposing (Route)
 import Styling.Colors exposing (..)
@@ -21,8 +21,8 @@ borderRadius =
     20
 
 
-viewUser : Maybe User -> Api.Data (List Course) -> Element msg
-viewUser maybeUser courseData =
+viewUser : Maybe User -> Element msg
+viewUser maybeUser =
     case maybeUser of
         Just user ->
             viewUserComponent user
@@ -31,13 +31,25 @@ viewUser maybeUser courseData =
             Element.none
 
 
-viewSidebar : { user : Maybe User, courseData : Api.Data (List Course), device : Shared.Device, active : Maybe String } -> Element msg
+viewSidebar : { user : Maybe User, device : Shared.Device, active : Maybe String } -> Element msg
 viewSidebar model =
     let
         links =
             [ ( "dashboard", Route.Dashboard )
             , ( "moodle integration", Route.Dashboard__Moodle )
             ]
+                ++ (case model.user of
+                        Just user ->
+                            case user.privilege of
+                                Models.Admin ->
+                                    [ ( "admin", Route.Dashboard__Admin ) ]
+
+                                _ ->
+                                    []
+
+                        Nothing ->
+                            []
+                   )
     in
     column
         [ width
@@ -53,7 +65,7 @@ viewSidebar model =
         , padding 40
         , Border.rounded borderRadius
         ]
-        [ viewUser model.user model.courseData
+        [ viewUser model.user
         , el [ width fill, paddingXY 0 50 ] (viewLinks links model.active)
         ]
 
@@ -98,7 +110,7 @@ viewLinks links maybeActive =
 
 viewLink : ( String, Route ) -> Bool -> Element msg
 viewLink linkData active =
-    el
+    link
         [ Font.bold
         , mouseOver
             [ Background.color (darken lighterGreyColor -0.1)
@@ -108,16 +120,14 @@ viewLink linkData active =
         , Border.rounded 10
         , padding 10
         ]
-        (link [ centerY ]
-            { url = Route.toString (Tuple.second linkData)
-            , label =
-                el
-                    (if active then
-                        [ Font.color blueColor ]
+        { url = Route.toString (Tuple.second linkData)
+        , label =
+            el
+                (if active then
+                    [ Font.color blueColor ]
 
-                     else
-                        []
-                    )
-                    (text (Tuple.first linkData))
-            }
-        )
+                 else
+                    []
+                )
+                (text (Tuple.first linkData))
+        }

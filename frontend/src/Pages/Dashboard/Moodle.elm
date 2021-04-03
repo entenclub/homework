@@ -192,7 +192,6 @@ view model =
                 [ --sidebar
                   Components.Sidebar.viewSidebar
                     { user = model.user
-                    , courseData = model.courseData
                     , device = model.device
                     , active = Just "moodle integration"
                     }
