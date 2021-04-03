@@ -587,6 +587,7 @@ filterCoursesByWhetherAssignmentsAreDueOnDate : List Course -> Date.Date -> List
 filterCoursesByWhetherAssignmentsAreDueOnDate courses date =
     let
         validCourses =
+            List.map (\idAssignmentTuple -> Tuple.first idAssignmentTuple)
                 (List.filter
                     (\_ ->
                         not
