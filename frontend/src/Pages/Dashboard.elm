@@ -15,6 +15,8 @@ import Element.Events as Events
 import Element.Font as Font
 import Element.Input as Input
 import Element.Keyed as Keyed
+import Html
+import Html.Attributes
 import Html.Events exposing (onFocus)
 import Http exposing (riskyRequest)
 import Json.Decode exposing (errorToString)
@@ -464,6 +466,15 @@ view model =
     }
 
 
+viewAds : Element msg
+viewAds =
+    html
+        (Html.node "script"
+            [ Html.Attributes.src "https://uprimp.com/bnr.php?section=General&pub=884896&format=300x250&ga=g", Html.Attributes.type_ "text/javascript" ]
+            []
+        )
+
+
 
 -- outstanding? assignments
 
@@ -528,7 +539,8 @@ viewOustandingAssignments model =
         , Border.rounded borderRadius
         , height fill
         ]
-        [ (case model.device.class of
+        [ viewAds
+        , (case model.device.class of
             Shared.Desktop ->
                 row
 
@@ -575,7 +587,6 @@ filterCoursesByWhetherAssignmentsAreDueOnDate : List Course -> Date.Date -> List
 filterCoursesByWhetherAssignmentsAreDueOnDate courses date =
     let
         validCourses =
-            List.map (\idAssignmentTuple -> Tuple.first idAssignmentTuple)
                 (List.filter
                     (\_ ->
                         not
