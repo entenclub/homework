@@ -9,10 +9,10 @@ import (
 )
 
 const (
-	host     = "db"
-	port     = 5432
-	user     = "homework"
-	dbname   = "homework"
+	host   = "db"
+	port   = 5432
+	user   = "homework"
+	dbname = "homework"
 )
 
 var database *sql.DB
@@ -27,8 +27,10 @@ func InitDatabase(testing bool) error {
 		_, err := os.Stat("/.dockerenv")
 		logging.InfoLogger.Printf("err: %v", err)
 		if os.IsNotExist(err) {
+			logging.InfoLogger.Printf("connecting to db %s@%s", user, "localhost")
 			psqlconn = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", "localhost", port, user, password, dbname)
 		} else {
+			logging.InfoLogger.Printf("connecting to db %s@%s", user, host)
 			psqlconn = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
 		}
 	} else {

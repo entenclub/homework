@@ -14,6 +14,7 @@ func GetUserCachedCourses(user structs.User) ([]structs.CachedCourse, error) {
 	// get all cached moodle courses where moodle_url == the users moodle url and the userID == user.id
 	query := "SELECT * FROM moodle_cache WHERE moodle_url = $1 AND user_id = $2"
 	rows, err := database.Query(query, user.MoodleURL, user.ID)
+	//goland:noinspection GoNilness
 	defer rows.Close()
 
 	if err != nil {
@@ -80,7 +81,7 @@ func CreateNewCacheObject(course structs.CachedCourse) error {
 
 // SearchUserCourses returns all user courses matching a given search term
 func SearchUserCourses(query string, user structs.User) ([]structs.CachedCourse, error) {
-	rows, err := database.Query("SELECT * FROM moodle_cache WHERE to_tsvector('german', course_json) @@ to_tsquery('german', $1) OR lower(course_json) LIKE $2", query, fmt.Sprintf("%%%s%%", query))
+	rows, err := database.Query("SELECT * FROM moodle_cache WHERE to_tsvector('german', course_json) @@ to_tsquery('german', $1) OR lower(course_json) LIKE $2 AND user_id = $3", query, fmt.Sprintf("%%%s%%", query), user.ID.String())
 	if err != nil {
 		return nil, err
 	}

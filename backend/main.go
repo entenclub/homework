@@ -12,14 +12,12 @@ import (
 	"syscall"
 )
 
-
 func main() {
 	logging.InitLoggers()
 
+	port := 8005
 
-        port := 8005
-
-        err := db.InitDatabase(false)
+	err := db.InitDatabase(false)
 
 	if err != nil {
 		logging.ErrorLogger.Printf("error connecting to db: %v\n", err)
@@ -54,7 +52,6 @@ func main() {
 	r.HandleFunc("/moodle/authenticate", routes.MoodleAuthenticate).Methods("POST")
 	r.HandleFunc("/moodle/get-school-info", routes.MoodleGetSchoolInfo).Methods("POST")
 	// TODO: /moodle/get-courses
-
 
 	logging.InfoLogger.Printf("started server on port %d", port)
 	logging.ErrorLogger.Fatalln(http.ListenAndServe(fmt.Sprintf(":%d", port), r).Error())
