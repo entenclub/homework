@@ -3,7 +3,6 @@ module Pages.Dashboard exposing (Model, Msg, Params, page)
 import Api exposing (Data(..), HttpError(..))
 import Api.Homework.Assignment exposing (createAssignment, getAssignments, removeAssignment)
 import Api.Homework.Course exposing (MinimalCourse, getActiveCourses, searchCourses)
-import Api.Homework.User exposing (getUserFromSession)
 import Array
 import Components.LineChart
 import Components.Sidebar
@@ -17,10 +16,7 @@ import Element.Input as Input
 import Element.Keyed as Keyed
 import Html
 import Html.Attributes
-import Html.Events exposing (onFocus)
-import Http exposing (riskyRequest)
-import Json.Decode exposing (errorToString)
-import Material.Icons as Icons
+import I18Next exposing (Translations)
 import Material.Icons.Types exposing (Coloring(..))
 import Models exposing (Assignment, Course, User)
 import Shared
@@ -31,9 +27,11 @@ import Spa.Url exposing (Url)
 import Styling.Colors exposing (..)
 import Task
 import Time
+import Translations.Global
+import Translations.Pages.Dashboard
 import Utils.Darken exposing (darken)
-import Utils.Route exposing (navigate)
-import Utils.Vh exposing (vh, vw)
+import Utils.Route
+import Utils.Vh
 
 
 type alias Params =
@@ -60,6 +58,7 @@ type alias Model =
     , errors : List String
     , maybeAssignmentHovered : Maybe String
     , assignmentData : Api.Data (List Assignment)
+    , translations : Translations
     }
 
 
@@ -121,6 +120,7 @@ init shared url =
       , errors = []
       , maybeAssignmentHovered = Nothing
       , assignmentData = NotAsked
+      , translations = shared.translations
       }
     , Cmd.batch initCommands
     )
@@ -425,7 +425,7 @@ view model =
                 , width fill
                 ]
                 [ -- sidebar
-                  Components.Sidebar.viewSidebar { user = model.user, device = model.device, active = Just "dashboard" }
+                  Components.Sidebar.viewSidebar { user = model.user, device = model.device, active = Just "dashboard", translations = model.translations }
 
                 -- content
                 , column
@@ -464,15 +464,6 @@ view model =
             )
         ]
     }
-
-
-viewAds : Element msg
-viewAds =
-    html
-        (Html.node "script"
-            [ Html.Attributes.src "https://uprimp.com/bnr.php?section=General&pub=884896&format=300x250&ga=g", Html.Attributes.type_ "text/javascript" ]
-            []
-        )
 
 
 
@@ -539,8 +530,7 @@ viewOustandingAssignments model =
         , Border.rounded borderRadius
         , height fill
         ]
-        [ viewAds
-        , (case model.device.class of
+        [ (case model.device.class of
             Shared.Desktop ->
                 row
 
@@ -553,9 +543,9 @@ viewOustandingAssignments model =
             ]
             (case model.user of
                 Just user ->
-                    [ viewAssignmentsDayColumn model.courseData "today" redColor model.today model.maybeAssignmentHovered user
-                    , viewAssignmentsDayColumn model.courseData "tomorrow" yellowColor (Date.add Date.Days 1 model.today) model.maybeAssignmentHovered user
-                    , viewAssignmentsDayColumn model.courseData "the day after tomorrow" greenColor (Date.add Date.Days 2 model.today) model.maybeAssignmentHovered user
+                    [ viewAssignmentsDayColumn model.courseData (Translations.Global.today model.translations) redColor model.today model.maybeAssignmentHovered user model.translations
+                    , viewAssignmentsDayColumn model.courseData (Translations.Global.tomorrow model.translations) yellowColor (Date.add Date.Days 1 model.today) model.maybeAssignmentHovered user model.translations
+                    , viewAssignmentsDayColumn model.courseData (Translations.Global.dayAfterTomorrow model.translations) greenColor (Date.add Date.Days 2 model.today) model.maybeAssignmentHovered user model.translations
                     ]
 
                 Nothing ->
@@ -566,7 +556,7 @@ viewOustandingAssignments model =
                 if List.length (otherOutstandingAssignments model.today courses) > 0 then
                     case model.user of
                         Just user ->
-                            viewOtherAssignments model.courseData model.today model.maybeAssignmentHovered user
+                            viewOtherAssignments model.courseData model.today model.maybeAssignmentHovered user model.translations
 
                         Nothing ->
                             none
@@ -603,8 +593,8 @@ filterCoursesByWhetherAssignmentsAreDueOnDate courses date =
     List.filter (\course -> List.member course.id validCourses) courses
 
 
-viewAssignmentsDayColumn : Api.Data (List Course) -> String -> Color -> Date.Date -> Maybe String -> User -> Element Msg
-viewAssignmentsDayColumn courseData title color date assignmentHovered user =
+viewAssignmentsDayColumn : Api.Data (List Course) -> String -> Color -> Date.Date -> Maybe String -> User -> Translations -> Element Msg
+viewAssignmentsDayColumn courseData title color date assignmentHovered user translations =
     column
         [ Background.color color
         , height (fill |> minimum 200)
@@ -621,7 +611,7 @@ viewAssignmentsDayColumn courseData title color date assignmentHovered user =
                         filterCoursesByWhetherAssignmentsAreDueOnDate allCourses date
                 in
                 if List.isEmpty courses then
-                    el [ centerX, centerY, Font.size 30, Font.bold ] (text "*nothing 🎉*")
+                    el [ centerX, centerY, Font.size 30, Font.bold ] (text (Translations.Pages.Dashboard.nothing translations))
 
                 else
                     Keyed.column [ width fill, spacing 5 ] (List.map (courseGroupToKeyValue color (Just date) assignmentHovered False user) courses)
@@ -630,15 +620,15 @@ viewAssignmentsDayColumn courseData title color date assignmentHovered user =
                 text (Api.errorToString e)
 
             Loading ->
-                el [ centerX, centerY, Font.size 30, Font.bold ] (text "Loading...")
+                el [ centerX, centerY, Font.size 30, Font.bold ] (text (Translations.Global.loading translations))
 
             NotAsked ->
-                el [ centerX, centerY, Font.size 30, Font.bold ] (text "Loading...")
+                el [ centerX, centerY, Font.size 30, Font.bold ] (text (Translations.Global.loading translations))
         ]
 
 
-viewOtherAssignments : Api.Data (List Course) -> Date.Date -> Maybe String -> User -> Element Msg
-viewOtherAssignments apiData date assignmentHovered user =
+viewOtherAssignments : Api.Data (List Course) -> Date.Date -> Maybe String -> User -> Translations -> Element Msg
+viewOtherAssignments apiData date assignmentHovered user translations =
     column
         [ width fill
         , Border.rounded borderRadius
@@ -646,7 +636,7 @@ viewOtherAssignments apiData date assignmentHovered user =
         , padding 20
         , Background.color blueColor
         ]
-        [ el [ Font.bold ] (text "other")
+        [ el [ Font.bold ] (text (Translations.Pages.Dashboard.others translations))
         , case apiData of
             Success data ->
                 let
@@ -660,7 +650,7 @@ viewOtherAssignments apiData date assignmentHovered user =
                     Keyed.column [ width fill, spacing 5 ] (List.map (courseGroupToKeyValue blueColor Nothing assignmentHovered True user) courses)
 
             Loading ->
-                el [ centerX, centerY, Font.size 30, Font.bold ] (text "Loading...")
+                el [ centerX, centerY, Font.size 30, Font.bold ] (text (Translations.Global.loading translations))
 
             _ ->
                 none
@@ -729,8 +719,8 @@ viewAssignment assignment color maybeHovered displayDate =
         [ el
             (case maybeHovered of
                 Just hovered ->
-                    [ Events.onClick (RemoveAssignment assignment.id) ]
-                        ++ (Events.onMouseEnter (HoverAssignment assignment.id)
+                    Events.onClick (RemoveAssignment assignment.id)
+                        :: (Events.onMouseEnter (HoverAssignment assignment.id)
                                 :: Events.onMouseLeave (DeHoverAssignment assignment.id)
                                 :: (if hovered then
                                         [ Font.strike ]
@@ -753,6 +743,7 @@ viewAssignment assignment color maybeHovered displayDate =
                      )
                         ++ assignment.title
                         ++ (case maybeHovered of
+                                -- TODO: good interface?
                                 Just hovered ->
                                     if hovered then
                                         " (click to remove)"
@@ -863,7 +854,7 @@ viewCreateAssignmentForm model =
         , spacing 10
         ]
         [ el [ Font.bold, Font.size 30, Font.color inputTextColor ]
-            (text "Create Assignment")
+            (text (Translations.Pages.Dashboard.createAssignments model.translations))
         , viewCreateAssignmentFormErrors model.errors
         , viewCreateAssignmentFormStatus model.createAssignmentData
         , (case model.device.class of
@@ -891,8 +882,8 @@ viewCreateAssignmentForm model =
                     , Font.color (rgb 1 1 1)
                     , height (px 50)
                     ]
-                    { label = Input.labelAbove [ Font.color (rgb 1 1 1) ] (text "search courses (required)")
-                    , placeholder = Just (Input.placeholder [] (text "Emily Oliver: History"))
+                    { label = Input.labelAbove [ Font.color (rgb 1 1 1) ] (text (Translations.Pages.Dashboard.searchCourses model.translations ++ Translations.Global.required model.translations))
+                    , placeholder = Just (Input.placeholder [] (text <| Translations.Global.exampleSubject model.translations))
                     , onChange = SearchCourses
                     , text = model.searchCoursesText
                     }
@@ -903,8 +894,8 @@ viewCreateAssignmentForm model =
                     inputStyle
                     [ alignTop ]
                 )
-                { label = Input.labelAbove [ Font.color (rgb 1 1 1) ] (text "title (required)")
-                , placeholder = Just (Input.placeholder [] (text "sb. page 105, 1-3a"))
+                { label = Input.labelAbove [ Font.color (rgb 1 1 1) ] (text <| (Translations.Pages.Dashboard.title model.translations ++ Translations.Global.required model.translations))
+                , placeholder = Just (Input.placeholder [] (text <| Translations.Pages.Dashboard.exampleTitle model.translations))
                 , onChange = CAFChangeTitle
                 , text = model.titleTfText
                 }
@@ -921,10 +912,10 @@ viewCreateAssignmentForm model =
                         (text
                             (case model.selectedDate of
                                 Just _ ->
-                                    "due date (required) -- selected date " ++ String.fromInt model.addDaysDifference ++ " days from now."
+                                    Translations.Pages.Dashboard.dueDateSelectedDateDaysFromNow model.translations (String.fromInt model.addDaysDifference)
 
                                 Nothing ->
-                                    "due date (required)"
+                                    Translations.Pages.Dashboard.dueDate model.translations
                             )
                         )
                 , placeholder = Just (Input.placeholder [] (text (toGermanDateString model.today)))
@@ -959,7 +950,7 @@ viewCreateAssignmentForm model =
                 , Border.rounded 10
                 , padding 10
                 ]
-                { label = el [ centerX, centerY ] (text "Submit")
+                { label = el [ centerX, centerY ] (text <| Translations.Global.submit model.translations)
                 , onPress = Nothing
                 }
 
@@ -973,7 +964,7 @@ viewCreateAssignmentForm model =
                 , Border.rounded 10
                 , padding 10
                 ]
-                { label = el [ centerX, centerY ] (text "Submit")
+                { label = el [ centerX, centerY ] (text <| Translations.Global.submit model.translations)
                 , onPress = Just CreateAssignment
                 }
         ]

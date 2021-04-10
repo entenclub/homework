@@ -5,7 +5,16 @@
     "register": "Registrieren",
     "username": "Benutzername",
     "password": "Passwort",
-    "dashboard": "Instrumententafel"
+    "dashboard": "Instrumententafel",
+    "logout": "Abmelden",
+    "today": "Heute",
+    "tomorrow": "Morgen",
+    "day_after_tomorrow": "Übermorgen",
+    "hey_username": "Moin, {{user}}",
+    "loading": "Laden...",
+    "required": " (verpflichtend)",
+    "example_subject": "Emily Mustermann: Geschichte",
+    "submit": "Abschicken"
   },
   "pages": {
     "top": {
@@ -15,6 +24,18 @@
     "login": {
       "enter_username": "Benutzername eingeben",
       "enter_password": "Passwort eingeben"
+    },
+    "dashboard": {
+      "moodle_integration": "Moodle Integration",
+      "admin": "Administratorschaltpaneeel",
+      "nothing": "*nix 🎉*",
+      "others": "Sonstige",
+      "create_assignments": "Aufgabe hinzufügen",
+      "search_courses": "Kurs suchen",
+      "title": "Titel",
+      "example_title": "Seite 105, Aufgabe 1-3a",
+      "due_date": "Fälligkeitsdatum (verpflichtend)",
+      "due_date_selected_date_days_from_now": "Fälligkeitsdatum (verpflictend) -- In {{days}} Tagen."
     }
   }
 }

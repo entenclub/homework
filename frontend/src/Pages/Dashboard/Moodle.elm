@@ -1,6 +1,6 @@
 module Pages.Dashboard.Moodle exposing (Model, Msg, Params, page)
 
-import Api
+import Api exposing (errorToString)
 import Api.Moodle.Moodle exposing (authenticateUser, getSiteName)
 import Components.Sidebar
 import Element exposing (..)
@@ -11,6 +11,7 @@ import Element.Font as Font
 import Element.Input as Input
 import Element.Region as Region
 import Http
+import I18Next exposing (Translations)
 import Models exposing (Course, User)
 import Shared
 import Spa.Document exposing (Document)
@@ -19,7 +20,6 @@ import Spa.Url exposing (Url)
 import String
 import Styling.Colors exposing (blueColor, darkGreyColor, greenColor, lighterGreyColor, redColor)
 import Utils.Darken exposing (darken)
-import Api exposing (errorToString)
 
 
 type alias Params =
@@ -38,6 +38,7 @@ type alias Model =
     , moodleUsernameInput : String
     , moodlePasswordInput : String
     , authenticationData : Api.Data User
+    , translations : Translations
     }
 
 
@@ -75,6 +76,7 @@ init shared url =
       , moodleUsernameInput = ""
       , moodlePasswordInput = ""
       , authenticationData = Api.NotAsked
+      , translations = shared.translations
       }
     , Cmd.none
     )
@@ -194,6 +196,7 @@ view model =
                     { user = model.user
                     , device = model.device
                     , active = Just "moodle integration"
+                    , translations = model.translations
                     }
                 , --content
                   column

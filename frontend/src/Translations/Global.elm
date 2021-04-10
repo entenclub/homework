@@ -35,3 +35,48 @@ password translations =
 dashboard : Translations -> String
 dashboard translations =
     t translations "global.dashboard"
+
+
+logout : Translations -> String
+logout translations =
+    t translations "global.logout"
+
+
+today : Translations -> String
+today translations =
+    t translations "global.today"
+
+
+tomorrow : Translations -> String
+tomorrow translations =
+    t translations "global.tomorrow"
+
+
+dayAfterTomorrow : Translations -> String
+dayAfterTomorrow translations =
+    t translations "global.day_after_tomorrow"
+
+
+heyUsername : Translations -> String -> String
+heyUsername translations user =
+    tr translations Curly "global.hey_username" [ ( "user", user ) ]
+
+
+loading : Translations -> String
+loading translations =
+    t translations "global.loading"
+
+
+required : Translations -> String
+required translations =
+    t translations "global.required"
+
+
+exampleSubject : Translations -> String
+exampleSubject translations =
+    t translations "global.example_subject"
+
+
+submit : Translations -> String
+submit translations =
+    t translations "global.submit"

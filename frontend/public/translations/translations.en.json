@@ -5,7 +5,16 @@
     "register": "Register",
     "username": "Username",
     "password": "Password",
-    "dashboard": "dashboard"
+    "dashboard": "dashboard",
+    "logout": "Log out",
+    "today": "Today",
+    "tomorrow": "tomorrow",
+    "day_after_tomorrow": "the day after tomorrow",
+    "hey_username": "Hey, {{user}}",
+    "loading": "Loading...",
+    "required": " (required)",
+    "example_subject": "Emily Smith: History",
+    "submit": "Submit"
   },
   "pages": {
     "top": {
@@ -15,6 +24,18 @@
     "login": {
       "enter_username": "enter username",
       "enter_password": "enter password"
+    },
+    "dashboard": {
+      "moodle_integration": "Moodle integration",
+      "admin": "Admin panel",
+      "nothing": "*nothing 🎉*",
+      "others": "other",
+      "create_assignments": "Create Assignment",
+      "search_courses": "search courses",
+      "title": "title",
+      "example_title": "page 105, 1-3a",
+      "due_date": "due date (required)",
+      "due_date_selected_date_days_from_now": "due date (required) -- selected date {{days}} from now."
     }
   }
 }

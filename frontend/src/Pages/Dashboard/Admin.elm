@@ -8,6 +8,7 @@ import Element.Events as Events
 import Element.Font as Font
 import Element.Input as Input
 import Element.Keyed as Keyed
+import I18Next exposing (Translations)
 import Models exposing (User)
 import Shared
 import Spa.Document exposing (Document)
@@ -24,6 +25,7 @@ type alias Model =
     { url : Url Params
     , user : Maybe User
     , device : Shared.Device
+    , translations : Translations
     }
 
 
@@ -48,6 +50,7 @@ init shared url =
     ( { url = url
       , user = shared.user
       , device = shared.device
+      , translations = shared.translations
       }
     , Cmd.none
     )
@@ -100,7 +103,7 @@ view model =
                 , width fill
                 ]
                 [ -- sidebar
-                  Components.Sidebar.viewSidebar { user = model.user, device = model.device, active = Just "admin" }
+                  Components.Sidebar.viewSidebar { user = model.user, device = model.device, active = Just "admin", translations = model.translations }
 
                 -- content
                 , column

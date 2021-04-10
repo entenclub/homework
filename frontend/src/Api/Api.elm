@@ -1,19 +1,20 @@
 module Api.Api exposing (apiAddress)
 
-import Svg.Attributes exposing (local)
 
-
+productionApiAddress : String
 productionApiAddress =
     "https://api.hausis.3nt3.de"
 
 
+localApiAddress : String
 localApiAddress =
     "http://localhost:8005"
 
 
+apiAddress : String
 apiAddress =
     let
-        debug =
+        _ =
             Debug.log "apiAddress" "fix api address back to actual endpoint"
     in
     localApiAddress

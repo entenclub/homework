@@ -1,15 +1,16 @@
-module Api exposing (Data(..), expectJson, HttpError(..), errorToString, expectPlainJson)
+module Api exposing (Data(..), HttpError(..), errorToString, expectJson, expectPlainJson)
 
 import Html.Attributes exposing (value)
 import Http
 import Json.Decode as Json
-import Http
 
-type Data value 
+
+type Data value
     = NotAsked
     | Loading
     | Failure HttpError
     | Success value
+
 
 type HttpError
     = BadUrl String
@@ -18,13 +19,16 @@ type HttpError
     | BadStatus Int (List String)
     | BadBody String
 
+
 expectJson : (Data value -> msg) -> Json.Decoder value -> Http.Expect msg
 expectJson toMsg =
     expectStringButItsJson (fromResult >> toMsg)
 
+
 expectPlainJson : (Data value -> msg) -> Json.Decoder value -> Http.Expect msg
 expectPlainJson toMsg =
     plainExpectStringButItsJson (fromResult >> toMsg)
+
 
 expectStringButItsJson : (Result HttpError a -> msg) -> Json.Decoder a -> Http.Expect msg
 expectStringButItsJson toMsg decoder =
@@ -36,25 +40,26 @@ expectStringButItsJson toMsg decoder =
 
                 Http.Timeout_ ->
                     Err Timeout
-                
+
                 Http.NetworkError_ ->
                     Err NetworkError
 
                 Http.BadStatus_ metadata body ->
-                    case Json.decodeString (Json.at ["errors"] (Json.list Json.string)) body of
+                    case Json.decodeString (Json.at [ "errors" ] (Json.list Json.string)) body of
                         Ok value ->
                             Err (BadStatus metadata.statusCode value)
 
-                        Err err ->
-                            Err (BadStatus metadata.statusCode ["an error occured."])
+                        Err _ ->
+                            Err (BadStatus metadata.statusCode [ "an error occured." ])
 
-                Http.GoodStatus_ metadata body ->
-                    case Json.decodeString (Json.at ["content"] decoder) body of
+                Http.GoodStatus_ _ body ->
+                    case Json.decodeString (Json.at [ "content" ] decoder) body of
                         Ok value ->
                             Ok value
 
                         Err err ->
                             Err (BadBody (Json.errorToString err))
+
 
 plainExpectStringButItsJson : (Result HttpError a -> msg) -> Json.Decoder a -> Http.Expect msg
 plainExpectStringButItsJson toMsg decoder =
@@ -66,20 +71,21 @@ plainExpectStringButItsJson toMsg decoder =
 
                 Http.Timeout_ ->
                     Err Timeout
-                
+
                 Http.NetworkError_ ->
                     Err NetworkError
 
                 Http.BadStatus_ metadata _ ->
-                    Err (BadStatus metadata.statusCode ["an error occured."])
+                    Err (BadStatus metadata.statusCode [ "an error occured." ])
 
-                Http.GoodStatus_ metadata body ->
+                Http.GoodStatus_ _ body ->
                     case Json.decodeString decoder body of
                         Ok value ->
                             Ok value
 
                         Err err ->
                             Err (BadBody (Json.errorToString err))
+
 
 fromResult : Result HttpError value -> Data value
 fromResult result =
@@ -94,13 +100,13 @@ fromResult result =
 errorToString : HttpError -> String
 errorToString error =
     case error of
-        BadStatus status errors ->
-            "an error occured: " ++  String.join "; " errors
+        BadStatus _ errors ->
+            "an error occured: " ++ String.join "; " errors
 
-        BadBody err ->
+        BadBody _ ->
             "an error occured"
 
-        BadUrl err ->
+        BadUrl _ ->
             "an error occured"
 
         NetworkError ->

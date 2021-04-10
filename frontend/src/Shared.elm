@@ -21,7 +21,7 @@ import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
 import Http
-import I18Next
+import I18Next exposing (Translations)
 import Json.Decode as JsonDecode
 import Models exposing (User)
 import Spa.Document exposing (Document)
@@ -30,7 +30,6 @@ import Styling.Colors exposing (blueColor, greenColor, redColor)
 import Time
 import Translations.Global
 import Url exposing (Url)
-import I18Next exposing (Translations)
 
 
 
@@ -238,7 +237,7 @@ navBarView device maybeUser translations options =
                             alignRight
                     , Events.onClick (options.toMsg Logout)
                     ]
-                    (navBarElement (text "logout") "/")
+                    (navBarElement (text <| Translations.Global.logout translations) "/")
                 ]
 
             Nothing ->
