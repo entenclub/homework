@@ -4,10 +4,14 @@ import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
+import I18Next exposing (Translations)
+import Shared
 import Spa.Document exposing (Document)
 import Spa.Page as Page exposing (Page)
 import Spa.Url exposing (Url)
 import Styling.Colors exposing (blueColor, darkGreyColor, redColor)
+import Translations.Global
+import Translations.Pages.Top
 
 
 type alias Params =
@@ -15,7 +19,9 @@ type alias Params =
 
 
 type alias Model =
-    Url Params
+    { url : Url Params
+    , translations : I18Next.Translations
+    }
 
 
 type alias Msg =
@@ -24,9 +30,39 @@ type alias Msg =
 
 page : Page Params Model Msg
 page =
-    Page.static
-        { view = view
+    Page.application
+        { init = init
+        , update = update
+        , view = view
+        , subscriptions = subscriptions
+        , save = save
+        , load = load
         }
+
+
+init : Shared.Model -> Url Params -> ( Model, Cmd Msg )
+init shared url =
+    ( { url = url, translations = shared.translations }, Cmd.none )
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    ( model, Cmd.none )
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.none
+
+
+save : Model -> Shared.Model -> Shared.Model
+save model shared =
+    shared
+
+
+load : Shared.Model -> Model -> ( Model, Cmd Msg )
+load shared model =
+    ( model, Cmd.none )
 
 
 
@@ -43,8 +79,8 @@ darkGrey =
     rgb255 61 61 61
 
 
-view : Url Params -> Document Msg
-view { params } =
+view : Model -> Document Msg
+view model =
     { title = "dwb?"
     , body =
         [ column [ width fill, height fill ]
@@ -58,7 +94,7 @@ view { params } =
                 , width fill
                 ]
                 (column [ centerX, centerY, spacing 10 ]
-                    [ el [ centerX, Font.size 80 ] (text "Homework Organizer")
+                    [ el [ centerX, Font.size 80 ] (text (Translations.Global.title model.translations))
                     , el
                         [ centerX
                         , Font.size 30
@@ -86,11 +122,11 @@ view { params } =
                 ]
                 (column [ padding 100, spacing 10 ]
                     [ el [ Font.size 60 ]
-                        (text "About")
+                        (text <| Translations.Pages.Top.aboutTitle model.translations)
                     , el
                         []
                         (paragraph [ Font.size 24 ]
-                            [ text "This is a tool created to help you organize homework assignments collaboratively with your classmates."
+                            [ text <| Translations.Pages.Top.aboutContent model.translations
                             ]
                         )
                     ]

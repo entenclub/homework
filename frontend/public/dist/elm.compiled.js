@@ -11180,9 +11180,9 @@ var $author$project$Main$fromUrl = A2(
 var $author$project$Shared$GotUser = function (a) {
 	return {$: 'GotUser', a: a};
 };
-var $author$project$Shared$Model = F4(
-	function (url, key, user, device) {
-		return {device: device, key: key, url: url, user: user};
+var $author$project$Shared$Model = F5(
+	function (url, key, user, device, translations) {
+		return {device: device, key: key, translations: translations, url: url, user: user};
 	});
 var $author$project$Shared$Desktop = {$: 'Desktop'};
 var $author$project$Shared$Device = F4(
@@ -11522,16 +11522,98 @@ var $author$project$Api$Homework$User$getUserFromSession = function (options) {
 			url: $author$project$Api$Api$apiAddress + '/user'
 		});
 };
+var $ChristophP$elm_i18next$I18Next$Translations = function (a) {
+	return {$: 'Translations', a: a};
+};
+var $ChristophP$elm_i18next$I18Next$initialTranslations = $ChristophP$elm_i18next$I18Next$Translations($elm$core$Dict$empty);
+var $ChristophP$elm_i18next$I18Next$flattenTranslationsHelp = F3(
+	function (initialValue, namespace, dict) {
+		return A3(
+			$elm$core$Dict$foldl,
+			F3(
+				function (key, val, acc) {
+					var newNamespace = function (currentKey) {
+						return $elm$core$String$isEmpty(namespace) ? currentKey : (namespace + ('.' + currentKey));
+					};
+					if (val.$ === 'Leaf') {
+						var str = val.a;
+						return A3(
+							$elm$core$Dict$insert,
+							newNamespace(key),
+							str,
+							acc);
+					} else {
+						var children = val.a;
+						return A3(
+							$ChristophP$elm_i18next$I18Next$flattenTranslationsHelp,
+							acc,
+							newNamespace(key),
+							children);
+					}
+				}),
+			initialValue,
+			dict);
+	});
+var $ChristophP$elm_i18next$I18Next$flattenTranslations = A2($ChristophP$elm_i18next$I18Next$flattenTranslationsHelp, $elm$core$Dict$empty, '');
+var $ChristophP$elm_i18next$I18Next$Branch = function (a) {
+	return {$: 'Branch', a: a};
+};
+var $ChristophP$elm_i18next$I18Next$Leaf = function (a) {
+	return {$: 'Leaf', a: a};
+};
+var $elm$json$Json$Decode$lazy = function (thunk) {
+	return A2(
+		$elm$json$Json$Decode$andThen,
+		thunk,
+		$elm$json$Json$Decode$succeed(_Utils_Tuple0));
+};
+var $elm$json$Json$Decode$oneOf = _Json_oneOf;
+function $ChristophP$elm_i18next$I18Next$cyclic$treeDecoder() {
+	return $elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				A2($elm$json$Json$Decode$map, $ChristophP$elm_i18next$I18Next$Leaf, $elm$json$Json$Decode$string),
+				$elm$json$Json$Decode$lazy(
+				function (_v0) {
+					return A2(
+						$elm$json$Json$Decode$map,
+						$ChristophP$elm_i18next$I18Next$Branch,
+						$elm$json$Json$Decode$dict(
+							$ChristophP$elm_i18next$I18Next$cyclic$treeDecoder()));
+				})
+			]));
+}
+try {
+	var $ChristophP$elm_i18next$I18Next$treeDecoder = $ChristophP$elm_i18next$I18Next$cyclic$treeDecoder();
+	$ChristophP$elm_i18next$I18Next$cyclic$treeDecoder = function () {
+		return $ChristophP$elm_i18next$I18Next$treeDecoder;
+	};
+} catch ($) {
+	throw 'Some top-level definitions from `I18Next` are causing infinite recursion:\n\n  ┌─────┐\n  │    treeDecoder\n  └─────┘\n\nThese errors are very tricky, so read https://elm-lang.org/0.19.1/bad-recursion to learn how to fix it!';}
+var $ChristophP$elm_i18next$I18Next$translationsDecoder = A2(
+	$elm$json$Json$Decode$map,
+	A2($elm$core$Basics$composeR, $ChristophP$elm_i18next$I18Next$flattenTranslations, $ChristophP$elm_i18next$I18Next$Translations),
+	$elm$json$Json$Decode$dict($ChristophP$elm_i18next$I18Next$treeDecoder));
 var $author$project$Shared$init = F3(
 	function (flags, url, key) {
 		return _Utils_Tuple2(
-			A4(
+			A5(
 				$author$project$Shared$Model,
 				url,
 				key,
 				$elm$core$Maybe$Nothing,
 				$author$project$Shared$classifyDevice(
-					{height: flags.height, width: flags.width})),
+					{height: flags.height, width: flags.width}),
+				function () {
+					var _v0 = A2($elm$json$Json$Decode$decodeValue, $ChristophP$elm_i18next$I18Next$translationsDecoder, flags.translations);
+					if (_v0.$ === 'Ok') {
+						var translations = _v0.a;
+						return translations;
+					} else {
+						var err = _v0.a;
+						return $ChristophP$elm_i18next$I18Next$initialTranslations;
+					}
+				}()),
 			$author$project$Api$Homework$User$getUserFromSession(
 				{onResponse: $author$project$Shared$GotUser}));
 	});
@@ -13659,7 +13741,6 @@ var $author$project$Api$Homework$Course$MinimalCourse = F3(
 		return {fromMoodle: fromMoodle, id: id, name: name};
 	});
 var $elm$json$Json$Decode$null = _Json_decodeNull;
-var $elm$json$Json$Decode$oneOf = _Json_oneOf;
 var $elm$json$Json$Decode$nullable = function (decoder) {
 	return $elm$json$Json$Decode$oneOf(
 		_List_fromArray(
@@ -21942,7 +22023,7 @@ var $mdgriffith$elm_ui$Element$link = F2(
 var $author$project$Components$Sidebar$viewLink = F2(
 	function (linkData, active) {
 		return A2(
-			$mdgriffith$elm_ui$Element$el,
+			$mdgriffith$elm_ui$Element$link,
 			_List_fromArray(
 				[
 					$mdgriffith$elm_ui$Element$Font$bold,
@@ -21958,20 +22039,16 @@ var $author$project$Components$Sidebar$viewLink = F2(
 					$mdgriffith$elm_ui$Element$Border$rounded(10),
 					$mdgriffith$elm_ui$Element$padding(10)
 				]),
-			A2(
-				$mdgriffith$elm_ui$Element$link,
-				_List_fromArray(
-					[$mdgriffith$elm_ui$Element$centerY]),
-				{
-					label: A2(
-						$mdgriffith$elm_ui$Element$el,
-						active ? _List_fromArray(
-							[
-								$mdgriffith$elm_ui$Element$Font$color($author$project$Styling$Colors$blueColor)
-							]) : _List_Nil,
-						$mdgriffith$elm_ui$Element$text(linkData.a)),
-					url: $author$project$Spa$Generated$Route$toString(linkData.b)
-				}));
+			{
+				label: A2(
+					$mdgriffith$elm_ui$Element$el,
+					active ? _List_fromArray(
+						[
+							$mdgriffith$elm_ui$Element$Font$color($author$project$Styling$Colors$blueColor)
+						]) : _List_Nil,
+					$mdgriffith$elm_ui$Element$text(linkData.a)),
+				url: $author$project$Spa$Generated$Route$toString(linkData.b)
+			});
 	});
 var $author$project$Components$Sidebar$viewLinks = F2(
 	function (links, maybeActive) {
@@ -22040,21 +22117,38 @@ var $author$project$Components$Sidebar$viewUserComponent = function (user) {
 				}())
 			]));
 };
-var $author$project$Components$Sidebar$viewUser = F2(
-	function (maybeUser, courseData) {
-		if (maybeUser.$ === 'Just') {
-			var user = maybeUser.a;
-			return $author$project$Components$Sidebar$viewUserComponent(user);
-		} else {
-			return $mdgriffith$elm_ui$Element$none;
-		}
-	});
+var $author$project$Components$Sidebar$viewUser = function (maybeUser) {
+	if (maybeUser.$ === 'Just') {
+		var user = maybeUser.a;
+		return $author$project$Components$Sidebar$viewUserComponent(user);
+	} else {
+		return $mdgriffith$elm_ui$Element$none;
+	}
+};
 var $author$project$Components$Sidebar$viewSidebar = function (model) {
-	var links = _List_fromArray(
-		[
-			_Utils_Tuple2('dashboard', $author$project$Spa$Generated$Route$Dashboard),
-			_Utils_Tuple2('moodle integration', $author$project$Spa$Generated$Route$Dashboard__Moodle)
-		]);
+	var links = _Utils_ap(
+		_List_fromArray(
+			[
+				_Utils_Tuple2('dashboard', $author$project$Spa$Generated$Route$Dashboard),
+				_Utils_Tuple2('moodle integration', $author$project$Spa$Generated$Route$Dashboard__Moodle)
+			]),
+		function () {
+			var _v1 = model.user;
+			if (_v1.$ === 'Just') {
+				var user = _v1.a;
+				var _v2 = user.privilege;
+				if (_v2.$ === 'Admin') {
+					return _List_fromArray(
+						[
+							_Utils_Tuple2('admin', $author$project$Spa$Generated$Route$Dashboard__Admin)
+						]);
+				} else {
+					return _List_Nil;
+				}
+			} else {
+				return _List_Nil;
+			}
+		}());
 	return A2(
 		$mdgriffith$elm_ui$Element$column,
 		_List_fromArray(
@@ -22078,7 +22172,7 @@ var $author$project$Components$Sidebar$viewSidebar = function (model) {
 			]),
 		_List_fromArray(
 			[
-				A2($author$project$Components$Sidebar$viewUser, model.user, model.courseData),
+				$author$project$Components$Sidebar$viewUser(model.user),
 				A2(
 				$mdgriffith$elm_ui$Element$el,
 				_List_fromArray(
@@ -25536,7 +25630,6 @@ var $author$project$Pages$Dashboard$view = function (model) {
 							$author$project$Components$Sidebar$viewSidebar(
 							{
 								active: $elm$core$Maybe$Just('dashboard'),
-								courseData: model.courseData,
 								device: model.device,
 								user: model.user
 							}),
@@ -25629,8 +25722,84 @@ var $author$project$Pages$Dashboard$Admin$view = function (model) {
 			[
 				A2(
 				$mdgriffith$elm_ui$Element$el,
-				_List_Nil,
-				$mdgriffith$elm_ui$Element$text('hello'))
+				_List_fromArray(
+					[
+						$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
+						$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
+						$mdgriffith$elm_ui$Element$Font$family(
+						_List_fromArray(
+							[
+								$mdgriffith$elm_ui$Element$Font$typeface('Source Sans Pro'),
+								$mdgriffith$elm_ui$Element$Font$sansSerif
+							])),
+						$mdgriffith$elm_ui$Element$Font$color(
+						A3($mdgriffith$elm_ui$Element$rgb, 1, 1, 1)),
+						$mdgriffith$elm_ui$Element$padding(30),
+						$mdgriffith$elm_ui$Element$Background$color($author$project$Styling$Colors$darkGreyColor)
+					]),
+				A2(
+					function () {
+						var _v0 = model.device._class;
+						if (_v0.$ === 'Desktop') {
+							return $mdgriffith$elm_ui$Element$wrappedRow;
+						} else {
+							return $mdgriffith$elm_ui$Element$column;
+						}
+					}(),
+					_List_fromArray(
+						[
+							$mdgriffith$elm_ui$Element$spacing(30),
+							$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
+							$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill)
+						]),
+					_List_fromArray(
+						[
+							$author$project$Components$Sidebar$viewSidebar(
+							{
+								active: $elm$core$Maybe$Just('admin'),
+								device: model.device,
+								user: model.user
+							}),
+							A2(
+							$mdgriffith$elm_ui$Element$column,
+							_List_fromArray(
+								[
+									$mdgriffith$elm_ui$Element$width(
+									function () {
+										var _v1 = model.device._class;
+										if (_v1.$ === 'Phone') {
+											return $mdgriffith$elm_ui$Element$fill;
+										} else {
+											return $mdgriffith$elm_ui$Element$fillPortion(4);
+										}
+									}()),
+									$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
+									$mdgriffith$elm_ui$Element$Background$color($author$project$Styling$Colors$darkGreyColor),
+									$mdgriffith$elm_ui$Element$spacing(30)
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$mdgriffith$elm_ui$Element$column,
+									_List_Nil,
+									_List_fromArray(
+										[
+											A2(
+											$mdgriffith$elm_ui$Element$el,
+											_List_fromArray(
+												[
+													$mdgriffith$elm_ui$Element$Font$size(40),
+													$mdgriffith$elm_ui$Element$Font$bold,
+													$mdgriffith$elm_ui$Element$alignTop
+												]),
+											$mdgriffith$elm_ui$Element$text('admin dashboard')),
+											A2(
+											$mdgriffith$elm_ui$Element$el,
+											_List_Nil,
+											$mdgriffith$elm_ui$Element$text('you are obviously very cool because in your row the permission field is 1, not 0'))
+										]))
+								]))
+						])))
 			]),
 		title: 'admin dashboard'
 	};
@@ -26094,7 +26263,6 @@ var $author$project$Pages$Dashboard$Moodle$view = function (model) {
 							$author$project$Components$Sidebar$viewSidebar(
 							{
 								active: $elm$core$Maybe$Just('moodle integration'),
-								courseData: model.courseData,
 								device: model.device,
 								user: model.user
 							}),
@@ -27298,8 +27466,45 @@ var $author$project$Pages$Register$view = function (model) {
 };
 var $author$project$Pages$Register$page = $author$project$Spa$Page$application(
 	{init: $author$project$Pages$Register$init, load: $author$project$Pages$Register$load, save: $author$project$Pages$Register$save, subscriptions: $author$project$Pages$Register$subscriptions, update: $author$project$Pages$Register$update, view: $author$project$Pages$Register$view});
-var $author$project$Pages$Top$view = function (_v0) {
-	var params = _v0.params;
+var $author$project$Pages$Top$init = F2(
+	function (shared, url) {
+		return _Utils_Tuple2(
+			{translations: shared.translations, url: url},
+			$elm$core$Platform$Cmd$none);
+	});
+var $author$project$Pages$Top$load = F2(
+	function (shared, model) {
+		return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+	});
+var $author$project$Pages$Top$save = F2(
+	function (model, shared) {
+		return shared;
+	});
+var $author$project$Pages$Top$subscriptions = function (model) {
+	return $elm$core$Platform$Sub$none;
+};
+var $author$project$Pages$Top$update = F2(
+	function (msg, model) {
+		return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+	});
+var $ChristophP$elm_i18next$I18Next$t = F2(
+	function (_v0, key) {
+		var translations = _v0.a;
+		return A2(
+			$elm$core$Maybe$withDefault,
+			key,
+			A2($elm$core$Dict$get, key, translations));
+	});
+var $author$project$Translations$Pages$Top$aboutContent = function (translations) {
+	return A2($ChristophP$elm_i18next$I18Next$t, translations, 'pages.top.about_content');
+};
+var $author$project$Translations$Pages$Top$aboutTitle = function (translations) {
+	return A2($ChristophP$elm_i18next$I18Next$t, translations, 'pages.top.about_title');
+};
+var $author$project$Translations$Global$title = function (translations) {
+	return A2($ChristophP$elm_i18next$I18Next$t, translations, 'global.title');
+};
+var $author$project$Pages$Top$view = function (model) {
 	return {
 		body: _List_fromArray(
 			[
@@ -27343,7 +27548,8 @@ var $author$project$Pages$Top$view = function (_v0) {
 											$mdgriffith$elm_ui$Element$centerX,
 											$mdgriffith$elm_ui$Element$Font$size(80)
 										]),
-									$mdgriffith$elm_ui$Element$text('Homework Organizer')),
+									$mdgriffith$elm_ui$Element$text(
+										$author$project$Translations$Global$title(model.translations))),
 									A2(
 									$mdgriffith$elm_ui$Element$el,
 									_List_fromArray(
@@ -27395,7 +27601,8 @@ var $author$project$Pages$Top$view = function (_v0) {
 										[
 											$mdgriffith$elm_ui$Element$Font$size(60)
 										]),
-									$mdgriffith$elm_ui$Element$text('About')),
+									$mdgriffith$elm_ui$Element$text(
+										$author$project$Translations$Pages$Top$aboutTitle(model.translations))),
 									A2(
 									$mdgriffith$elm_ui$Element$el,
 									_List_Nil,
@@ -27407,7 +27614,8 @@ var $author$project$Pages$Top$view = function (_v0) {
 											]),
 										_List_fromArray(
 											[
-												$mdgriffith$elm_ui$Element$text('This is a tool created to help you organize homework assignments collaboratively with your classmates.')
+												$mdgriffith$elm_ui$Element$text(
+												$author$project$Translations$Pages$Top$aboutContent(model.translations))
 											])))
 								])))
 					]))
@@ -27415,8 +27623,8 @@ var $author$project$Pages$Top$view = function (_v0) {
 		title: 'dwb?'
 	};
 };
-var $author$project$Pages$Top$page = $author$project$Spa$Page$static(
-	{view: $author$project$Pages$Top$view});
+var $author$project$Pages$Top$page = $author$project$Spa$Page$application(
+	{init: $author$project$Pages$Top$init, load: $author$project$Pages$Top$load, save: $author$project$Pages$Top$save, subscriptions: $author$project$Pages$Top$subscriptions, update: $author$project$Pages$Top$update, view: $author$project$Pages$Top$view});
 var $elm$core$Tuple$mapBoth = F3(
 	function (funcA, funcB, _v0) {
 		var x = _v0.a;
@@ -28353,7 +28561,13 @@ var $author$project$Main$update = F2(
 var $author$project$Shared$Logout = {$: 'Logout'};
 var $mdgriffith$elm_ui$Internal$Model$Left = {$: 'Left'};
 var $mdgriffith$elm_ui$Element$alignLeft = $mdgriffith$elm_ui$Internal$Model$AlignX($mdgriffith$elm_ui$Internal$Model$Left);
+var $author$project$Translations$Global$dashboard = function (translations) {
+	return A2($ChristophP$elm_i18next$I18Next$t, translations, 'global.dashboard');
+};
 var $author$project$Shared$lighterGreyColor = A3($mdgriffith$elm_ui$Element$rgb255, 29, 32, 37);
+var $author$project$Translations$Global$login = function (translations) {
+	return A2($ChristophP$elm_i18next$I18Next$t, translations, 'global.login');
+};
 var $author$project$Shared$navBarElement = F2(
 	function (label, url) {
 		return A2(
@@ -28364,6 +28578,9 @@ var $author$project$Shared$navBarElement = F2(
 				_List_Nil,
 				{label: label, url: url}));
 	});
+var $author$project$Translations$Global$register = function (translations) {
+	return A2($ChristophP$elm_i18next$I18Next$t, translations, 'global.register');
+};
 var $mdgriffith$elm_ui$Element$Font$underline = $mdgriffith$elm_ui$Internal$Model$htmlClass($mdgriffith$elm_ui$Internal$Style$classes.underline);
 var $author$project$Shared$viewHomeButton = A2(
 	$mdgriffith$elm_ui$Element$row,
@@ -28373,7 +28590,7 @@ var $author$project$Shared$viewHomeButton = A2(
 		]),
 	_List_fromArray(
 		[
-			$mdgriffith$elm_ui$Element$text('beta.hausis.3nt3.de'),
+			$mdgriffith$elm_ui$Element$text('hausis.3nt3.de'),
 			A2(
 			$mdgriffith$elm_ui$Element$el,
 			_List_fromArray(
@@ -28384,10 +28601,10 @@ var $author$project$Shared$viewHomeButton = A2(
 					A3($mdgriffith$elm_ui$Element$rgb, 1, 1, 1)),
 					$mdgriffith$elm_ui$Element$Border$rounded(5)
 				]),
-			$mdgriffith$elm_ui$Element$text('v0.7'))
+			$mdgriffith$elm_ui$Element$text('v0.8'))
 		]));
-var $author$project$Shared$navBarView = F3(
-	function (device, maybeUser, options) {
+var $author$project$Shared$navBarView = F4(
+	function (device, maybeUser, translations, options) {
 		return A2(
 			function () {
 				var _v0 = device._class;
@@ -28455,7 +28672,8 @@ var $author$project$Shared$navBarView = F3(
 								]),
 							A2(
 								$author$project$Shared$navBarElement,
-								$mdgriffith$elm_ui$Element$text('dashboard'),
+								$mdgriffith$elm_ui$Element$text(
+									$author$project$Translations$Global$dashboard(translations)),
 								'/dashboard')),
 							A2(
 							$mdgriffith$elm_ui$Element$el,
@@ -28510,7 +28728,8 @@ var $author$project$Shared$navBarView = F3(
 								]),
 							A2(
 								$author$project$Shared$navBarElement,
-								$mdgriffith$elm_ui$Element$text('login'),
+								$mdgriffith$elm_ui$Element$text(
+									$author$project$Translations$Global$login(translations)),
 								'/login')),
 							A2(
 							$mdgriffith$elm_ui$Element$el,
@@ -28528,7 +28747,8 @@ var $author$project$Shared$navBarView = F3(
 								]),
 							A2(
 								$author$project$Shared$navBarElement,
-								$mdgriffith$elm_ui$Element$text('register'),
+								$mdgriffith$elm_ui$Element$text(
+									$author$project$Translations$Global$register(translations)),
 								'/register'))
 						]);
 				}
@@ -28541,10 +28761,11 @@ var $author$project$Shared$view = F2(
 		return {
 			body: _List_fromArray(
 				[
-					A3(
+					A4(
 					$author$project$Shared$navBarView,
 					model.device,
 					model.user,
+					model.translations,
 					{toMsg: toMsg}),
 					A2(
 					$mdgriffith$elm_ui$Element$column,
@@ -28588,10 +28809,15 @@ _Platform_export({'Main':{'init':$author$project$Main$main(
 		function (width) {
 			return A2(
 				$elm$json$Json$Decode$andThen,
-				function (height) {
-					return $elm$json$Json$Decode$succeed(
-						{height: height, width: width});
+				function (translations) {
+					return A2(
+						$elm$json$Json$Decode$andThen,
+						function (height) {
+							return $elm$json$Json$Decode$succeed(
+								{height: height, translations: translations, width: width});
+						},
+						A2($elm$json$Json$Decode$field, 'height', $elm$json$Json$Decode$int));
 				},
-				A2($elm$json$Json$Decode$field, 'height', $elm$json$Json$Decode$int));
+				A2($elm$json$Json$Decode$field, 'translations', $elm$json$Json$Decode$value));
 		},
 		A2($elm$json$Json$Decode$field, 'width', $elm$json$Json$Decode$int)))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Url.Url":{"args":[],"type":"{ protocol : Url.Protocol, host : String.String, port_ : Maybe.Maybe Basics.Int, path : String.String, query : Maybe.Maybe String.String, fragment : Maybe.Maybe String.String }"},"Pages.NotFound.Msg":{"args":[],"type":"Basics.Never"},"Pages.Top.Msg":{"args":[],"type":"Basics.Never"},"Models.User":{"args":[],"type":"{ id : String.String, username : String.String, email : String.String, privilege : Models.Privilege, moodleUrl : String.String }"},"Models.Assignment":{"args":[],"type":"{ id : String.String, courseId : Basics.Int, user : Models.User, title : String.String, dueDate : Date.Date, fromMoodle : Basics.Bool }"},"Models.Course":{"args":[],"type":"{ id : Basics.Int, name : String.String, assignments : List.List Models.Assignment, fromMoodle : Basics.Bool, user : String.String }"},"Api.Homework.Course.MinimalCourse":{"args":[],"type":"{ id : Basics.Int, name : String.String, fromMoodle : Basics.Bool }"},"Date.RataDie":{"args":[],"type":"Basics.Int"}},"unions":{"Main.Msg":{"args":[],"tags":{"LinkClicked":["Browser.UrlRequest"],"UrlChanged":["Url.Url"],"Shared":["Shared.Msg"],"Pages":["Spa.Generated.Pages.Msg"]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}},"Shared.Msg":{"args":[],"tags":{"GotUser":["Api.Data Models.User"],"Logout":[],"Resize":["Basics.Int","Basics.Int"],"GotLogoutData":["Result.Result Http.Error ()"]}},"Spa.Generated.Pages.Msg":{"args":[],"tags":{"Top__Msg":["Pages.Top.Msg"],"Dashboard__Msg":["Pages.Dashboard.Msg"],"Login__Msg":["Pages.Login.Msg"],"NotFound__Msg":["Pages.NotFound.Msg"],"Register__Msg":["Pages.Register.Msg"],"Dashboard__Admin__Msg":["Pages.Dashboard.Admin.Msg"],"Dashboard__Moodle__Msg":["Pages.Dashboard.Moodle.Msg"]}},"Url.Protocol":{"args":[],"tags":{"Http":[],"Https":[]}},"String.String":{"args":[],"tags":{"String":[]}},"Browser.UrlRequest":{"args":[],"tags":{"Internal":["Url.Url"],"External":["String.String"]}},"Api.Data":{"args":["value"],"tags":{"NotAsked":[],"Loading":[],"Failure":["Api.HttpError"],"Success":["value"]}},"Http.Error":{"args":[],"tags":{"BadUrl":["String.String"],"Timeout":[],"NetworkError":[],"BadStatus":["Basics.Int"],"BadBody":["String.String"]}},"Pages.Dashboard.Msg":{"args":[],"tags":{"GotCourseData":["Api.Data (List.List Models.Course)"],"SearchCourses":["String.String"],"GotSearchCoursesData":["Api.Data (List.List Api.Homework.Course.MinimalCourse)"],"CAFSelectCourse":["Api.Homework.Course.MinimalCourse"],"CAFChangeTitle":["String.String"],"CAFChangeDate":["String.String"],"CreateAssignment":[],"GotCreateAssignmentData":["Api.Data Models.Assignment"],"ReceiveTime":["Time.Posix"],"Add1Day":[],"RemoveAssignment":["String.String"],"GotRemoveAssignmentData":["Api.Data Models.Assignment"],"HoverAssignment":["String.String"],"DeHoverAssignment":["String.String"],"GotAssignmentData":["Api.Data (List.List Models.Assignment)"]}},"Pages.Dashboard.Admin.Msg":{"args":[],"tags":{"NoOp":[]}},"Pages.Dashboard.Moodle.Msg":{"args":[],"tags":{"ChangeMoodleUrlInput":["String.String"],"GotSiteData":["Api.Data String.String"],"ChangeMoodleUsernameInput":["String.String"],"ChangeMoodlePasswordInput":["String.String"],"Authenticate":[],"GotAuthenticationData":["Api.Data Models.User"]}},"Pages.Login.Msg":{"args":[],"tags":{"UsernameInput":["String.String"],"PasswordInput":["String.String"],"GotLoginData":["Api.Data Models.User"],"Login":[]}},"Pages.Register.Msg":{"args":[],"tags":{"UsernameInput":["String.String"],"PasswordInput":["String.String"],"ValidatePasswordInput":["String.String"],"EmailInput":["String.String"],"GotUsernameTaken":["Api.Data Basics.Bool"],"GotRegistrationData":["Api.Data Models.User"],"Register":[]}},"Basics.Never":{"args":[],"tags":{"JustOneMore":["Basics.Never"]}},"Models.Privilege":{"args":[],"tags":{"Normal":[],"Admin":[]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"Basics.Bool":{"args":[],"tags":{"True":[],"False":[]}},"Date.Date":{"args":[],"tags":{"RD":["Date.RataDie"]}},"Api.HttpError":{"args":[],"tags":{"BadUrl":["String.String"],"Timeout":[],"NetworkError":[],"BadStatus":["Basics.Int","List.List String.String"],"BadBody":["String.String"]}},"List.List":{"args":["a"],"tags":{}},"Time.Posix":{"args":[],"tags":{"Posix":["Basics.Int"]}}}}})}});}(this));

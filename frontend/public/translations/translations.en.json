@@ -1,0 +1,20 @@
+{
+  "global": {
+    "title": "Homework Organizer",
+    "login": "Login",
+    "register": "Register",
+    "username": "Username",
+    "password": "Password",
+    "dashboard": "dashboard"
+  },
+  "pages": {
+    "top": {
+      "about_title": "About",
+      "about_content": "This is a tool created to help you organize homework assignments collaboratively with your classmates."
+    },
+    "login": {
+      "enter_username": "enter username",
+      "enter_password": "enter password"
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "global": {
+    "title": "Hausaufgaben Organizer",
+    "login": "Anmelden",
+    "register": "Registrieren",
+    "username": "Benutzername",
+    "password": "Passwort",
+    "dashboard": "Instrumententafel"
+  },
+  "pages": {
+    "top": {
+      "about_title": "Über das Tool",
+      "about_content": "Dieses Tool hilft dir und deinen Klassengenoss:innen Hausaufgaben kollaborativ zu verwalten."
+    },
+    "login": {
+      "enter_username": "Benutzername eingeben",
+      "enter_password": "Passwort eingeben"
+    }
+  }
+}

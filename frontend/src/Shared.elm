@@ -14,18 +14,23 @@ import Api
 import Api.Homework.User exposing (getUserFromSession, logout)
 import Browser.Events
 import Browser.Navigation exposing (Key)
+import Dict exposing (Dict)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
 import Http
+import I18Next
+import Json.Decode as JsonDecode
 import Models exposing (User)
 import Spa.Document exposing (Document)
 import Spa.Generated.Route as Route
 import Styling.Colors exposing (blueColor, greenColor, redColor)
 import Time
+import Translations.Global
 import Url exposing (Url)
+import I18Next exposing (Translations)
 
 
 
@@ -58,6 +63,11 @@ type Orientation
     | Landscape
 
 
+type Language
+    = En
+    | De
+
+
 classifyDevice : { window | height : Int, width : Int } -> Device
 classifyDevice options =
     if options.width < 900 then
@@ -73,6 +83,7 @@ classifyDevice options =
 type alias Flags =
     { width : Int
     , height : Int
+    , translations : JsonDecode.Value
     }
 
 
@@ -81,12 +92,23 @@ type alias Model =
     , key : Key
     , user : Maybe User
     , device : Device
+    , translations : I18Next.Translations
     }
 
 
 init : Flags -> Url -> Key -> ( Model, Cmd Msg )
 init flags url key =
-    ( Model url key Nothing (classifyDevice { width = flags.width, height = flags.height })
+    ( Model url
+        key
+        Nothing
+        (classifyDevice { width = flags.width, height = flags.height })
+        (case JsonDecode.decodeValue I18Next.translationsDecoder flags.translations of
+            Ok translations ->
+                translations
+
+            Err err ->
+                I18Next.initialTranslations
+        )
     , getUserFromSession { onResponse = GotUser }
     )
 
@@ -144,7 +166,7 @@ navBarElement label url =
 
 viewHomeButton =
     row [ spacing 7 ]
-        [ text "beta.hausis.3nt3.de"
+        [ text "hausis.3nt3.de"
         , el
             [ padding 3
             , Background.color blueColor
@@ -152,12 +174,12 @@ viewHomeButton =
                 (rgb 1 1 1)
             , Border.rounded 5
             ]
-            (text "v0.7")
+            (text "v0.8")
         ]
 
 
-navBarView : Device -> Maybe User -> { toMsg : Msg -> msg } -> Element msg
-navBarView device maybeUser options =
+navBarView : Device -> Maybe User -> I18Next.Translations -> { toMsg : Msg -> msg } -> Element msg
+navBarView device maybeUser translations options =
     (case device.class of
         Phone ->
             column
@@ -206,7 +228,7 @@ navBarView device maybeUser options =
                         _ ->
                             alignRight
                     ]
-                    (navBarElement (text "dashboard") "/dashboard")
+                    (navBarElement (text <| Translations.Global.dashboard translations) "/dashboard")
                 , el
                     [ case device.class of
                         Phone ->
@@ -241,7 +263,7 @@ navBarView device maybeUser options =
                         _ ->
                             alignRight
                     ]
-                    (navBarElement (text "login") "/login")
+                    (navBarElement (text <| Translations.Global.login translations) "/login")
                 , el
                     [ case device.class of
                         Desktop ->
@@ -251,7 +273,7 @@ navBarView device maybeUser options =
                             alignBottom
                     , Font.underline
                     ]
-                    (navBarElement (text "register") "/register")
+                    (navBarElement (text <| Translations.Global.register translations) "/register")
                 ]
         )
 
@@ -264,7 +286,7 @@ view { page, toMsg } model =
     { title = page.title
     , body =
         [ -- body
-          navBarView model.device model.user { toMsg = toMsg }
+          navBarView model.device model.user model.translations { toMsg = toMsg }
         , column [ height fill, width fill ] page.body
         ]
     }
