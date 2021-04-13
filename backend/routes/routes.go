@@ -28,7 +28,10 @@ func returnApiResponse(w http.ResponseWriter, response apiResponse, status int) 
 func getUserBySession(r *http.Request, getCourses bool) (structs.User, bool, error) {
 	cookie, err := r.Cookie("hw_cookie_v2")
 	if err != nil {
-		return structs.User{}, false, err
+		// return no error, because the error will (probably) only be `named cookie not present`, which can be ignored here,
+		// rather than being checked every fucking time this helper is called. This prevents the client from just getting
+		// "500 internal server error" if the cookie does not exist.
+		return structs.User{}, false, nil
 	}
 
 	sessionId := cookie.Value
