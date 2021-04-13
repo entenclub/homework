@@ -164,7 +164,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	HandleCORSPreflight(w, r)
 
 	user, authenticated, err := getUserBySession(r, true)
-	if err != nil {
+	if err != nil && err != sql.ErrNoRows {
 		logging.ErrorLogger.Printf("error getting user by session: %v\n", err)
 		_ = returnApiResponse(w, apiResponse{
 			Content: nil,
