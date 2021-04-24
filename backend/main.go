@@ -53,6 +53,8 @@ func main() {
 	r.HandleFunc("/moodle/get-school-info", routes.MoodleGetSchoolInfo).Methods("POST")
 	// TODO: /moodle/get-courses
 
+	r.PathPrefix("/api")
+
 	logging.InfoLogger.Printf("started server on port %d", port)
 	logging.ErrorLogger.Fatalln(http.ListenAndServe(fmt.Sprintf(":%d", port), r).Error())
 }

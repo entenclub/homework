@@ -6,15 +6,20 @@ productionApiAddress =
     "https://api.hausis.3nt3.de"
 
 
+localProductionApiAddress : String
+localProductionApiAddress =
+    "http://localhost/api-global"
+
+
 localApiAddress : String
 localApiAddress =
-    "http://localhost:8005"
+    "http://localhost/api"
 
 
 apiAddress : String
 apiAddress =
-    let
-        _ =
-            Debug.log "apiAddress" "fix api address back to actual endpoint"
-    in
-    localApiAddress
+    -- let
+    --     _ =
+    --         Debug.log "apiAddress" "fix api address back to actual endpoint"
+    -- in
+    localProductionApiAddress

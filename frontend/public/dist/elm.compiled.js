@@ -11196,12 +11196,8 @@ var $author$project$Shared$Tablet = {$: 'Tablet'};
 var $author$project$Shared$classifyDevice = function (options) {
 	return (options.width < 900) ? A4($author$project$Shared$Device, $author$project$Shared$Phone, $author$project$Shared$Portrait, options.width, options.height) : ((options.width < 1400) ? A4($author$project$Shared$Device, $author$project$Shared$Tablet, $author$project$Shared$Portrait, options.width, options.height) : A4($author$project$Shared$Device, $author$project$Shared$Desktop, $author$project$Shared$Landscape, options.width, options.height));
 };
-var $author$project$Api$Api$localApiAddress = 'http://localhost:8005';
-var $elm$core$Debug$log = _Debug_log;
-var $author$project$Api$Api$apiAddress = function () {
-	var _v0 = A2($elm$core$Debug$log, 'apiAddress', 'fix api address back to actual endpoint');
-	return $author$project$Api$Api$localApiAddress;
-}();
+var $author$project$Api$Api$localProductionApiAddress = 'http://localhost/api-global';
+var $author$project$Api$Api$apiAddress = $author$project$Api$Api$localProductionApiAddress;
 var $elm$http$Http$BadStatus_ = F2(
 	function (a, b) {
 		return {$: 'BadStatus_', a: a, b: b};
